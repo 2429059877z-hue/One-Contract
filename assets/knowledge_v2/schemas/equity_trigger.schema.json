@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contract-copilot/equity-trigger-v2.schema.json",
+  "title": "Equity-transfer structural-risk trigger",
+  "type": "object",
+  "required": [
+    "trigger_id", "version", "type_id", "name", "severity", "hard_signals",
+    "false_positive_guards", "evidence_state", "human_confirmation_required",
+    "auto_action", "required_modules", "required_outputs", "prohibited_outputs",
+    "source_ids", "approval_status", "activation_status"
+  ],
+  "properties": {
+    "trigger_id": {"type": "string", "pattern": "^TRG-EQ-[A-Z0-9-]+$"},
+    "version": {"type": "string"},
+    "type_id": {"const": "type-equity-transfer"},
+    "name": {"type": "string", "minLength": 1},
+    "severity": {"enum": ["P0", "P1", "P2"]},
+    "hard_signals": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "supporting_signals": {"type": "array", "items": {"type": "string"}},
+    "false_positive_guards": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "evidence_state": {"const": "major_choice"},
+    "human_confirmation_required": {"const": true},
+    "auto_action": {"enum": ["block_auto_revision", "comment_and_request_evidence"]},
+    "required_modules": {"type": "array", "items": {"type": "string"}},
+    "required_outputs": {"type": "array", "items": {"type": "string"}},
+    "prohibited_outputs": {"type": "array", "items": {"type": "string"}},
+    "source_ids": {"type": "array", "items": {"type": "string"}},
+    "approval_status": {"const": "candidate"},
+    "activation_status": {"const": "inactive"}
+  },
+  "additionalProperties": false
+}

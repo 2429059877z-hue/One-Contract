@@ -1,0 +1,182 @@
+{
+  "$id": "contract-copilot/clause-module-v2.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activation_status": {
+      "enum": ["inactive", "active", "deprecated"]
+    },
+    "approval_status": {
+      "enum": [
+        "candidate",
+        "lawyer_approved",
+        "regression_passed",
+        "active",
+        "deprecated"
+      ]
+    },
+    "assumptions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "clause_group": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "conflicts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dependencies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dependencies_by_type": {
+      "additionalProperties": {
+        "items": {"type": "string"},
+        "type": "array"
+      },
+      "type": "object"
+    },
+    "failure_mode": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "legal_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "module_id": {
+      "pattern": "^mod-[a-z0-9-]+$",
+      "type": "string"
+    },
+    "placeholders": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requiredness": {
+      "enum": [
+        "required",
+        "conditional",
+        "optional"
+      ]
+    },
+    "review_objective": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "reviewed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reviewer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "roles": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "scene_tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_family_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_status": {"type": "string"},
+    "content_status": {"type": "string"},
+    "type_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "type_ids": {
+      "items": {"type": "string"},
+      "minItems": 1,
+      "type": "array"
+    },
+    "type_codes": {
+      "items": {"type": "string"},
+      "minItems": 1,
+      "type": "array"
+    },
+    "variants": {
+      "properties": {
+        "balanced": {
+          "type": "string"
+        },
+        "concession": {
+          "type": "string"
+        },
+        "strong_protection": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "strong_protection",
+        "balanced",
+        "concession"
+      ],
+      "type": "object"
+    },
+    "version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "module_id",
+    "version",
+    "type_id",
+    "clause_group",
+    "review_objective",
+    "failure_mode",
+    "roles",
+    "scene_tags",
+    "requiredness",
+    "assumptions",
+    "placeholders",
+    "variants",
+    "dependencies",
+    "conflicts",
+    "source_ids",
+    "source_family_ids",
+    "approval_status",
+    "reviewer",
+    "reviewed_at",
+    "legal_checked_at"
+  ],
+  "title": "Contract clause module v2",
+  "type": "object"
+}

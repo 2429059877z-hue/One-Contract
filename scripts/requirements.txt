@@ -1,0 +1,3 @@
+defusedxml
+lxml
+python-docx

@@ -1,0 +1,1453 @@
+{
+ "assets": [
+  {
+   "action_guidance": [
+    "先建立交易文件清单和对价真实性对照表，再进入单条条款审查",
+    "将标的、对价、出资、程序、交割、陈述保证和治理移交作为联动组处理",
+    "P0触发后默认证据状态为major_choice，只生成批注、补件清单和合规整改路径",
+    "用完整交易事实、我方立场和议价能力重新起草，不进行整份模板差异替换"
+   ],
+   "activation_status": "active",
+   "approval_status": "active",
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "default_tendencies": [
+    "不以合同标题或工商登记价格代替对交易实质和全部经济利益的核对",
+    "受让方立场默认将大额付款与关键先决条件、股东名册记载和登记进度联动",
+    "转让方立场默认核对受让方资信，并对未届期认缴股权的补充责任设计追偿、担保或履约证明",
+    "对外转让默认取得可证明送达的同等条件通知及放弃或期满证据",
+    "陈述保证必须与披露函、知情限定、索赔期、责任上限和专项赔偿成组设计",
+    "登记或备案表单属于实施文件；如其经济条款不能与真实交易一致，先确认主管机关填写要求和合规处理路径，不以内部优先条款消除对外申报风险"
+   ],
+   "doctrine_id": "doctrine-equity-transfer-closing",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "不起草、推荐或优化用于隐瞒真实对价、虚假申报或逃避税费的内外两套合同",
+    "同一交易存在多文本对价不一致、不明来源侧协议或资金流异常时，必须停止自动修改并升级人工复核",
+    "不将当事人之间的免责或责任分配写成可以对抗公司、债权人、税务机关或其他第三人",
+    "不在不明确交易主体、实际对价、出资状态和我方角色时自动选择条款变体"
+   ],
+   "judgment_coordinates": [
+    "我方是转让方、受让方、目标公司还是其他股东",
+    "内部转让还是对外转让",
+    "转让的是实缴、未届期认缴还是已瑕疵出资股权",
+    "固定价、估值调整、锁箱、对赌或或有对价",
+    "签约、付款、股东名册、工商登记和控制权移交的先后关系",
+    "合同、补充协议、资金流、估值报告、税务申报和会计记录是否一致",
+    "每份文件是实质交易协议、补充或变更协议、登记备案表单、公司决议、付款凭证还是其他实施文件"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "linked_module_ids": [
+    "mod-equity-transfer-object",
+    "mod-equity-transfer-consideration",
+    "mod-equity-transfer-preemption-charter",
+    "mod-equity-transfer-capital-liability",
+    "mod-equity-transfer-document-tax-consistency",
+    "mod-equity-transfer-closing",
+    "mod-equity-transfer-representations-indemnity",
+    "mod-equity-transfer-governance-transition"
+   ],
+   "name": "股权转让审查原则卡（深挖候选版）",
+   "override_factors": [
+    "经证实的低价转让正当理由及完整证据",
+    "关联方内部重组、员工激励、赠与、代持还原等特殊交易实质",
+    "特许行业、国资、外资、上市或挂牌监管要求",
+    "目标公司章程、股东协议或既有投资文件的特别限制",
+    "税务机关、市场监管机关或审批机关的属地办理口径"
+   ],
+   "representative_family_count_local_summary": 3,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "确认转让标的、权属、出资状态和处分限制可以被证据链证明",
+    "将全部交易对价、付款路径、估值逻辑、税务申报和会计处理纳入同一事实表",
+    "保证优先购买权、章程限制、公司通知、股东名册和变更登记程序闭环",
+    "区分未届期认缴股权与瑕疵出资股权，分配转让人、受让人和目标公司的责任",
+    "以先决条件、分段付款、交割文件、陈述保证、披露函和专项赔偿形成可执行的风险闭环",
+    "把实质交易协议、登记或备案表单、付款文件、税务申报和公司内部程序文件作为同一文件体系核对，不允许以文件用途掩盖真实交易条件"
+   ],
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-prc-civil-code-2020",
+    "src-spc-contract-general-interpretation-2023",
+    "src-sta-equity-individual-income-tax-67",
+    "src-sta-equity-tax-67-explanation",
+    "src-china-tax-news-dual-contract-2026",
+    "src-kwm-capital-liability-2024",
+    "src-allbright-equity-change-2024",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814",
+    "src-wechat-shangpu-equity-seven-20260616",
+    "src-wechat-deheng-zibo-equity-risk-20260814",
+    "src-wechat-fatianshi-equity-checklist-20230610",
+    "src-wechat-sun-equity-cases-20240307",
+    "src-internal-history-defective-equity-rescission-note",
+    "src-academic-defective-equity-validity-2010",
+    "src-thesis-equity-termination-effects-2022"
+   ],
+   "source_status": "official_sources_control_practice_articles_fulltext_reviewed_with_caveats_internal_samples_anonymised",
+   "type_code": "EC-01-001",
+   "type_id": "type-equity-transfer",
+   "version": "0.3.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-investment-governance-exit",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-investment-amount",
+    "mod-conditions-closing",
+    "mod-governance-rights",
+    "mod-representations-indemnity",
+    "mod-exit-adjustment"
+   ],
+   "name": "增资投资审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对投资、金额的对象、触发条件、程序、期限和后果",
+    "核对条件、交割的对象、触发条件、程序、期限和后果",
+    "核对治理、权利的对象、触发条件、程序、期限和后果",
+    "核对陈述保证、赔偿的对象、触发条件、程序、期限和后果",
+    "核对退出、调整的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-01-002",
+   "type_id": "type-capital-increase-investment",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-goods-transaction-control",
+   "gold_family_count_local_summary": 3,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-goods-scope",
+    "mod-order-mechanism",
+    "mod-payment-acceptance",
+    "mod-delivery-risk",
+    "mod-breach-termination"
+   ],
+   "name": "年度框架购销审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对货物、范围的对象、触发条件、程序、期限和后果",
+    "核对订单、机制的对象、触发条件、程序、期限和后果",
+    "核对付款、验收的对象、触发条件、程序、期限和后果",
+    "核对交付、风险转移的对象、触发条件、程序、期限和后果",
+    "核对违约、解除的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-02-001",
+   "type_id": "type-annual-framework-sales-procurement",
+   "version": "0.1.0"
+  },
+  {
+   "doctrine_id": "doctrine-goods-transaction-control",
+   "type_id": "type-equipment-material-procurement",
+   "type_code": "EC-02-002",
+   "name": "设备、原材料采购审查原则卡",
+   "version": "0.4.1",
+   "approval_status": "active",
+   "activation_status": "active",
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "review_objectives": [
+    "让标的物、规格标准、技术协议和附件清单可唯一识别，防止只写品名不写规格",
+    "让交付时间、地点、方式、风险转移时点和运费归属形成明确闭环",
+    "让验收标准、检验期限、质量保证期和异议程序可执行，并匹配实际检验能力",
+    "让付款金额、节点、条件、发票与交付/验收/质保联动，保持对价平衡",
+    "让违约救济（宽限期、解除权、违约金、损失赔偿）完整且与司法支持范围匹配",
+    "将质保责任、所有权保留、知识产权归属、技术协议与验收交付成组联动处理"
+   ],
+   "judgment_coordinates": [
+    "我方是采购方（需方）还是供应方（供方），及双方相对议价地位",
+    "标的物是设备（含安装调试、技术协议、知识产权）还是原材料（计量单位、质量异议、加工连带）",
+    "交易是一次性买卖、订单式采购还是年度框架采购",
+    "交付地点、交付方式、风险转移时点和运费归属",
+    "验收标准、检验期限、质量保证期和异议程序是否可执行",
+    "付款金额、节点、条件、发票和违约责任",
+    "是否存在主合同、订单、技术协议、质保协议等文件体系",
+    "是否涉及第三方付款前提（背靠背）、所有权保留、保证金或抵押质押等配套安排",
+    "签约主体/收款账户/实际履约主体是否一致，是否需特殊资质许可，工商与信用状态",
+    "技术协议、图纸、报价单、封样等附件与主合同的效力排序，冲突时以哪个文件为准",
+    "是否涉及上下游合同责任联动（责任倒挂风险）、框架协议/订单/补充协议的版本管理"
+   ],
+   "default_tendencies": [
+    "采购方立场默认明确标的物清单、规格、技术标准和质量要求，模糊处直接落笔补全或进批注",
+    "采购方立场默认让验收标准与检验期限匹配实际检验能力，过短异议期提示为外观异议而非全面检验（民法典622）",
+    "采购方立场默认让付款与交付、验收、发票、质保联动，避免一次性付清全款失去对价平衡",
+    "采购方立场默认明确交付前风险归属与运输风险、运费归属",
+    "采购方立场默认对供方违约设置宽限期、解除权、违约金（逾期交货/质量不符）并保留损失赔偿",
+    "供应方立场默认明确付款期限与逾期付款责任，防止货发钱未收（买卖合同解释18：LPR加计30-50%）",
+    "供应方立场默认对验收异议设定合理期限与程序，防止事后无期限追责",
+    "供应方立场默认写明免责边界（不可抗力、买方操作不当、第三方原因、特殊使用条件）但不滥用",
+    "供应方立场默认将违约金比例与司法支持范围匹配（民法典585、损失30%基准）",
+    "涉税（发票、价税分离、税率调整）按建议口径处理，不作断言",
+    "采购方立场默认核验签约主体与收款账户一致性、特殊资质和信用状态，主体不明或收款不一致时落笔补全或进批注",
+    "采购方立场默认明确隐蔽缺陷责任：现场验收仅为外观确认，不排除使用中发现的隐蔽瑕疵追责（民法典622）",
+    "涉及大型企业向中小企业采购时，识别背靠背付款条款并按《保障中小企业款项支付条例》（2025修订）与法释〔2024〕11号提示效力风险",
+    "采购方立场默认让质保期自验收合格之日起算而非交付之日，约定更换/修理后质保期重新计算",
+    "采购方立场默认约定实现债权费用（律师费、诉讼费、保全费、鉴定费）由违约方承担，并约定替代采购追偿",
+    "供应方立场默认控制违约金在损失30%基准内、定金不超过20%，并核对上下游合同避免责任倒挂",
+    "阶梯式付款（预付款+验收后付尾款）是采购方立场专用倾向，供货方立场不主动把一次性付款改为阶梯式（会增加收款周期与资金压力）",
+    "争议解决管辖：原文约定地点属于民诉法35条合法地点（被告住所地/合同履行地/合同签订地/原告住所地/标的物所在地）时不改变归属，只做明确化表述（如向原告住所地法院起诉）；单方改写为对己方有利但改变归属的管辖不默认落笔，以批注提示备选"
+   ],
+   "hard_boundaries": [
+    "不虚构标的物清单、规格、数量、价格、交付时间、验收结果或双方意思表示",
+    "不把验收合格、已交付、已付款写成未经证实的既成事实",
+    "不越过法定强制标准做减损（质量、安全、环保、计量等）",
+    "不在事实缺失或我方角色不明时自动选择条款变体",
+    "不把违约条款写成明显高于司法支持上限的惩罚性金额而不提示风险",
+    "涉及背靠背付款（大型企业与中小企业）、所有权保留、定金等安排时须提示法律后果，不静默改写",
+    "不越过强制性国家标准、行业标准做质量减损约定，验收标准不得低于法定底线"
+   ],
+   "override_factors": [
+    "双方长期合作、历史订单稳定、信用良好，可放宽部分程序性要求",
+    "行业或监管强制标准（特种设备、安全防护、危化品等）优先于合同约定",
+    "标的物为定制设备或专用原材料，验收标准须以技术协议或样品为准",
+    "采购方为大企业、供应方为中小企业时，背靠背付款条款等受2024批复监管新规约束",
+    "双方已明确适用总协议或框架，单笔订单从简但仍须保留核心救济条款"
+   ],
+   "action_guidance": [
+    "标的物或规格缺失、验收异议期过短、付款与交付脱节等确定性缺口：直接落笔补全或调整",
+    "涉及金额、日期、账户、附件、技术参数等待确认事实：修订＋批注，用【待填：…】标记",
+    "验收标准依赖样品或技术协议、违约金额需客户决策、背靠背安排需客户选择：批注＋风险清单",
+    "特种设备、危化品、安全防护等法定强制标准：先核对合规边界，不静默改写",
+    "条款联动冲突（如验收异议期与质保期、付款节点与交付节点）直接落笔统一口径，批注说明影响"
+   ],
+   "linked_module_ids": [
+    "mod-goods-specification",
+    "mod-delivery-risk",
+    "mod-payment-acceptance",
+    "mod-quality-warranty",
+    "mod-breach-termination"
+   ],
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "source_ids": [
+    "src-prc-civil-code-2020",
+    "src-spc-contract-general-interpretation-2023",
+    "src-spc-sale-contract-interpretation-2020",
+    "src-spc-guarantee-interpretation-2020",
+    "src-spc-large-small-enterprise-payment-2024",
+    "src-spc-bankruptcy-interpretation-2-2020",
+    "src-lawyer-sale-contract-guide",
+    "src-internal-procurement-sample-aggregate-202608",
+    "src-internal-procurement-review-opinions-202608",
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-welegal-procurement-202606"
+   ],
+   "source_status": "researched_candidate",
+   "sample_support_status": "internal_representatives_available_local_only",
+   "gold_family_count_local_summary": 4,
+   "representative_family_count_local_summary": 2,
+   "legal_checked_at": "2026-08-19",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-goods-transaction-control",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-goods-scope",
+    "mod-price-tax-invoice",
+    "mod-delivery-risk",
+    "mod-payment-acceptance",
+    "mod-breach-termination"
+   ],
+   "name": "产成品销售审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对货物、范围的对象、触发条件、程序、期限和后果",
+    "核对价格、税费、发票的对象、触发条件、程序、期限和后果",
+    "核对交付、风险转移的对象、触发条件、程序、期限和后果",
+    "核对付款、验收的对象、触发条件、程序、期限和后果",
+    "核对违约、解除的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-02-003",
+   "type_id": "type-finished-goods-sale",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-lease-use-exit-control",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-lease-object",
+    "mod-rent-deposit",
+    "mod-use-maintenance",
+    "mod-renewal-exit",
+    "mod-breach-termination"
+   ],
+   "name": "房屋、场地租赁审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对租赁、标的的对象、触发条件、程序、期限和后果",
+    "核对租金、押金的对象、触发条件、程序、期限和后果",
+    "核对使用、维护的对象、触发条件、程序、期限和后果",
+    "核对续期、退出的对象、触发条件、程序、期限和后果",
+    "核对违约、解除的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-03-001",
+   "type_id": "type-property-venue-lease",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-service-deliverable-control",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-service-scope",
+    "mod-deliverables-acceptance",
+    "mod-fees-expenses",
+    "mod-change-control",
+    "mod-breach-termination"
+   ],
+   "name": "综合咨询服务审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对服务、范围的对象、触发条件、程序、期限和后果",
+    "核对成果交付、验收的对象、触发条件、程序、期限和后果",
+    "核对费用、支出的对象、触发条件、程序、期限和后果",
+    "核对变更、控制的对象、触发条件、程序、期限和后果",
+    "核对违约、解除的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-04-001",
+   "type_id": "type-general-consulting-service",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-development-delivery-ip",
+   "gold_family_count_local_summary": 8,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-development-scope",
+    "mod-milestone-acceptance",
+    "mod-change-control",
+    "mod-ip-ownership",
+    "mod-source-code-maintenance"
+   ],
+   "name": "技术、软件委托开发审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 1,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对开发、范围的对象、触发条件、程序、期限和后果",
+    "核对里程碑、验收的对象、触发条件、程序、期限和后果",
+    "核对变更、控制的对象、触发条件、程序、期限和后果",
+    "核对知识产权、权属的对象、触发条件、程序、期限和后果",
+    "核对源代码、代码、维护的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-05-001",
+   "type_id": "type-commissioned-technology-development",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-saas-continuity-data",
+   "gold_family_count_local_summary": 1,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-subscription-scope",
+    "mod-sla-support",
+    "mod-data-processing",
+    "mod-fee-renewal",
+    "mod-exit-portability"
+   ],
+   "name": "SaaS订阅审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对订阅、范围的对象、触发条件、程序、期限和后果",
+    "核对服务等级、支持的对象、触发条件、程序、期限和后果",
+    "核对数据、处理的对象、触发条件、程序、期限和后果",
+    "核对费用、续期的对象、触发条件、程序、期限和后果",
+    "核对退出、迁移的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-05-002",
+   "type_id": "type-saas-subscription",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-operations-continuity",
+   "gold_family_count_local_summary": 0,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-maintenance-scope",
+    "mod-sla-response",
+    "mod-change-access",
+    "mod-security-incident",
+    "mod-handover-exit"
+   ],
+   "name": "系统运维审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对维护、范围的对象、触发条件、程序、期限和后果",
+    "核对服务等级、响应的对象、触发条件、程序、期限和后果",
+    "核对变更、访问的对象、触发条件、程序、期限和后果",
+    "核对安全、事件的对象、触发条件、程序、期限和后果",
+    "核对交接、退出的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-05-003",
+   "type_id": "type-system-operations-maintenance",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-employment-mandatory-boundaries",
+   "gold_family_count_local_summary": 3,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-employment-term",
+    "mod-position-location",
+    "mod-compensation-hours",
+    "mod-rules-discipline",
+    "mod-employment-exit"
+   ],
+   "name": "固定期限劳动合同审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对劳动关系、期限的对象、触发条件、程序、期限和后果",
+    "核对岗位、地点的对象、触发条件、程序、期限和后果",
+    "核对报酬、工时的对象、触发条件、程序、期限和后果",
+    "核对规章、纪律的对象、触发条件、程序、期限和后果",
+    "核对劳动关系、退出的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-06-001",
+   "type_id": "type-fixed-term-employment",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "保密范围过宽或不可识别：直接修订为按实际接触列举",
+    "缺少返还/删除/账号退出机制：修订加批注补清单",
+    "违约金过高或与损失不匹配：提示风险，不直接下调（合法但需客户决策）",
+    "保密范围/期限需客户确认：批注提示",
+    "仅有表述瑕疵：直接局部修订"
+   ],
+   "activation_status": "active",
+   "approval_status": "active",
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "default_tendencies": [
+    "保密信息范围应明确且与岗位实际接触匹配，过宽范围（如一切未公开信息）审查时提示",
+    "保密义务按在职+离职后持续义务设计，写明期限和例外（依法披露/劳动争议处理/作证）",
+    "资料返还/数据删除/账号退出用清单机制，可核验可确认",
+    "保密义务与职务成果/知识产权归属衔接，不重复冲突",
+    "违约金合理，与潜在损失匹配，不设定过高违约金而不提示",
+    "保密义务是劳动者对用人单位的义务，用人单位立场默认明确保护范围与救济，劳动者立场默认核对范围是否过度/义务期限/是否保留法定权利",
+    "保密费：若约定已含在工资中，属合法安排但审查时提示对劳动者可能的不足"
+   ],
+   "doctrine_id": "doctrine-employment-confidentiality",
+   "gold_family_count_local_summary": 4,
+   "hard_boundaries": [
+    "不虚构保密信息范围/接触事实/违约状态",
+    "不得以保密条款剥夺劳动者依法举报/作证/劳动争议处理权利",
+    "保密义务不以支付保密费为前提（劳动合同法23条仅针对竞业限制），保密义务法定（反不正当竞争法）",
+    "违约金条款不与劳动法强制规定冲突"
+   ],
+   "judgment_coordinates": [
+    "保密信息范围是否具体明确（技术信息/经营信息/客户信息/个人信息分类）",
+    "我方是用人单位还是劳动者（离职员工）",
+    "保密义务是否含离职后持续义务、期限和地域",
+    "资料返还/数据删除/账号退出/工作交接机制是否可执行",
+    "是否与竞业限制/知识产权/职务成果条款衔接",
+    "违约金/赔偿是否合理、是否与损失匹配",
+    "是否保留法定权利（举报/作证/依法披露）"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "linked_module_ids": [
+    "mod-confidential-information",
+    "mod-employee-use-restriction",
+    "mod-return-destruction",
+    "mod-ip-interface",
+    "mod-confidentiality-remedies"
+   ],
+   "name": "员工保密审查原则卡",
+   "override_factors": [
+    "涉密岗位/关键技术岗位→保护强度可提高",
+    "普通岗位被要求签过度保密协议→提示范围是否适当",
+    "存在已发生的泄密/竞业行为→升级处理",
+    "个人信息保护（个人信息保护法）与保密义务衔接"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "让保密信息范围明确且与员工实际接触匹配，避免过度宽泛或不可识别",
+    "让保密义务（在职/离职）、使用限制、返还/删除/销毁机制可执行",
+    "让保密义务与知识产权、职务成果归属衔接",
+    "让违约与救济（违约金/赔偿/停止侵害）明确且与法律边界一致",
+    "区分商业秘密与一般技能经验/公开信息，避免无边界保密"
+   ],
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_status": "researched_candidate",
+   "type_code": "EC-06-002",
+   "type_id": "type-employee-confidentiality",
+   "version": "0.3.0",
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ]
+  },
+  {
+   "action_guidance": [
+    "竞业期限超二年：直接修订为二年（法律强制）",
+    "员工不适格（普通岗位）：提示无效风险，从劳动者立场建议主张、从用人单位立场确认必要性",
+    "补偿按最低工资或低于30%平均工资：从劳动者立场提示谈判风险（指引建议），不直接改写",
+    "违约金超过指引5倍建议：提示风险，不直接下调（合法条款，需客户决策）",
+    "地域全球/名单可调：提示对劳动者过重，不认定无效",
+    "竞业启动机制缺失：修订补书面通知启动条款",
+    "仅有表述瑕疵：直接局部修订"
+   ],
+   "activation_status": "active",
+   "approval_status": "active",
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "default_tendencies": [
+    "先确认员工适格性：非高管/高级技工/保密义务人签订的竞业限制条款存在无效风险（最高法案例），从劳动者立场提示、从用人单位立场确认必要性",
+    "竞业期限不超过二年（劳动合同法24条强制）；超过二年部分无效",
+    "补偿按月支付，标准明确；补偿低于30%平均工资或按最低工资（人社部指引建议）属合法但谈判风险，审查时从劳动者立场提示",
+    "违约金约定（如按已付补偿3倍、固定金额）合法，但超过指引5倍补偿建议时提示谈判风险，不直接下调",
+    "地域过宽（全球范围）或竞争单位名单由甲方单方可调→审查时提示对劳动者过重，不认定无效",
+    "竞业限制须由用人单位书面通知启动；未通知则员工无需履行离职竞业限制",
+    "竞业限制经济补偿连续三个月未支付的，员工有权解除竞业限制约定",
+    "竞业限制与保密义务相互独立，未启动竞业不影响保密义务"
+   ],
+   "doctrine_id": "doctrine-noncompete-enforceability",
+   "gold_family_count_local_summary": 4,
+   "hard_boundaries": [
+    "竞业限制期限不得超过二年（劳动合同法24条）",
+    "竞业限制人员限于高级管理人员/高级技术人员/其他负有保密义务人员（劳动合同法24条）",
+    "对负有保密义务的劳动者约定竞业限制，须按月给予经济补偿（劳动合同法23条）",
+    "不虚构竞业范围/补偿金额/启动状态",
+    "不把员工不适格或期限超限的竞业条款写成有效",
+    "违约金不与劳动法强制规定冲突"
+   ],
+   "judgment_coordinates": [
+    "员工是否适格（高管/高级技工/保密义务人），普通员工被签竞业→主体不适格条款无效风险",
+    "竞业范围（业务/地域/客户/不招揽）是否明确、是否过宽（如全球范围）",
+    "竞业期限是否超过二年（劳动合同法24条强制上限）",
+    "补偿标准：是否按月支付、是否约定金额，是否低于最低工资",
+    "补偿低于30%平均工资或违约金超过5倍补偿（人社部指引）→属指引建议，提示风险但非违法",
+    "竞业限制是否由用人单位书面启动，未启动则员工无需履行",
+    "我方是用人单位还是劳动者（离职员工）",
+    "是否与保密/知识产权/解除协议衔接"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "linked_module_ids": [
+    "mod-noncompete-scope",
+    "mod-noncompete-term-region",
+    "mod-noncompete-compensation",
+    "mod-noncompete-release",
+    "mod-noncompete-remedies"
+   ],
+   "name": "竞业限制审查原则卡",
+   "override_factors": [
+    "关键技术岗位/重大商业秘密/已支付竞业补偿→保护强度可提高",
+    "员工在普通岗位且不知悉商业秘密→竞业限制主体不适格，条款无效风险",
+    "竞业范围/地域与实际保密事项不匹配→审查是否过宽",
+    "双方对竞业范围/补偿达成真实协商→尊重约定",
+    "新员工入职前签署/在职期间竞业（劳动争议解释二）→按相应规则"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "确认员工是否属于竞业限制适格主体（高级管理人员/高级技术人员/其他负有保密义务人员）",
+    "让竞业范围/地域/期限明确且不违反法律强制边界（期限≤2年）",
+    "让竞业限制补偿按月支付且标准明确，与法律和指引一致",
+    "让竞业限制启动/解除机制清晰（书面通知启动/免于履行/逾期未付补偿的解除权）",
+    "让违约与救济（违约金/返还补偿/损失赔偿）明确且与法律边界一致",
+    "让竞业限制与保密/知识产权/劳动关系解除衔接"
+   ],
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_status": "researched_candidate",
+   "type_code": "EC-06-003",
+   "type_id": "type-noncompete",
+   "version": "0.3.0",
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ]
+  },
+  {
+   "action_guidance": [
+    "解除路径和金额均确认：直接修订完整机制",
+    "金额未知但项目和计算原则已知：占位符修订加批注",
+    "提出方/工伤/被迫签署事实不明：仅批注并升级",
+    "竞业是否启动待用人单位决定：给继续/解除两种变体，要求授权",
+    "仅有格式或称谓错误：直接局部修订，不加冗余批注",
+    "劳动相关协议的争议解决按法定前置（劳动争议仲裁前置、仲裁/诉讼管辖法定）处理，不主动修改管辖条款；仅当条款与法定规则冲突或表述明显错误时才处理"
+   ],
+   "activation_status": "active",
+   "approval_status": "active",
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "default_tendencies": [
+    "事实明确且确为协商解除时，正文清楚写明依据（劳动合同法36条）、解除日期和双方意思表示",
+    "用人单位提出协商解除→依法支付经济补偿（46条2项）；劳动者主动提出→一般不适用补偿，但协议可明确表述提出方",
+    "离职结算使用分项清单（工资/奖金/加班/未休年假/经济补偿/代通知金），金额未知用【待填：】不写已足额",
+    "区分签署日/生效日/最后工作日/劳动关系解除日，期间出勤/工资/社保/假期明确",
+    "社会保险/公积金/离职证明/档案转移等法定义务不混入无法识别构成的一次性和解款",
+    "权利终结以具体列明的项目、期间和履行完成为基础，保留依法不能放弃的权利和未披露事项",
+    "存在工伤/职业病/医疗期/孕期等特殊保护迹象时，将普通全面终结条款降级，先核验再升级",
+    "工作交接用清单（资料/设备/账号/期限/确认人/异议期），不直接从法定工资中任意扣除",
+    "涉税（经济补偿免税额/代扣代缴）按建议口径提示，不作断言",
+    "劳动协议的管辖/争议解决条款依法律规定运行（劳动争议仲裁前置），不主动改写管辖条款，避免画蛇添足"
+   ],
+   "doctrine_id": "doctrine-employment-exit-settlement",
+   "gold_family_count_local_summary": 4,
+   "hard_boundaries": [
+    "不得凭协议措辞把未经确认的提出方/解除事由/自愿状态写成既成事实",
+    "不得以不开证明、不发工资、不办社保转移为条件迫使全面放弃权利",
+    "不得把劳动者自愿不缴/现金补偿替代缴纳社保作为当然有效方案",
+    "不得在事实未核前写无工伤/无职业病/无任何争议",
+    "不虚构金额/日期/结算状态，未知用占位符或批注",
+    "违约金/赔偿条款不与劳动合同法强制规定冲突"
+   ],
+   "judgment_coordinates": [
+    "解除路径：协商解除/单方解除后续和解/固定期限终止/辞职/被迫解除",
+    "提出方与自愿性：谁提出、何时提出、有无通知/辞职书、有无欺诈胁迫",
+    "我方是劳动者还是用人单位，及双方议价地位",
+    "解除日/生效日/最后工作日/工资社保截止日是否一致",
+    "经济补偿是否依法（用人单位提出协商解除→应补偿，劳动者主动提出→不适用）",
+    "是否存在欠薪/未缴社保/调岗降薪/停工/职业病检查/工伤/医疗期等特殊事实",
+    "结算款项是否分项可核验（项目/基数/期间/税务属性/支付节点）",
+    "竞业限制/保密/知识产权在解除协议中的衔接状态",
+    "权利终结范围是否与已披露/已核对/已支付事项对应"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "linked_module_ids": [
+    "mod-termination-date",
+    "mod-compensation-settlement",
+    "mod-handover-return",
+    "mod-certificate-social-insurance",
+    "mod-release-boundary"
+   ],
+   "name": "协商解除劳动关系审查原则卡",
+   "override_factors": [
+    "存在单方解除通知、被迫辞职、欺诈胁迫、重大误解、显失公平事实→转入人工升级",
+    "工伤/职业病/医疗期/孕期产期哺乳期等特殊保护→不能用普通全面终结模板",
+    "地方工资支付规则要求更早结清→按地方规则",
+    "双方对明确争议独立协商、充分披露并以真实对价和解→可扩大终结范围",
+    "存在劳务派遣/关联用工/退休返聘→按相应规则"
+   ],
+   "representative_family_count_local_summary": 2,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "确认解除路径、提出方与自愿性，避免用结算文件掩盖单方解除/被迫辞职/未解决争议",
+    "让解除日期、协议生效、最后工作日、工资/社保计算截止日和交接节点一致",
+    "让离职结算分项可核验（工资/奖金/加班/未休年假/经济补偿/代通知金/竞业补偿），不虚构金额",
+    "让社会保险、公积金、离职证明和档案转移等法定程序义务与可协商款项分开",
+    "识别工伤/职业病/医疗期/孕期产期哺乳期等特殊保护，防止普通全面放弃条款掩盖",
+    "让工作交接可完成可确认，权利终结以实际履行为条件且范围具体"
+   ],
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_status": "researched_candidate",
+   "type_code": "EC-06-004",
+   "type_id": "type-employment-mutual-termination",
+   "version": "0.3.1",
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ]
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-loan-repayment-security",
+   "gold_family_count_local_summary": 3,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-loan-drawdown",
+    "mod-interest-fees",
+    "mod-repayment",
+    "mod-covenants-default",
+    "mod-security-interface"
+   ],
+   "name": "企业借款审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对借款、提款的对象、触发条件、程序、期限和后果",
+    "核对利息、费用的对象、触发条件、程序、期限和后果",
+    "核对还款的对象、触发条件、程序、期限和后果",
+    "核对承诺、违约事件的对象、触发条件、程序、期限和后果",
+    "核对安全、衔接的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-07-001",
+   "type_id": "type-enterprise-loan",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-guarantee-scope-period",
+   "gold_family_count_local_summary": 2,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-guaranteed-obligation",
+    "mod-guarantee-form",
+    "mod-guarantee-period",
+    "mod-defense-notice",
+    "mod-recourse-release"
+   ],
+   "name": "保证合同审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对被担保、债务的对象、触发条件、程序、期限和后果",
+    "核对保证、方式的对象、触发条件、程序、期限和后果",
+    "核对保证、期间的对象、触发条件、程序、期限和后果",
+    "核对抗辩、通知的对象、触发条件、程序、期限和后果",
+    "核对追偿、解除的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-07-002",
+   "type_id": "type-guarantee-contract",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-construction-performance-control",
+   "gold_family_count_local_summary": 1,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-project-scope",
+    "mod-schedule-change",
+    "mod-measurement-payment",
+    "mod-completion-acceptance",
+    "mod-defects-breach"
+   ],
+   "name": "建设工程总包审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对项目、范围的对象、触发条件、程序、期限和后果",
+    "核对工期、变更的对象、触发条件、程序、期限和后果",
+    "核对计量、付款的对象、触发条件、程序、期限和后果",
+    "核对完工、验收的对象、触发条件、程序、期限和后果",
+    "核对缺陷、违约的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-08-001",
+   "type_id": "type-construction-general-contract",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-construction-subcontract-control",
+   "gold_family_count_local_summary": 0,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-subcontract-scope",
+    "mod-main-contract-interface",
+    "mod-schedule-coordination",
+    "mod-payment-acceptance",
+    "mod-safety-defects"
+   ],
+   "name": "专业分包审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 0,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对分包、范围的对象、触发条件、程序、期限和后果",
+    "核对主合同、合同、衔接的对象、触发条件、程序、期限和后果",
+    "核对工期、协调的对象、触发条件、程序、期限和后果",
+    "核对付款、验收的对象、触发条件、程序、期限和后果",
+    "核对安全、缺陷的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "placeholder_only_insufficient_representatives",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-08-002",
+   "type_id": "type-professional-subcontract",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-distribution-channel-control",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-territory-channel",
+    "mod-sales-target",
+    "mod-price-policy",
+    "mod-brand-compliance",
+    "mod-inventory-exit"
+   ],
+   "name": "经销合作审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 4,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对区域、渠道的对象、触发条件、程序、期限和后果",
+    "核对销售、目标的对象、触发条件、程序、期限和后果",
+    "核对价格、政策的对象、触发条件、程序、期限和后果",
+    "核对品牌、合规的对象、触发条件、程序、期限和后果",
+    "核对库存、退出的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-09-001",
+   "type_id": "type-distribution-cooperation",
+   "version": "0.1.0"
+  },
+  {
+   "action_guidance": [
+    "先核对事实与现有条款机制",
+    "再选择模块变体并联动检查",
+    "未知事实使用占位符或批注，不作事实填充"
+   ],
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "content_status": "candidate_framework_only",
+   "default_tendencies": [
+    "待专业资料确认：本类型的专业默认倾向",
+    "待历史修订验证：不同我方角色下的默认倾向"
+   ],
+   "doctrine_id": "doctrine-cooperation-governance-exit",
+   "gold_family_count_local_summary": 10,
+   "hard_boundaries": [
+    "待补充：强制性法律边界",
+    "待补充：司法裁判倾向",
+    "待补充：客户内部政策边界"
+   ],
+   "judgment_coordinates": [
+    "交易目的",
+    "我方角色",
+    "交易阶段",
+    "履行与验收闭环",
+    "变更与退出",
+    "责任与救济"
+   ],
+   "legal_checked_at": null,
+   "linked_module_ids": [
+    "mod-cooperation-scope",
+    "mod-input-contribution",
+    "mod-governance-decision",
+    "mod-revenue-cost",
+    "mod-exit-settlement"
+   ],
+   "name": "项目合作、联营审查原则卡框架",
+   "override_factors": [
+    "交易结构变化",
+    "我方角色与议价能力",
+    "监管或行业特殊要求",
+    "已存在的主合同、订单或附件"
+   ],
+   "representative_family_count_local_summary": 3,
+   "required_source_slots": [
+    "official_law",
+    "judicial_interpretation_or_case",
+    "verified_practice_article",
+    "historical_revision_or_failure_case"
+   ],
+   "review_objectives": [
+    "核对合作、范围的对象、触发条件、程序、期限和后果",
+    "核对投入、贡献的对象、触发条件、程序、期限和后果",
+    "核对治理、决策的对象、触发条件、程序、期限和后果",
+    "核对收益、成本的对象、触发条件、程序、期限和后果",
+    "核对退出、结算的对象、触发条件、程序、期限和后果"
+   ],
+   "reviewed_at": null,
+   "reviewer": null,
+   "sample_support_status": "internal_representatives_available_local_only",
+   "source_status": "professional_sources_missing",
+   "type_code": "EC-09-002",
+   "type_id": "type-project-cooperation-joint-operation",
+   "version": "0.1.0"
+  }
+ ],
+ "schema_version": "2.1.0"
+}

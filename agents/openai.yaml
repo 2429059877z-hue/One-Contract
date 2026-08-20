@@ -1,0 +1,4 @@
+interface:
+  display_name: "Contract Copilot 合同助手"
+  short_description: "原则型合同审查、真实修订批注与 DOCX 质量验证"
+  default_prompt: "使用 $contract-copilot 审查这份合同，优先形成可执行修订，并完成真实批注和最终 DOCX 质量验证。"

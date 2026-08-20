@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contract-copilot/experience-card-v2.schema.json",
+  "title": "Anonymised review experience card",
+  "type": "object",
+  "required": [
+    "experience_id", "type_id", "title", "source_ids", "source_status",
+    "observation", "review_rule", "limits", "approval_status", "activation_status"
+  ],
+  "properties": {
+    "experience_id": {"type": "string", "pattern": "^exp-[a-z0-9-]+$"},
+    "type_id": {"type": "string"},
+    "title": {"type": "string", "minLength": 1},
+    "source_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "source_status": {"type": "string"},
+    "observation": {"type": "string", "minLength": 1},
+    "review_rule": {"type": "string", "minLength": 1},
+    "limits": {"type": "string", "minLength": 1},
+    "approval_status": {"const": "candidate"},
+    "activation_status": {"const": "inactive"}
+  },
+  "additionalProperties": false
+}

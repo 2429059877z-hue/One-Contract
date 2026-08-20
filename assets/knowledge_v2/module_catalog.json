@@ -1,0 +1,6231 @@
+{
+ "assets": [
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "品牌、合规",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-inventory-exit",
+    "mod-price-policy",
+    "mod-sales-target",
+    "mod-territory-channel"
+   ],
+   "dependencies_by_type": {
+    "type-distribution-cooperation": [
+     "mod-territory-channel",
+     "mod-sales-target",
+     "mod-price-policy",
+     "mod-inventory-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-brand-compliance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确品牌、合规的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-001"
+   ],
+   "type_id": "type-distribution-cooperation",
+   "type_ids": [
+    "type-distribution-cooperation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "违约情形、违约金标准和解除权可确认",
+    "违约金与定金/赔偿损失的选择关系需明确",
+    "我方立场和议价能力影响违约金强度设计"
+   ],
+   "clause_group": "违约、解除",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-change-control",
+    "mod-deliverables-acceptance",
+    "mod-delivery-risk",
+    "mod-fees-expenses",
+    "mod-goods-scope",
+    "mod-goods-specification",
+    "mod-lease-object",
+    "mod-order-mechanism",
+    "mod-payment-acceptance",
+    "mod-price-tax-invoice",
+    "mod-quality-warranty",
+    "mod-renewal-exit",
+    "mod-rent-deposit",
+    "mod-service-scope",
+    "mod-use-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-annual-framework-sales-procurement": [
+     "mod-goods-scope",
+     "mod-order-mechanism",
+     "mod-payment-acceptance",
+     "mod-delivery-risk"
+    ],
+    "type-equipment-material-procurement": [
+     "mod-goods-specification",
+     "mod-delivery-risk",
+     "mod-payment-acceptance",
+     "mod-quality-warranty"
+    ],
+    "type-finished-goods-sale": [
+     "mod-goods-scope",
+     "mod-price-tax-invoice",
+     "mod-delivery-risk",
+     "mod-payment-acceptance"
+    ],
+    "type-general-consulting-service": [
+     "mod-service-scope",
+     "mod-deliverables-acceptance",
+     "mod-fees-expenses",
+     "mod-change-control"
+    ],
+    "type-property-venue-lease": [
+     "mod-lease-object",
+     "mod-rent-deposit",
+     "mod-use-maintenance",
+     "mod-renewal-exit"
+    ]
+   },
+   "failure_mode": [
+    "违约条款缺失或只约定一方的违约责任，权利义务失衡",
+    "违约金约定过高（如合同总额的50%-60%）未提示司法调整风险（民法典585，损失30%基准）",
+    "违约金与定金、赔偿损失并用时未明确选择关系（民法典588，买卖合同解释21）",
+    "逾期交货/逾期付款无宽限期和解除权，救济机制断裂",
+    "解除合同后价款返还、货物返还、损失赔偿未成组处理",
+    "违约条款与质量异议、验收、付款条款未联动",
+    "只约定采购方违约责任未约定供方责任，或违约责任与核心义务不对应（格式合同显失公平）",
+    "违约责任倒挂：下游对终端客户承担高违约金，但上游供应违约金比例过低，风险单向转移",
+    "未约定实现债权费用（律师费/诉讼费/保全费/鉴定费）由违约方承担",
+    "未约定逾期期间替代采购追偿（向第三方采购增加的费用由供方承担）"
+   ],
+   "legal_checked_at": "2026-08-19",
+   "module_id": "mod-breach-termination",
+   "placeholders": [
+    "<违约情形>",
+    "<违约金标准>",
+    "<宽限期>",
+    "<解除权>",
+    "<定金/赔偿选择>",
+    "<损失赔偿范围>"
+   ],
+   "requiredness": "required",
+   "review_objective": "明确违约情形、宽限期、违约金（逾期交货/逾期付款/质量不符）、解除权、定金选择和损失赔偿，使违约救济完整且与司法支持范围匹配。",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "buyer",
+    "supplier",
+    "any"
+   ],
+   "scene_tags": [
+    "equipment_purchase",
+    "material_purchase",
+    "breach_remedy",
+    "termination"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-lawyer-sale-contract-guide",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-spc-contract-general-interpretation-2023",
+    "src-prc-civil-code-2020",
+    "src-wechat-welegal-procurement-202606",
+    "src-internal-procurement-review-opinions-202608",
+    "src-spc-sale-contract-interpretation-2020"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-02-001",
+    "EC-02-002",
+    "EC-02-003",
+    "EC-03-001",
+    "EC-04-001"
+   ],
+   "type_id": "type-annual-framework-sales-procurement",
+   "type_ids": [
+    "type-annual-framework-sales-procurement",
+    "type-equipment-material-procurement",
+    "type-finished-goods-sale",
+    "type-property-venue-lease",
+    "type-general-consulting-service"
+   ],
+   "variants": {
+    "balanced": "明确双方违约情形、宽限期、违约金（与司法支持范围匹配）和解除权；违约金与定金、赔偿损失的选择关系写明。",
+    "concession": "违约金适度降低或仅保留逾期违约金，解除权设置更宽松触发条件。",
+    "strong_protection": "采购方应使供方逾期交货/质量不符有明确宽限期、违约金和解除权，并保留损失赔偿；供应方应控制违约金在损失30%基准内，避免被调整，且明确逾期付款责任。；违约责任与核心义务一一对应、双方对等，设置日费率违约金与合理上限，约定实现债权费用承担与替代采购追偿，并核对上下游合同避免责任倒挂。"
+   },
+   "version": "0.4.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "社保/公积金缴费状态可核验",
+    "地方经办口径需核验"
+   ],
+   "clause_group": "证明、社会保险、保险",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-compensation-settlement",
+    "mod-handover-return",
+    "mod-release-boundary",
+    "mod-termination-date"
+   ],
+   "dependencies_by_type": {
+    "type-employment-mutual-termination": [
+     "mod-termination-date",
+     "mod-compensation-settlement",
+     "mod-handover-return",
+     "mod-release-boundary"
+    ]
+   },
+   "failure_mode": [
+    "法定缴纳/转移/证明义务混入一次性和解款",
+    "以劳动者自愿不缴/现金补偿替代缴纳社保",
+    "离职证明/档案转移无限期附条件",
+    "缴费截至月/补缴/转移未明确"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-certificate-social-insurance",
+   "placeholders": [
+    "<缴费截止月>",
+    "<补缴安排>",
+    "<转移/封存安排>",
+    "<离职证明出具日>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让社会保险/公积金/离职证明/档案转移等法定程序义务与可协商款项分开，不以现金买断替代法定程序。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "mutual_termination",
+    "social_insurance",
+    "certificate"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-004"
+   ],
+   "type_id": "type-employment-mutual-termination",
+   "type_ids": [
+    "type-employment-mutual-termination"
+   ],
+   "variants": {
+    "balanced": "写明缴费截至月、依法补缴/核对机制、个人承担部分、账户转移/封存、离职证明和档案社保转移。",
+    "concession": "核心法定义务明确，细节从简。",
+    "strong_protection": "不把法定程序义务与可协商款项混同，不把证明/转移无限期附条件。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "变更、访问",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-handover-exit",
+    "mod-maintenance-scope",
+    "mod-security-incident",
+    "mod-sla-response"
+   ],
+   "dependencies_by_type": {
+    "type-system-operations-maintenance": [
+     "mod-maintenance-scope",
+     "mod-sla-response",
+     "mod-security-incident",
+     "mod-handover-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-change-access",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确变更、访问的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-003"
+   ],
+   "type_id": "type-system-operations-maintenance",
+   "type_ids": [
+    "type-system-operations-maintenance"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "变更、控制",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-deliverables-acceptance",
+    "mod-development-scope",
+    "mod-fees-expenses",
+    "mod-ip-ownership",
+    "mod-milestone-acceptance",
+    "mod-service-scope",
+    "mod-source-code-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-commissioned-technology-development": [
+     "mod-development-scope",
+     "mod-milestone-acceptance",
+     "mod-ip-ownership",
+     "mod-source-code-maintenance"
+    ],
+    "type-general-consulting-service": [
+     "mod-service-scope",
+     "mod-deliverables-acceptance",
+     "mod-fees-expenses",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-change-control",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确变更、控制的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-04-001",
+    "EC-05-001"
+   ],
+   "type_id": "type-general-consulting-service",
+   "type_ids": [
+    "type-general-consulting-service",
+    "type-commissioned-technology-development"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "报酬、工时",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-employment-exit",
+    "mod-employment-term",
+    "mod-position-location",
+    "mod-rules-discipline"
+   ],
+   "dependencies_by_type": {
+    "type-fixed-term-employment": [
+     "mod-employment-term",
+     "mod-position-location",
+     "mod-rules-discipline",
+     "mod-employment-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-compensation-hours",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确报酬、工时的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-06-001"
+   ],
+   "type_id": "type-fixed-term-employment",
+   "type_ids": [
+    "type-fixed-term-employment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "结算项目可识别",
+    "金额已知或待核",
+    "是否涉及经济补偿/代通知金需按解除路径判断"
+   ],
+   "clause_group": "报酬、结算",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-certificate-social-insurance",
+    "mod-handover-return",
+    "mod-release-boundary",
+    "mod-termination-date"
+   ],
+   "dependencies_by_type": {
+    "type-employment-mutual-termination": [
+     "mod-termination-date",
+     "mod-handover-return",
+     "mod-certificate-social-insurance",
+     "mod-release-boundary"
+    ]
+   },
+   "failure_mode": [
+    "以宽泛全部结清替代对劳动报酬项目的真实核对",
+    "一揽子金额掩盖法定义务或事实争议",
+    "金额/基数/期间未核对就写已足额支付",
+    "支付条件由一方单独控制",
+    "经济补偿是否依法（用人单位提出协商解除）判断错误",
+    "用逐项占位（经济补偿【待填】/代通知金【待填】）代替一笔总额+涵盖说明，导致文本工程化、不符合实务出件习惯"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-compensation-settlement",
+   "placeholders": [
+    "<结算项目清单>",
+    "<金额>",
+    "<计算基数>",
+    "<支付时间>",
+    "<税务属性>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让离职结算分项可核验（工资/奖金/加班/未休年假/经济补偿/代通知金/竞业补偿），金额、基数、税务属性、支付节点明确。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "mutual_termination",
+    "severance",
+    "compensation"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-004"
+   ],
+   "type_id": "type-employment-mutual-termination",
+   "type_ids": [
+    "type-employment-mutual-termination"
+   ],
+   "variants": {
+    "balanced": "甲方一次性向乙方支付人民币税前【待填：金额】元（大写：【待填：】），该款项已包含社保费用、公积金补差、年休假折抵、经济补偿、赔偿等。金额为税前，个人所得税依法由乙方承担，由甲方代扣代缴。",
+    "concession": "甲方一次性向乙方支付人民币【待填：金额】元，该款项已包含双方劳动关系解除相关的全部经济补偿与法定项目。",
+    "strong_protection": "用人单位立场：一笔总额+涵盖所有项目的明确说明（含税前提/代扣代缴），避免分项争议；劳动者立场：金额依法核算、税前/税后明确、代扣代缴合规。"
+   },
+   "version": "0.3.1"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "完工、验收",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-defects-breach",
+    "mod-measurement-payment",
+    "mod-project-scope",
+    "mod-schedule-change"
+   ],
+   "dependencies_by_type": {
+    "type-construction-general-contract": [
+     "mod-project-scope",
+     "mod-schedule-change",
+     "mod-measurement-payment",
+     "mod-defects-breach"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-completion-acceptance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确完工、验收的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-001"
+   ],
+   "type_id": "type-construction-general-contract",
+   "type_ids": [
+    "type-construction-general-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "条件、交割",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-exit-adjustment",
+    "mod-governance-rights",
+    "mod-investment-amount",
+    "mod-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-capital-increase-investment": [
+     "mod-investment-amount",
+     "mod-governance-rights",
+     "mod-representations-indemnity",
+     "mod-exit-adjustment"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-conditions-closing",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确条件、交割的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-01-002"
+   ],
+   "type_id": "type-capital-increase-investment",
+   "type_ids": [
+    "type-capital-increase-investment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "保密信息范围可按岗位实际接触列举",
+    "是否涉及个人信息保护需判断"
+   ],
+   "clause_group": "保密、信息",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-confidentiality-remedies",
+    "mod-employee-use-restriction",
+    "mod-ip-interface",
+    "mod-return-destruction"
+   ],
+   "dependencies_by_type": {
+    "type-employee-confidentiality": [
+     "mod-employee-use-restriction",
+     "mod-return-destruction",
+     "mod-ip-interface",
+     "mod-confidentiality-remedies"
+    ]
+   },
+   "failure_mode": [
+    "保密范围过宽（一切未公开信息）导致不可识别",
+    "技术信息/经营信息/客户信息/个人信息未分类",
+    "范围与岗位实际接触不匹配",
+    "商业秘密定义不明（未达秘密性/价值性/保密措施要件）"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-confidential-information",
+   "placeholders": [
+    "<保密信息范围>",
+    "<岗位实际接触>",
+    "<例外情形>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让保密信息范围明确且与员工实际接触匹配，区分商业秘密/一般经验/公开信息，避免过度宽泛。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "confidentiality",
+    "trade_secret",
+    "information"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-002"
+   ],
+   "type_id": "type-employee-confidentiality",
+   "type_ids": [
+    "type-employee-confidentiality"
+   ],
+   "variants": {
+    "balanced": "按岗位实际接触列举保密信息范围（技术/经营/客户/个人信息分类），写明例外（依法披露/劳动争议/作证）。",
+    "concession": "范围从简但明确核心商业秘密。",
+    "strong_protection": "用人单位立场：范围明确具体可举证；劳动者立场：范围与岗位匹配、不过度、保留法定权利。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "违约情形可界定",
+    "违约金与损失的关系需判断"
+   ],
+   "clause_group": "confidentiality、救济",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-confidential-information",
+    "mod-employee-use-restriction",
+    "mod-ip-interface",
+    "mod-return-destruction"
+   ],
+   "dependencies_by_type": {
+    "type-employee-confidentiality": [
+     "mod-confidential-information",
+     "mod-employee-use-restriction",
+     "mod-return-destruction",
+     "mod-ip-interface"
+    ]
+   },
+   "failure_mode": [
+    "违约金过高且无提示",
+    "违约金与损失赔偿关系不明",
+    "缺少停止侵害/返还救济",
+    "救济条款与劳动法强制规定冲突"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-confidentiality-remedies",
+   "placeholders": [
+    "<违约金>",
+    "<赔偿范围>",
+    "<救济方式>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "让保密违约救济（违约金/赔偿/停止侵害）明确且与法律边界一致。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "confidentiality",
+    "remedy",
+    "breach"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-002"
+   ],
+   "type_id": "type-employee-confidentiality",
+   "type_ids": [
+    "type-employee-confidentiality"
+   ],
+   "variants": {
+    "balanced": "明确违约金与损失赔偿关系（违约金不足以弥补可继续追偿），写明停止侵害/返还救济。",
+    "concession": "核心违约金明确。",
+    "strong_protection": "用人单位立场：违约金+损失追偿+停止侵害；劳动者立场：违约金合理、与损失匹配、不违法扣除工资。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "合作、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-exit-settlement",
+    "mod-governance-decision",
+    "mod-input-contribution",
+    "mod-revenue-cost"
+   ],
+   "dependencies_by_type": {
+    "type-project-cooperation-joint-operation": [
+     "mod-input-contribution",
+     "mod-governance-decision",
+     "mod-revenue-cost",
+     "mod-exit-settlement"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-cooperation-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确合作、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-002"
+   ],
+   "type_id": "type-project-cooperation-joint-operation",
+   "type_ids": [
+    "type-project-cooperation-joint-operation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "承诺、违约事件",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-interest-fees",
+    "mod-loan-drawdown",
+    "mod-repayment",
+    "mod-security-interface"
+   ],
+   "dependencies_by_type": {
+    "type-enterprise-loan": [
+     "mod-loan-drawdown",
+     "mod-interest-fees",
+     "mod-repayment",
+     "mod-security-interface"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-covenants-default",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确承诺、违约事件的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-001"
+   ],
+   "type_id": "type-enterprise-loan",
+   "type_ids": [
+    "type-enterprise-loan"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "数据、处理",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-exit-portability",
+    "mod-fee-renewal",
+    "mod-sla-support",
+    "mod-subscription-scope"
+   ],
+   "dependencies_by_type": {
+    "type-saas-subscription": [
+     "mod-subscription-scope",
+     "mod-sla-support",
+     "mod-fee-renewal",
+     "mod-exit-portability"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-data-processing",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确数据、处理的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-002"
+   ],
+   "type_id": "type-saas-subscription",
+   "type_ids": [
+    "type-saas-subscription"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "缺陷、违约",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-completion-acceptance",
+    "mod-measurement-payment",
+    "mod-project-scope",
+    "mod-schedule-change"
+   ],
+   "dependencies_by_type": {
+    "type-construction-general-contract": [
+     "mod-project-scope",
+     "mod-schedule-change",
+     "mod-measurement-payment",
+     "mod-completion-acceptance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-defects-breach",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确缺陷、违约的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-001"
+   ],
+   "type_id": "type-construction-general-contract",
+   "type_ids": [
+    "type-construction-general-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "抗辩、通知",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-guarantee-form",
+    "mod-guarantee-period",
+    "mod-guaranteed-obligation",
+    "mod-recourse-release"
+   ],
+   "dependencies_by_type": {
+    "type-guarantee-contract": [
+     "mod-guaranteed-obligation",
+     "mod-guarantee-form",
+     "mod-guarantee-period",
+     "mod-recourse-release"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-defense-notice",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确抗辩、通知的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-002"
+   ],
+   "type_id": "type-guarantee-contract",
+   "type_ids": [
+    "type-guarantee-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "成果交付、验收",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-change-control",
+    "mod-fees-expenses",
+    "mod-service-scope"
+   ],
+   "dependencies_by_type": {
+    "type-general-consulting-service": [
+     "mod-service-scope",
+     "mod-fees-expenses",
+     "mod-change-control",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-deliverables-acceptance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确成果交付、验收的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-04-001"
+   ],
+   "type_id": "type-general-consulting-service",
+   "type_ids": [
+    "type-general-consulting-service"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "交付时间、地点、方式和我方角色可确认",
+    "风险转移时点与运费、装卸费归属需按合同写明",
+    "若设所有权保留，需确认登记安排与取回权程序"
+   ],
+   "clause_group": "交付、风险转移",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-goods-scope",
+    "mod-goods-specification",
+    "mod-order-mechanism",
+    "mod-payment-acceptance",
+    "mod-price-tax-invoice",
+    "mod-quality-warranty"
+   ],
+   "dependencies_by_type": {
+    "type-annual-framework-sales-procurement": [
+     "mod-goods-scope",
+     "mod-order-mechanism",
+     "mod-payment-acceptance",
+     "mod-breach-termination"
+    ],
+    "type-equipment-material-procurement": [
+     "mod-goods-specification",
+     "mod-payment-acceptance",
+     "mod-quality-warranty",
+     "mod-breach-termination"
+    ],
+    "type-finished-goods-sale": [
+     "mod-goods-scope",
+     "mod-price-tax-invoice",
+     "mod-payment-acceptance",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "交付时间未写明或仅写‘以通知为准’，无宽限期和逾期后果",
+    "交付地点不明或与实际收货地不符，导致风险归属和管辖悬空",
+    "交付方式（自提/送货/代办运输）与风险转移时点不一致（民法典603/604/607）",
+    "运费、装卸费、包装费归属不明，或已含税价未注明包含范围",
+    "未写明交付凭证（出库单/签收单/送货单）的出具与返还义务",
+    "所有权保留/知识产权与交付、付款节点未联动",
+    "仓库签收被解释为完成交付并验收合格，未区分签收与终验（签收仅确认数量外观可即时检查事项）",
+    "未限定有权签收的岗位/人员，或未约定不合格/超量/提前交付的拒收与退运机制",
+    "未约定随货文件（合格证/检测报告/使用说明书/保修卡），或进口物资缺报关单与检验检疫证明",
+    "所有权保留未约定登记安排，大额设备未办理登记无法对抗善意第三人（民法典641）"
+   ],
+   "legal_checked_at": "2026-08-19",
+   "module_id": "mod-delivery-risk",
+   "placeholders": [
+    "<交付时间>",
+    "<交付地点>",
+    "<交付方式>",
+    "<风险转移时点>",
+    "<运费/装卸费归属>",
+    "<交付凭证>"
+   ],
+   "requiredness": "required",
+   "review_objective": "明确交付时间、交付地点、交付方式、风险转移时点、运费归属和相关单证交付，使交付与付款/验收/违约救济形成闭环。",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "buyer",
+    "supplier",
+    "any"
+   ],
+   "scene_tags": [
+    "equipment_purchase",
+    "material_purchase",
+    "delivery_logistics",
+    "ownership_reservation"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-lawyer-sale-contract-guide",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-wechat-welegal-procurement-202606",
+    "src-prc-civil-code-2020",
+    "src-internal-procurement-sample-aggregate-202608",
+    "src-spc-sale-contract-interpretation-2020"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-02-001",
+    "EC-02-002",
+    "EC-02-003"
+   ],
+   "type_id": "type-annual-framework-sales-procurement",
+   "type_ids": [
+    "type-annual-framework-sales-procurement",
+    "type-equipment-material-procurement",
+    "type-finished-goods-sale"
+   ],
+   "variants": {
+    "balanced": "明确交付时间、地点和方式；风险自交付（或约定时点）转移，运费归属写明；交付凭证与验收手续一并约定。",
+    "concession": "至少写明交付时间、地点和风险转移时点；运费可按交易习惯默认由供方承担，交货凭证简化。",
+    "strong_protection": "采购方应明确具体交付时间及逾期后果，风险在签收前由供方承担，交付凭证作为付款/验收依据；供应方应明确买方逾期收货时风险自违约时转移（民法典608）。；明确签收仅确认数量外观、不视为终验，限定有权签收人员，约定拒收与退运机制，并明确随货文件清单。"
+   },
+   "version": "0.4.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "开发、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-control",
+    "mod-ip-ownership",
+    "mod-milestone-acceptance",
+    "mod-source-code-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-commissioned-technology-development": [
+     "mod-milestone-acceptance",
+     "mod-change-control",
+     "mod-ip-ownership",
+     "mod-source-code-maintenance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-development-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确开发、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-001"
+   ],
+   "type_id": "type-commissioned-technology-development",
+   "type_ids": [
+    "type-commissioned-technology-development"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "使用限制范围可界定",
+    "在职/离职义务需分别写明"
+   ],
+   "clause_group": "员工、使用、限制",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-confidential-information",
+    "mod-confidentiality-remedies",
+    "mod-ip-interface",
+    "mod-return-destruction"
+   ],
+   "dependencies_by_type": {
+    "type-employee-confidentiality": [
+     "mod-confidential-information",
+     "mod-return-destruction",
+     "mod-ip-interface",
+     "mod-confidentiality-remedies"
+    ]
+   },
+   "failure_mode": [
+    "使用限制不明确（在职/离职阶段）",
+    "未禁止向个人设备/账号/云盘转移",
+    "对员工使用保密信息的合理边界未界定",
+    "离职后持续义务未写明"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-employee-use-restriction",
+   "placeholders": [
+    "<在职使用限制>",
+    "<离职后义务>",
+    "<禁止行为>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让员工在职/离职对保密信息的使用限制明确可执行，防止泄露/复制/转移/不当使用。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "confidentiality",
+    "use_restriction",
+    "access_control"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-002"
+   ],
+   "type_id": "type-employee-confidentiality",
+   "type_ids": [
+    "type-employee-confidentiality"
+   ],
+   "variants": {
+    "balanced": "明确在职/离职使用限制，禁止向个人设备/账号/云盘转移保密信息，写明例外。",
+    "concession": "核心禁止行为明确。",
+    "strong_protection": "用人单位立场：全面禁止+账号权限管控；劳动者立场：限制与岗位匹配、保留依法使用权利。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "劳动关系、退出",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-compensation-hours",
+    "mod-employment-term",
+    "mod-position-location",
+    "mod-rules-discipline"
+   ],
+   "dependencies_by_type": {
+    "type-fixed-term-employment": [
+     "mod-employment-term",
+     "mod-position-location",
+     "mod-compensation-hours",
+     "mod-rules-discipline"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-employment-exit",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确劳动关系、退出的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-06-001"
+   ],
+   "type_id": "type-fixed-term-employment",
+   "type_ids": [
+    "type-fixed-term-employment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "劳动关系、期限",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-compensation-hours",
+    "mod-employment-exit",
+    "mod-position-location",
+    "mod-rules-discipline"
+   ],
+   "dependencies_by_type": {
+    "type-fixed-term-employment": [
+     "mod-position-location",
+     "mod-compensation-hours",
+     "mod-rules-discipline",
+     "mod-employment-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-employment-term",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确劳动关系、期限的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-06-001"
+   ],
+   "type_id": "type-fixed-term-employment",
+   "type_ids": [
+    "type-fixed-term-employment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已核验章程出资日期、出资凭证和验资或财务记录",
+    "已确认适用新旧公司法的时间节点"
+   ],
+   "clause_group": "出资状态与法定责任",
+   "conflicts": [
+    "external_liability_waiver"
+   ],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-object",
+    "mod-equity-transfer-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-object",
+     "mod-equity-transfer-representations-indemnity"
+    ]
+   },
+   "failure_mode": [
+    "以“转让后与转让方无关”对抗公司或债权人",
+    "未届期认缴和已瑕疵出资适用同一责任条款",
+    "受让方未核对出资时间、凭证和公司债务状况"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-capital-liability",
+   "placeholders": [
+    "<认缴额>",
+    "<实缴额>",
+    "<出资期限>",
+    "<未缴金额>",
+    "<受让方资信保障>",
+    "<追偿或担保安排>"
+   ],
+   "requiredness": "required",
+   "review_objective": "区分未届出资期限、逾期未缴、未足额出资、非货币出资显著低估和抽逃出资，识别对内追偿与对外法定责任的边界。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "unpaid_not_due",
+    "overdue_contribution",
+    "defective_contribution",
+    "non_cash_contribution"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-spc-company-law-time-effect-2024",
+    "src-kwm-capital-liability-2024",
+    "src-wechat-sun-equity-cases-20240307",
+    "src-internal-history-defective-equity-rescission-note",
+    "src-academic-defective-equity-validity-2010"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "列明认缴、实缴、期限和凭证，按法律区分受让方主责、转让方补充责任或连带责任风险，并另行约定内部追偿。",
+    "concession": "可弱化担保或保留款，但不得将法定出资责任写成经双方约定即归于消灭。",
+    "strong_protection": "对未届期出资设定受让方缴付义务、资信证明和转让方追偿保障；对已瑕疵出资列为整改先决条件或专项赔偿，并明示对内约定不影响法定对外责任。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已区分合同生效、交割、股东名册记载和工商登记节点",
+    "已确认是否涉及控制权移交"
+   ],
+   "clause_group": "先决条件与交割",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-object",
+    "mod-equity-transfer-consideration",
+    "mod-equity-transfer-preemption-charter",
+    "mod-equity-transfer-document-tax-consistency"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-object",
+     "mod-equity-transfer-consideration",
+     "mod-equity-transfer-preemption-charter",
+     "mod-equity-transfer-document-tax-consistency"
+    ]
+   },
+   "failure_mode": [
+    "把合同生效、股权取得、股东权利行使和工商登记混为同一时点",
+    "买方全额付款后才由卖方无期限办理变更",
+    "控制权交易只办登记而未移交印章、账户、证照、财务和重大合同",
+    "协议要求目标公司办理名册、章程或登记手续，却未让目标公司签署、确认或提供可执行的公司决议",
+    "只约定解除或退款，未处理已变更股权、股东名册、登记、分红收益、第三人权利及股权价值变动"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-closing",
+   "placeholders": [
+    "<先决条件>",
+    "<交割日>",
+    "<交割文件清单>",
+    "<股东名册记载日>",
+    "<登记申请日>",
+    "<长停日>",
+    "<移交清单>",
+    "<解除后股权回转清单>",
+    "<价款及收益返还规则>"
+   ],
+   "requiredness": "required",
+   "review_objective": "将付款、公司通知、股东名册、章程及登记变更、印章账户资料和控制权移交编入可勾稽的交割清单。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "signing",
+    "closing",
+    "staged_payment",
+    "control_transfer"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-allbright-equity-change-2024",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814",
+    "src-wechat-fatianshi-equity-checklist-20230610",
+    "src-wechat-deheng-zibo-equity-risk-20260814",
+    "src-thesis-equity-termination-effects-2022"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "在交割清单中分别列明先决条件、签约文件、股东名册及登记义务、付款节点、完成证据和逾期后果；如解除可能发生在交割后，同步约定股权回转、名册与登记恢复、价款及收益返还和第三人权利障碍的处理。",
+    "concession": "可不使用托管或同日互易，但必须保留具体办理期限、公司配合义务、可证明的股东名册和登记步骤及违约后果。",
+    "strong_protection": "交割采取文件托管或同日互易，付款与股东名册记载、章程修订、登记申请及控制权资料移交联动，并设置长停日、退款、解除和损害赔偿机制。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已确认实际总对价和所有支付路径",
+    "已区分股权价款与具有独立商业实质的其他交易"
+   ],
+   "clause_group": "全部交易对价与付款",
+   "conflicts": [
+    "undisclosed_side_payment",
+    "false_external_price"
+   ],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-document-tax-consistency",
+    "mod-equity-transfer-closing",
+    "mod-equity-transfer-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-document-tax-consistency",
+     "mod-equity-transfer-closing",
+     "mod-equity-transfer-representations-indemnity"
+    ]
+   },
+   "failure_mode": [
+    "只在主协议写名义价格，实际价款散落在侧协议、借款、往来款或补偿安排中",
+    "付款节点与先决条件、股东名册和登记变更脱节",
+    "估值调整、净债务或或有对价没有计算口径和证据程序",
+    "多个转让人或受让人仅写合计对价，未分别对应转让比例、应收应付款和收款账户"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-consideration",
+   "placeholders": [
+    "<基础对价>",
+    "<对价调整公式>",
+    "<或有对价>",
+    "<付款节点>",
+    "<收款账户>",
+    "<尾款或监管安排>"
+   ],
+   "requiredness": "required",
+   "review_objective": "识别并闭环所有与股权转让相关的现金、实物、债务承担、补偿、或有对价和其他经济利益。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee"
+   ],
+   "scene_tags": [
+    "fixed_price",
+    "staged_payment",
+    "price_adjustment",
+    "earnout",
+    "low_price"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-sta-equity-individual-income-tax-67",
+    "src-sta-equity-tax-67-explanation",
+    "src-china-tax-news-dual-contract-2026",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814",
+    "src-wechat-fatianshi-equity-checklist-20230610",
+    "src-wechat-deheng-zibo-equity-risk-20260814"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "以单一对价表列明全部支付、每一转让或受让主体、对应股权比例、付款触发条件、收款账户和凭证；登记备案表单及其他文件不得暗中增减股权转让对价。",
+    "concession": "可减少付款保障，但不得放弃对全部真实对价、收付主体、付款节点和价格调整口径的明确记载。",
+    "strong_protection": "将对价拆分为基础价、调整项和或有对价；多个转让人或受让人逐一对应股权比例、应收应付金额和账户。大额付款与尽调满意、程序文件、股东名册及登记进度挂钩，并保留尾款、托管或抵销权。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已收集所有主协议、补充协议、确认函和与交易相关的其他付款安排",
+    "已核对实际收付、申报价、评估价和相关会计记录"
+   ],
+   "clause_group": "多文本、资金与税务一致性",
+   "conflicts": [
+    "false_external_price",
+    "concealment_clause",
+    "sham_service_or_loan_payment"
+   ],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-consideration",
+    "mod-equity-transfer-closing",
+    "mod-equity-transfer-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-consideration",
+     "mod-equity-transfer-closing",
+     "mod-equity-transfer-representations-indemnity"
+    ]
+   },
+   "failure_mode": [
+    "一份协议对外按出资额申报，另一份协议或实际付款反映更高对价",
+    "用借款、往来款、咨询费、补偿款等名义补足对价且没有独立商业实质",
+    "依赖“备案合同”或保密条款试图使隐藏对价合法化",
+    "实质交易协议约定其优先于登记备案表单，但未同步解决真实价款申报、付款凭证和会计记录的一致性"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-document-tax-consistency",
+   "placeholders": [
+    "<文件清单>",
+    "<实际总对价>",
+    "<申报价>",
+    "<资金流差异>",
+    "<差异商业理由与证据>",
+    "<整改与补充申报安排>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "发现同一交易的真实对价、合同文本、资金流、估值、申报和会计记录之间的不一致，列明低价申报等可能风险与备选处理方向，不阻断自动改文，由业务执行者自行决断。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "dual_document_price_mismatch",
+    "low_declared_price",
+    "disguised_consideration",
+    "tax_filing_mismatch"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-civil-code-2020",
+    "src-spc-contract-general-interpretation-2023",
+    "src-sta-equity-individual-income-tax-67",
+    "src-sta-equity-tax-67-explanation",
+    "src-prc-tax-collection-law",
+    "src-china-tax-news-dual-contract-2026",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814",
+    "src-wechat-fatianshi-equity-checklist-20230610"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "用交易事实对照表统一实质协议、登记备案表单、补充文件、付款、纳税申报和会计处理；文件优先顺序只能解决当事人内部解释，不能替代真实申报和对外合规。",
+    "concession": "不提供任何隐瞒、虚假申报或税费规避版本。如仅因补充协议、分期、或有对价或价格调整导致文本金额不同，仍须透明记载并依法处理申报。",
+    "strong_protection": "先按文件用途建立主协议、补充或变更协议、登记备案表单、付款和申报清单。各方确认全部真实对价和支付安排已完整披露，不存在未披露侧协议或变相对价；历史或拟提交文件存在重大不一致时，应以涉税建议提示对价真实性与申报风险（如“建议按实际对价如实申报，避免被税务机关按公平交易原则核定补税”），并在必要整改完成前不得交割或提交，不以“待专业复核”作为延迟处理的默认口径。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已确认交易后的持股和治理目标",
+    "已确认章程、股东协议和董监高决议的配套修订"
+   ],
+   "clause_group": "过渡期、治理与控制移交",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-closing",
+    "mod-equity-transfer-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-closing",
+     "mod-equity-transfer-representations-indemnity"
+    ]
+   },
+   "failure_mode": [
+    "转让比例与约定的控制权、董事席位或否决权不匹配",
+    "过渡期内可以分红、举债、关联交易或处分重大资产但无同意机制",
+    "交割后公司的印章、U盾、财务账套和核心资料仍由原控制人掌握"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-governance-transition",
+   "placeholders": [
+    "<过渡期>",
+    "<受限行为>",
+    "<期间损益>",
+    "<董监高安排>",
+    "<章程及股东协议修订>",
+    "<印章证照账户资料清单>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "使签约至交割的行为限制、期间损益、董监高安排、印章证照账户资料和业务移交与交易目的一致。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "control_transfer",
+    "minority_investment",
+    "transition_period",
+    "management_handover"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-allbright-equity-change-2024",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-wechat-shangpu-equity-seven-20260616"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "根据转让比例区分少数股东保护与控制权移交，列明过渡期限制、期间损益、治理文件和移交清单。",
+    "concession": "可减少事先同意事项，但治理目标、章程及股东协议衔接、关键资料和权限移交不得空白。",
+    "strong_protection": "对过渡期重大资产处分、分红、举债、担保、关联交易和人员异动设置事先同意，将治理文件生效及经营控制资料移交纳入交割。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "目标公司和标的股权已唯一确定",
+    "已获取最新章程、股东名册、出资证明和登记档案"
+   ],
+   "clause_group": "标的股权与权属",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-capital-liability",
+    "mod-equity-transfer-preemption-charter",
+    "mod-equity-transfer-closing"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-capital-liability",
+     "mod-equity-transfer-preemption-charter",
+     "mod-equity-transfer-closing"
+    ]
+   },
+   "failure_mode": [
+    "只写百分比但未对应认缴额、实缴额和出资期限",
+    "未披露代持、质押、冻结、优先权或其他处分限制",
+    "仅笼统约定未缴认缴出资由受让方承担，却未列明每一转让人的认缴额、实缴额、期限和凭证"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-object",
+   "placeholders": [
+    "<目标公司>",
+    "<标的股权比例>",
+    "<对应认缴出资额>",
+    "<实缴额及日期>",
+    "<出资期限>",
+    "<权利限制清单>"
+   ],
+   "requiredness": "required",
+   "review_objective": "使标的股权、对应注册资本、持股比例、出资状态和附随权利可唯一识别。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "internal_transfer",
+    "external_transfer",
+    "partial_transfer",
+    "control_transfer"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "双方以附件列明标的股权比例、对应认缴额、实缴额、出资期限及已披露的权利限制，附件与正文不一致时须先核实并书面确认。",
+    "concession": "至少明确目标公司、标的股权比例、对应认缴额、实缴情况和已知权利限制；未核实事项不得用确定性表述。",
+    "strong_protection": "转让方应对标的股权的登记、实际归属、出资状态和全部权利限制作穿透陈述，并以最新章程、股东名册、出资凭证和公示档案作为交割附件。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已确认是否向现有股东以外主体转让",
+    "已取得现行章程和股东协议"
+   ],
+   "clause_group": "优先购买权、章程与程序",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-object",
+    "mod-equity-transfer-closing"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-object",
+     "mod-equity-transfer-closing"
+    ]
+   },
+   "failure_mode": [
+    "使用过时模板仍将其他股东过半数同意作为法定必要条件",
+    "通知条件与最终签约条件不一致",
+    "没有收悉、放弃或三十日期间届满证据",
+    "多个现有股东分别签署登记文件，却没有一份能对应最终真实交易条件的通知、同意或放弃文件"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-preemption-charter",
+   "placeholders": [
+    "<其他股东清单>",
+    "<通知日期与方式>",
+    "<同等条件>",
+    "<收悉证明>",
+    "<放弃文件或届满日>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "确保对外转让的数量、价格、支付方式和期限等同等条件已可证明通知，并核对章程特别规定。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company",
+    "other_shareholder"
+   ],
+   "scene_tags": [
+    "external_transfer",
+    "internal_transfer",
+    "charter_restriction"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-company-law-2023",
+    "src-spc-company-law-interpretation-iv",
+    "src-wechat-fatianshi-equity-checklist-20230610"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "按现行公司法和章程履行可证明的通知程序，并将相关证据列入交割文件清单。",
+    "concession": "可不将所有文件作为付款先决条件，但不得省略应用的优先购买权通知及章程限制核验。",
+    "strong_protection": "将通知、收悉证明、优先购买权放弃或期满以及章程限制满足列为交割先决条件，最终条件实质变更时重新履行通知。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已根据尽调范围和交易规模确定陈述保证的宽度",
+    "已区分基础保证、一般业务保证和专项赔偿"
+   ],
+   "clause_group": "陈述保证、披露与赔偿",
+   "conflicts": [
+    "blanket_no_reliance",
+    "concealment_clause"
+   ],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-equity-transfer-object",
+    "mod-equity-transfer-capital-liability",
+    "mod-equity-transfer-document-tax-consistency",
+    "mod-equity-transfer-closing"
+   ],
+   "dependencies_by_type": {
+    "type-equity-transfer": [
+     "mod-equity-transfer-object",
+     "mod-equity-transfer-capital-liability",
+     "mod-equity-transfer-document-tax-consistency",
+     "mod-equity-transfer-closing"
+    ]
+   },
+   "failure_mode": [
+    "只写“信息真实”却没有披露函和重要性标准",
+    "对历史税务、出资瑕疵和权属风险与一般商业索赔适用同一低上限和短期限",
+    "陈述保证与价格调整、尾款抵销、解除和管辖机制冲突",
+    "用受让方已全面尽调、按现状受让或转让方不作任何保证的概括确认，替代权属、出资、未披露负债和资料真实性的具体分配"
+   ],
+   "legal_checked_at": "2026-08-14",
+   "module_id": "mod-equity-transfer-representations-indemnity",
+   "placeholders": [
+    "<披露函>",
+    "<重要性标准>",
+    "<知情标准>",
+    "<索赔期>",
+    "<免赔额>",
+    "<责任上限>",
+    "<专项赔偿清单>"
+   ],
+   "requiredness": "required",
+   "review_objective": "以披露函界定一般陈述保证的例外，并将权属、出资、财税、资产负债、诉讼、重大合同和合规风险转化为可执行索赔机制。",
+   "reviewed_at": "2026-08-14",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "transferor",
+    "transferee",
+    "target_company"
+   ],
+   "scene_tags": [
+    "buyer_protection",
+    "seller_protection",
+    "historical_tax_risk",
+    "disclosure_letter"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-civil-code-2020",
+    "src-spc-contract-general-interpretation-2023",
+    "src-internal-equity-sample-aggregate-202608",
+    "src-internal-equity-user-template-system-20260814",
+    "src-wechat-shangpu-equity-seven-20260616",
+    "src-wechat-deheng-zibo-equity-risk-20260814",
+    "src-wechat-sun-equity-cases-20240307",
+    "src-internal-history-defective-equity-rescission-note",
+    "src-academic-defective-equity-validity-2010"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-01-001"
+   ],
+   "type_id": "type-equity-transfer",
+   "type_ids": [
+    "type-equity-transfer"
+   ],
+   "variants": {
+    "balanced": "受让方尽调和知情限定仅覆盖披露函中可具体识别的事项；转让方仍就权属、出资、授权、重大未披露负债及资料真实性作分层保证，并与一般赔偿、专项赔偿、索赔期和责任上限对应。",
+    "concession": "可调整一般业务保证的知情限定、期限和上限，但不得用笼统披露或保密条款免除故意隐瞒、虚假对价或权属瑕疵的责任。",
+    "strong_protection": "对权属、出资、真实对价、历史税务及故意隐瞒设置基础或专项赔偿，不当然适用一般知情限定、低上限或短索赔期，并与尾款、托管及抵销权联动。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "退出、调整",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-conditions-closing",
+    "mod-governance-rights",
+    "mod-investment-amount",
+    "mod-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-capital-increase-investment": [
+     "mod-investment-amount",
+     "mod-conditions-closing",
+     "mod-governance-rights",
+     "mod-representations-indemnity"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-exit-adjustment",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确退出、调整的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-01-002"
+   ],
+   "type_id": "type-capital-increase-investment",
+   "type_ids": [
+    "type-capital-increase-investment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "退出、迁移",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-data-processing",
+    "mod-fee-renewal",
+    "mod-sla-support",
+    "mod-subscription-scope"
+   ],
+   "dependencies_by_type": {
+    "type-saas-subscription": [
+     "mod-subscription-scope",
+     "mod-sla-support",
+     "mod-data-processing",
+     "mod-fee-renewal"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-exit-portability",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确退出、迁移的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-002"
+   ],
+   "type_id": "type-saas-subscription",
+   "type_ids": [
+    "type-saas-subscription"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "退出、结算",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-cooperation-scope",
+    "mod-governance-decision",
+    "mod-input-contribution",
+    "mod-revenue-cost"
+   ],
+   "dependencies_by_type": {
+    "type-project-cooperation-joint-operation": [
+     "mod-cooperation-scope",
+     "mod-input-contribution",
+     "mod-governance-decision",
+     "mod-revenue-cost"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-exit-settlement",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确退出、结算的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-002"
+   ],
+   "type_id": "type-project-cooperation-joint-operation",
+   "type_ids": [
+    "type-project-cooperation-joint-operation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "费用、续期",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-data-processing",
+    "mod-exit-portability",
+    "mod-sla-support",
+    "mod-subscription-scope"
+   ],
+   "dependencies_by_type": {
+    "type-saas-subscription": [
+     "mod-subscription-scope",
+     "mod-sla-support",
+     "mod-data-processing",
+     "mod-exit-portability"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-fee-renewal",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确费用、续期的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-002"
+   ],
+   "type_id": "type-saas-subscription",
+   "type_ids": [
+    "type-saas-subscription"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "费用、支出",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-change-control",
+    "mod-deliverables-acceptance",
+    "mod-service-scope"
+   ],
+   "dependencies_by_type": {
+    "type-general-consulting-service": [
+     "mod-service-scope",
+     "mod-deliverables-acceptance",
+     "mod-change-control",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-fees-expenses",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确费用、支出的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-04-001"
+   ],
+   "type_id": "type-general-consulting-service",
+   "type_ids": [
+    "type-general-consulting-service"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "货物、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-order-mechanism",
+    "mod-payment-acceptance",
+    "mod-price-tax-invoice"
+   ],
+   "dependencies_by_type": {
+    "type-annual-framework-sales-procurement": [
+     "mod-order-mechanism",
+     "mod-payment-acceptance",
+     "mod-delivery-risk",
+     "mod-breach-termination"
+    ],
+    "type-finished-goods-sale": [
+     "mod-price-tax-invoice",
+     "mod-delivery-risk",
+     "mod-payment-acceptance",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-goods-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确货物、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-02-001",
+    "EC-02-003"
+   ],
+   "type_id": "type-annual-framework-sales-procurement",
+   "type_ids": [
+    "type-annual-framework-sales-procurement",
+    "type-finished-goods-sale"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "标的物清单、规格型号、数量、单位和质量标准可识别",
+    "存在订单、技术协议、样品确认书等作为规格依据（若适用）",
+    "我方角色和交易结构（单次/订单/框架）已确认"
+   ],
+   "clause_group": "货物、规格标准",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-payment-acceptance",
+    "mod-quality-warranty"
+   ],
+   "dependencies_by_type": {
+    "type-equipment-material-procurement": [
+     "mod-delivery-risk",
+     "mod-payment-acceptance",
+     "mod-quality-warranty",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "只写品名不写规格型号、数量或单位，标的物无法唯一识别",
+    "规格标准以附件、技术协议或样品为准但附件缺失、版本不明或未随附",
+    "质量标准引用国家/行业标准但未写具体标准号或版本",
+    "对定制设备或专用原材料，未写明技术协议、图纸、样品确认书等验收基准文件",
+    "清单与订单、发票、交付内容不一致，多文本口径冲突",
+    "技术协议/图纸/报价单/封样作为附件但未约定效力排序，冲突时以哪个文件为准不明",
+    "未约定替代物料（换型号/材料/部件/产地）的书面确认机制与差价核算",
+    "未将决定采购目的的用途指标（产能/精度/兼容性）写入合同，仅凭采购目的反推供应商义务",
+    "未明确新旧货品要求（全新原装正品/无贴牌翻新），或涉及知识产权不侵权保证缺失"
+   ],
+   "legal_checked_at": "2026-08-19",
+   "module_id": "mod-goods-specification",
+   "placeholders": [
+    "<标的物清单>",
+    "<规格型号>",
+    "<数量及单位>",
+    "<技术标准/标准号>",
+    "<技术协议/样品基准>",
+    "<附件清单>"
+   ],
+   "requiredness": "required",
+   "review_objective": "明确标的物（设备/原材料）的品名、规格型号、数量、技术标准、附件清单和质量要求，使其可唯一识别并与订单/技术协议/样品一致。",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "buyer",
+    "supplier",
+    "any"
+   ],
+   "scene_tags": [
+    "equipment_purchase",
+    "material_purchase",
+    "order_based",
+    "framework_procurement"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-wechat-welegal-procurement-202606",
+    "src-prc-civil-code-2020",
+    "src-internal-procurement-sample-aggregate-202608",
+    "src-internal-procurement-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-02-002"
+   ],
+   "type_id": "type-equipment-material-procurement",
+   "type_ids": [
+    "type-equipment-material-procurement"
+   ],
+   "variants": {
+    "balanced": "双方以附件列明设备/原材料的品名、规格型号、数量、技术标准和质量要求；附件与正文不一致时先核实并书面确认。",
+    "concession": "至少明确标的物品名、规格型号和数量；质量标准可引用通用国家/行业标准，待技术协议或样品确认后再细化。",
+    "strong_protection": "采购方应使标的物清单、规格型号、技术标准、验收基准文件（技术协议/图纸/样品确认书）完整闭环，与订单和交付内容一致，并约定与清单不符的救济。；明确技术协议/图纸/封样与主合同的效力排序，替代物料须经采购方书面确认，供方保证不侵犯第三方知识产权。"
+   },
+   "version": "0.4.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "治理、决策",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-cooperation-scope",
+    "mod-exit-settlement",
+    "mod-input-contribution",
+    "mod-revenue-cost"
+   ],
+   "dependencies_by_type": {
+    "type-project-cooperation-joint-operation": [
+     "mod-cooperation-scope",
+     "mod-input-contribution",
+     "mod-revenue-cost",
+     "mod-exit-settlement"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-governance-decision",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确治理、决策的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-002"
+   ],
+   "type_id": "type-project-cooperation-joint-operation",
+   "type_ids": [
+    "type-project-cooperation-joint-operation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "治理、权利",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-conditions-closing",
+    "mod-exit-adjustment",
+    "mod-investment-amount",
+    "mod-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-capital-increase-investment": [
+     "mod-investment-amount",
+     "mod-conditions-closing",
+     "mod-representations-indemnity",
+     "mod-exit-adjustment"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-governance-rights",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确治理、权利的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-01-002"
+   ],
+   "type_id": "type-capital-increase-investment",
+   "type_ids": [
+    "type-capital-increase-investment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "保证、方式",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-defense-notice",
+    "mod-guarantee-period",
+    "mod-guaranteed-obligation",
+    "mod-recourse-release"
+   ],
+   "dependencies_by_type": {
+    "type-guarantee-contract": [
+     "mod-guaranteed-obligation",
+     "mod-guarantee-period",
+     "mod-defense-notice",
+     "mod-recourse-release"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-guarantee-form",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确保证、方式的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-002"
+   ],
+   "type_id": "type-guarantee-contract",
+   "type_ids": [
+    "type-guarantee-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "保证、期间",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-defense-notice",
+    "mod-guarantee-form",
+    "mod-guaranteed-obligation",
+    "mod-recourse-release"
+   ],
+   "dependencies_by_type": {
+    "type-guarantee-contract": [
+     "mod-guaranteed-obligation",
+     "mod-guarantee-form",
+     "mod-defense-notice",
+     "mod-recourse-release"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-guarantee-period",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确保证、期间的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-002"
+   ],
+   "type_id": "type-guarantee-contract",
+   "type_ids": [
+    "type-guarantee-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "被担保、债务",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-defense-notice",
+    "mod-guarantee-form",
+    "mod-guarantee-period",
+    "mod-recourse-release"
+   ],
+   "dependencies_by_type": {
+    "type-guarantee-contract": [
+     "mod-guarantee-form",
+     "mod-guarantee-period",
+     "mod-defense-notice",
+     "mod-recourse-release"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-guaranteed-obligation",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确被担保、债务的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-002"
+   ],
+   "type_id": "type-guarantee-contract",
+   "type_ids": [
+    "type-guarantee-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "交接、退出",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-access",
+    "mod-maintenance-scope",
+    "mod-security-incident",
+    "mod-sla-response"
+   ],
+   "dependencies_by_type": {
+    "type-system-operations-maintenance": [
+     "mod-maintenance-scope",
+     "mod-sla-response",
+     "mod-change-access",
+     "mod-security-incident"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-handover-exit",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确交接、退出的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-003"
+   ],
+   "type_id": "type-system-operations-maintenance",
+   "type_ids": [
+    "type-system-operations-maintenance"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "交接范围可列明",
+    "交接与付款的关系需按交易设计"
+   ],
+   "clause_group": "交接、返还",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-certificate-social-insurance",
+    "mod-compensation-settlement",
+    "mod-release-boundary",
+    "mod-termination-date"
+   ],
+   "dependencies_by_type": {
+    "type-employment-mutual-termination": [
+     "mod-termination-date",
+     "mod-compensation-settlement",
+     "mod-certificate-social-insurance",
+     "mod-release-boundary"
+    ]
+   },
+   "failure_mode": [
+    "交接无清单/无期限/无确认人",
+    "交接缺失导致付款无限期延迟",
+    "财物/资料/账号返还无记录",
+    "从法定工资中任意扣除交接损失"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-handover-return",
+   "placeholders": [
+    "<交接清单>",
+    "<交接期限>",
+    "<确认人>",
+    "<异议期限>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "让工作交接可完成、可确认、可纠正，避免无限清单和一方任意认定阻断支付。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "mutual_termination",
+    "handover",
+    "return"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-004"
+   ],
+   "type_id": "type-employment-mutual-termination",
+   "type_ids": [
+    "type-employment-mutual-termination"
+   ],
+   "variants": {
+    "balanced": "使用交接清单（资料/设备/账号/期限/确认人/异议期），遗失损坏按证据规则处理。",
+    "concession": "一次性交接清单，期限宽松。",
+    "strong_protection": "用人单位立场：分阶段交接+确认程序+有限答疑期；劳动者立场：交接条件客观可完成，不因单方认定阻断付款。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "投入、贡献",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-cooperation-scope",
+    "mod-exit-settlement",
+    "mod-governance-decision",
+    "mod-revenue-cost"
+   ],
+   "dependencies_by_type": {
+    "type-project-cooperation-joint-operation": [
+     "mod-cooperation-scope",
+     "mod-governance-decision",
+     "mod-revenue-cost",
+     "mod-exit-settlement"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-input-contribution",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确投入、贡献的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-002"
+   ],
+   "type_id": "type-project-cooperation-joint-operation",
+   "type_ids": [
+    "type-project-cooperation-joint-operation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "利息、费用",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-covenants-default",
+    "mod-loan-drawdown",
+    "mod-repayment",
+    "mod-security-interface"
+   ],
+   "dependencies_by_type": {
+    "type-enterprise-loan": [
+     "mod-loan-drawdown",
+     "mod-repayment",
+     "mod-covenants-default",
+     "mod-security-interface"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-interest-fees",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确利息、费用的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-001"
+   ],
+   "type_id": "type-enterprise-loan",
+   "type_ids": [
+    "type-enterprise-loan"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "库存、退出",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-brand-compliance",
+    "mod-price-policy",
+    "mod-sales-target",
+    "mod-territory-channel"
+   ],
+   "dependencies_by_type": {
+    "type-distribution-cooperation": [
+     "mod-territory-channel",
+     "mod-sales-target",
+     "mod-price-policy",
+     "mod-brand-compliance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-inventory-exit",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确库存、退出的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-001"
+   ],
+   "type_id": "type-distribution-cooperation",
+   "type_ids": [
+    "type-distribution-cooperation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "投资、金额",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-conditions-closing",
+    "mod-exit-adjustment",
+    "mod-governance-rights",
+    "mod-representations-indemnity"
+   ],
+   "dependencies_by_type": {
+    "type-capital-increase-investment": [
+     "mod-conditions-closing",
+     "mod-governance-rights",
+     "mod-representations-indemnity",
+     "mod-exit-adjustment"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-investment-amount",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确投资、金额的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-01-002"
+   ],
+   "type_id": "type-capital-increase-investment",
+   "type_ids": [
+    "type-capital-increase-investment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "职务成果范围可界定",
+    "权属归属需按实际判断"
+   ],
+   "clause_group": "知识产权、衔接",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-confidential-information",
+    "mod-confidentiality-remedies",
+    "mod-employee-use-restriction",
+    "mod-return-destruction"
+   ],
+   "dependencies_by_type": {
+    "type-employee-confidentiality": [
+     "mod-confidential-information",
+     "mod-employee-use-restriction",
+     "mod-return-destruction",
+     "mod-confidentiality-remedies"
+    ]
+   },
+   "failure_mode": [
+    "职务成果权属未明确（归用人单位/劳动者/共有）",
+    "保密义务与知识产权条款重复冲突",
+    "离职后职务成果处理不明",
+    "员工申明非职务成果的机制缺失"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-ip-interface",
+   "placeholders": [
+    "<职务成果范围>",
+    "<权属归属>",
+    "<申明机制>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "让保密义务与职务成果/知识产权归属衔接，避免重复冲突，明确权属。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "confidentiality",
+    "ip_ownership",
+    "work_product"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-002"
+   ],
+   "type_id": "type-employee-confidentiality",
+   "type_ids": [
+    "type-employee-confidentiality"
+   ],
+   "variants": {
+    "balanced": "明确职务成果权属（通常归用人单位），设员工申明非职务成果的期限和机制，与保密义务衔接。",
+    "concession": "核心权属明确。",
+    "strong_protection": "用人单位立场：职务成果推定归己+员工申明期限；劳动者立场：非职务成果申明权、权属与保密不冲突。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "知识产权、权属",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-control",
+    "mod-development-scope",
+    "mod-milestone-acceptance",
+    "mod-source-code-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-commissioned-technology-development": [
+     "mod-development-scope",
+     "mod-milestone-acceptance",
+     "mod-change-control",
+     "mod-source-code-maintenance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-ip-ownership",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确知识产权、权属的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-001"
+   ],
+   "type_id": "type-commissioned-technology-development",
+   "type_ids": [
+    "type-commissioned-technology-development"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "租赁、标的",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-renewal-exit",
+    "mod-rent-deposit",
+    "mod-use-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-property-venue-lease": [
+     "mod-rent-deposit",
+     "mod-use-maintenance",
+     "mod-renewal-exit",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-lease-object",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确租赁、标的的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-03-001"
+   ],
+   "type_id": "type-property-venue-lease",
+   "type_ids": [
+    "type-property-venue-lease"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "借款、提款",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-covenants-default",
+    "mod-interest-fees",
+    "mod-repayment",
+    "mod-security-interface"
+   ],
+   "dependencies_by_type": {
+    "type-enterprise-loan": [
+     "mod-interest-fees",
+     "mod-repayment",
+     "mod-covenants-default",
+     "mod-security-interface"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-loan-drawdown",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确借款、提款的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-001"
+   ],
+   "type_id": "type-enterprise-loan",
+   "type_ids": [
+    "type-enterprise-loan"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "主合同、合同、衔接",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-payment-acceptance",
+    "mod-safety-defects",
+    "mod-schedule-coordination",
+    "mod-subcontract-scope"
+   ],
+   "dependencies_by_type": {
+    "type-professional-subcontract": [
+     "mod-subcontract-scope",
+     "mod-schedule-coordination",
+     "mod-payment-acceptance",
+     "mod-safety-defects"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-main-contract-interface",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确主合同、合同、衔接的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-002"
+   ],
+   "type_id": "type-professional-subcontract",
+   "type_ids": [
+    "type-professional-subcontract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "维护、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-access",
+    "mod-handover-exit",
+    "mod-security-incident",
+    "mod-sla-response"
+   ],
+   "dependencies_by_type": {
+    "type-system-operations-maintenance": [
+     "mod-sla-response",
+     "mod-change-access",
+     "mod-security-incident",
+     "mod-handover-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-maintenance-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确维护、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-003"
+   ],
+   "type_id": "type-system-operations-maintenance",
+   "type_ids": [
+    "type-system-operations-maintenance"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "计量、付款",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-completion-acceptance",
+    "mod-defects-breach",
+    "mod-project-scope",
+    "mod-schedule-change"
+   ],
+   "dependencies_by_type": {
+    "type-construction-general-contract": [
+     "mod-project-scope",
+     "mod-schedule-change",
+     "mod-completion-acceptance",
+     "mod-defects-breach"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-measurement-payment",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确计量、付款的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-001"
+   ],
+   "type_id": "type-construction-general-contract",
+   "type_ids": [
+    "type-construction-general-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "里程碑、验收",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-control",
+    "mod-development-scope",
+    "mod-ip-ownership",
+    "mod-source-code-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-commissioned-technology-development": [
+     "mod-development-scope",
+     "mod-change-control",
+     "mod-ip-ownership",
+     "mod-source-code-maintenance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-milestone-acceptance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确里程碑、验收的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-001"
+   ],
+   "type_id": "type-commissioned-technology-development",
+   "type_ids": [
+    "type-commissioned-technology-development"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "补偿标准可约定",
+    "30%/50%为指引建议，非法律强制上限"
+   ],
+   "clause_group": "竞业限制、报酬",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-noncompete-release",
+    "mod-noncompete-remedies",
+    "mod-noncompete-scope",
+    "mod-noncompete-term-region"
+   ],
+   "dependencies_by_type": {
+    "type-noncompete": [
+     "mod-noncompete-scope",
+     "mod-noncompete-term-region",
+     "mod-noncompete-release",
+     "mod-noncompete-remedies"
+    ]
+   },
+   "failure_mode": [
+    "未约定竞业限制补偿（须按月支付）",
+    "补偿金额不明或按最低工资",
+    "补偿低于30%平均工资或期限超1年低于50%（指引建议，非强制）",
+    "补偿支付方式/账户/变更机制不明"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-noncompete-compensation",
+   "placeholders": [
+    "<月补偿金额>",
+    "<支付方式>",
+    "<账户>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让竞业限制补偿按月支付且标准明确；补偿偏低（指引建议）属合法但谈判风险。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "noncompete",
+    "compensation",
+    "monthly"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-003"
+   ],
+   "type_id": "type-noncompete",
+   "type_ids": [
+    "type-noncompete"
+   ],
+   "variants": {
+    "balanced": "按月支付竞业补偿，标准明确；不低于法定底线，可参考人社部指引30%平均工资。",
+    "concession": "补偿标准从约定，但明确按月支付。",
+    "strong_protection": "用人单位立场：补偿按约定（合法即可，指引非强制）；劳动者立场：补偿低于30%提示谈判风险。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "启动/解除机制可按交易设计",
+    "是否启动竞业需用人单位决定"
+   ],
+   "clause_group": "竞业限制、解除",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-noncompete-compensation",
+    "mod-noncompete-remedies",
+    "mod-noncompete-scope",
+    "mod-noncompete-term-region"
+   ],
+   "dependencies_by_type": {
+    "type-noncompete": [
+     "mod-noncompete-scope",
+     "mod-noncompete-term-region",
+     "mod-noncompete-compensation",
+     "mod-noncompete-remedies"
+    ]
+   },
+   "failure_mode": [
+    "竞业限制启动机制不明（何时生效）",
+    "未通知启动员工却承担义务",
+    "免于履行通知机制缺失",
+    "连续三个月未付补偿员工无解除权",
+    "竞业解除后补偿处理不明"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-noncompete-release",
+   "placeholders": [
+    "<启动通知>",
+    "<免于履行通知>",
+    "<补偿处理>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让竞业限制启动/解除机制清晰：书面通知启动、未通知则无需履行、免于履行通知、逾期未付补偿的解除权。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "noncompete",
+    "release",
+    "trigger"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-003"
+   ],
+   "type_id": "type-noncompete",
+   "type_ids": [
+    "type-noncompete"
+   ],
+   "variants": {
+    "balanced": "明确书面通知启动/免于履行/逾期未付补偿解除权；未启动则员工无需履行。",
+    "concession": "启动机制从简但核心（未通知不启动）保留。",
+    "strong_protection": "用人单位立场：启动灵活+竞业/保密独立；劳动者立场：未通知不启动、三个月未付可解除。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "违约情形可界定",
+    "违约金5倍为指引建议非强制"
+   ],
+   "clause_group": "竞业限制、救济",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-noncompete-compensation",
+    "mod-noncompete-release",
+    "mod-noncompete-scope",
+    "mod-noncompete-term-region"
+   ],
+   "dependencies_by_type": {
+    "type-noncompete": [
+     "mod-noncompete-scope",
+     "mod-noncompete-term-region",
+     "mod-noncompete-compensation",
+     "mod-noncompete-release"
+    ]
+   },
+   "failure_mode": [
+    "违约金过高（超指引5倍补偿）未提示",
+    "违约金与返还补偿/损失赔偿关系不明",
+    "损失赔偿范围过宽（营业额10倍等）未提示",
+    "违约金从工资扣除与劳动法冲突"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-noncompete-remedies",
+   "placeholders": [
+    "<违约金>",
+    "<返还补偿>",
+    "<损失赔偿>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "让违反竞业救济（违约金/返还补偿/损失赔偿）明确；违约金倍数（指引5倍）属建议非强制，提示风险不直接下调。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "noncompete",
+    "remedy",
+    "breach"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-003"
+   ],
+   "type_id": "type-noncompete",
+   "type_ids": [
+    "type-noncompete"
+   ],
+   "variants": {
+    "balanced": "明确违约金/返还已付补偿/损失赔偿关系；违约金过高提示谈判风险。",
+    "concession": "核心违约金明确。",
+    "strong_protection": "用人单位立场：违约金+返还+损失追偿；劳动者立场：违约金超指引5倍提示、不违法扣工资。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "员工岗位和实际知悉的保密事项可判断",
+    "竞业范围与保密事项的匹配需按实际判断"
+   ],
+   "clause_group": "竞业限制、范围",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-noncompete-compensation",
+    "mod-noncompete-release",
+    "mod-noncompete-remedies",
+    "mod-noncompete-term-region"
+   ],
+   "dependencies_by_type": {
+    "type-noncompete": [
+     "mod-noncompete-term-region",
+     "mod-noncompete-compensation",
+     "mod-noncompete-release",
+     "mod-noncompete-remedies"
+    ]
+   },
+   "failure_mode": [
+    "员工不适格（普通岗位）被签竞业，条款无效风险",
+    "竞业范围过宽（一切同类业务/全球地域）",
+    "竞争单位名单由甲方单方可调且范围不确定",
+    "竞业范围与员工实际知悉的保密事项不匹配"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-noncompete-scope",
+   "placeholders": [
+    "<竞业范围>",
+    "<地域>",
+    "<竞争单位名单>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让竞业范围明确且与员工实际知悉的保密事项匹配，识别主体不适格和范围过宽。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "noncompete",
+    "scope",
+    "eligibility"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-003"
+   ],
+   "type_id": "type-noncompete",
+   "type_ids": [
+    "type-noncompete"
+   ],
+   "variants": {
+    "balanced": "竞业范围/地域/竞争单位名单明确且与员工实际知悉的保密事项匹配；名单调整需合理告知。",
+    "concession": "范围从行业/地域核心限定。",
+    "strong_protection": "用人单位立场：范围完整+名单可调；劳动者立场：主体不适格则提示无效、范围过宽提示谈判风险。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "竞业期限是否超二年需判断",
+    "地域与保密事项的匹配需判断"
+   ],
+   "clause_group": "竞业限制、期限、区域",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-noncompete-compensation",
+    "mod-noncompete-release",
+    "mod-noncompete-remedies",
+    "mod-noncompete-scope"
+   ],
+   "dependencies_by_type": {
+    "type-noncompete": [
+     "mod-noncompete-scope",
+     "mod-noncompete-compensation",
+     "mod-noncompete-release",
+     "mod-noncompete-remedies"
+    ]
+   },
+   "failure_mode": [
+    "竞业期限超过二年（劳动合同法24条强制上限）",
+    "地域过宽（全球）与保密事项不匹配",
+    "期限起算点不明",
+    "期限依补偿月数确定未衔接"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-noncompete-term-region",
+   "placeholders": [
+    "<竞业期限>",
+    "<地域范围>",
+    "<起算点>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让竞业期限不超法律上限（二年），地域合理且与保密事项匹配。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "noncompete",
+    "term",
+    "region"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-civil-code-2020",
+    "src-mohrss-noncompete-guide-2025",
+    "src-spc-labor-dispute-interpretation-2-2025",
+    "src-spc-guiding-case-32-2022",
+    "src-internal-noncompete-sample-aggregate-202608",
+    "src-internal-noncompete-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-003"
+   ],
+   "type_id": "type-noncompete",
+   "type_ids": [
+    "type-noncompete"
+   ],
+   "variants": {
+    "balanced": "期限不超过二年，地域与保密事项所涉市场/客户/业务匹配。",
+    "concession": "期限按实际涉密程度缩短。",
+    "strong_protection": "用人单位立场：期限足额二年+地域完整；劳动者立场：期限超二年部分无效、地域过宽提示谈判风险。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "订单、机制",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-goods-scope",
+    "mod-payment-acceptance"
+   ],
+   "dependencies_by_type": {
+    "type-annual-framework-sales-procurement": [
+     "mod-goods-scope",
+     "mod-payment-acceptance",
+     "mod-delivery-risk",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-order-mechanism",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确订单、机制的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-02-001"
+   ],
+   "type_id": "type-annual-framework-sales-procurement",
+   "type_ids": [
+    "type-annual-framework-sales-procurement"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "付款金额、节点、条件和发票安排可确认",
+    "付款与交付/验收/质保的联动顺序需按交易结构设计",
+    "若涉及背靠背付款或定金，需确认双方主体规模和安排意图"
+   ],
+   "clause_group": "付款、验收",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-goods-scope",
+    "mod-goods-specification",
+    "mod-main-contract-interface",
+    "mod-order-mechanism",
+    "mod-price-tax-invoice",
+    "mod-quality-warranty",
+    "mod-safety-defects",
+    "mod-schedule-coordination",
+    "mod-subcontract-scope"
+   ],
+   "dependencies_by_type": {
+    "type-annual-framework-sales-procurement": [
+     "mod-goods-scope",
+     "mod-order-mechanism",
+     "mod-delivery-risk",
+     "mod-breach-termination"
+    ],
+    "type-equipment-material-procurement": [
+     "mod-goods-specification",
+     "mod-delivery-risk",
+     "mod-quality-warranty",
+     "mod-breach-termination"
+    ],
+    "type-finished-goods-sale": [
+     "mod-goods-scope",
+     "mod-price-tax-invoice",
+     "mod-delivery-risk",
+     "mod-breach-termination"
+    ],
+    "type-professional-subcontract": [
+     "mod-subcontract-scope",
+     "mod-main-contract-interface",
+     "mod-schedule-coordination",
+     "mod-safety-defects"
+    ]
+   },
+   "failure_mode": [
+    "付款节点与交付、验收、发票脱节，供方收款后迟延交货或需方收货后拖延付款",
+    "一次性付清全款而验收、质保救济缺失，对价失去平衡",
+    "预付款/订金/尾款比例与违约救济不匹配",
+    "发票义务（开具时间、类型、税率、价税分离）缺失或与付款错位",
+    "背靠背付款条款（以第三方付款为前提）未识别其效力风险（大型企业与中小企业场景）",
+    "付款账户、收款主体与合同主体不一致",
+    "预付款比例过高（超过30%）且无返还保障，或质保金比例低于5%、退还条件不明",
+    "未约定三单匹配（采购订单/入库单/发票）后再付款，付款与客观可验证条件脱节",
+    "收款账户非对公账户或可随意变更，付款后对方否认收款",
+    "发票类型/税率/开票时间不明或先款后票，虚假发票无违约责任",
+    "长期合同无价格调整机制，原材料价格波动时成本失控",
+    "调价条款表述过软（如\"不得随意调价\"），无客观判断标准，供方可在解释空间内主张调价，价格锁定缺乏约束"
+   ],
+   "legal_checked_at": "2026-08-19",
+   "module_id": "mod-payment-acceptance",
+   "placeholders": [
+    "<付款金额>",
+    "<付款节点>",
+    "<付款条件>",
+    "<发票类型与时间>",
+    "<收款账户>"
+   ],
+   "requiredness": "required",
+   "review_objective": "明确付款金额、节点、条件、方式、发票义务与验收/交付/质保的联动关系，防止付款与对价平衡脱节。",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "buyer",
+    "supplier",
+    "any"
+   ],
+   "scene_tags": [
+    "equipment_purchase",
+    "material_purchase",
+    "milestone_payment",
+    "advance_payment"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-wechat-welegal-procurement-202606",
+    "src-spc-large-small-enterprise-payment-2024",
+    "src-prc-civil-code-2020",
+    "src-internal-procurement-sample-aggregate-202608",
+    "src-spc-sale-contract-interpretation-2020"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-02-001",
+    "EC-02-002",
+    "EC-02-003",
+    "EC-08-002"
+   ],
+   "type_id": "type-annual-framework-sales-procurement",
+   "type_ids": [
+    "type-annual-framework-sales-procurement",
+    "type-equipment-material-procurement",
+    "type-finished-goods-sale",
+    "type-professional-subcontract"
+   ],
+   "variants": {
+    "balanced": "按交付/验收节点分段付款，发票与付款联动；明确逾期付款违约责任和背靠背安排（如有）。",
+    "concession": "付款期限放宽，但至少保留验收后付款节点或质保金；发票按交易习惯提供。",
+    "strong_protection": "采购方应使尾款或质保金与验收/质保期绑定，付款前核验发票与交付凭证；供应方应明确付款期限与逾期付款损失计算（LPR加计30-50%）。；预付款控制在30%以内、质保金不低于5%，约定三单匹配后付款，收款账户为对公账户且书面变更，明确发票违约与调价机制。；调价须经需方书面同意，不得以任何形式随意调整。"
+   },
+   "version": "0.4.1"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "岗位、地点",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-compensation-hours",
+    "mod-employment-exit",
+    "mod-employment-term",
+    "mod-rules-discipline"
+   ],
+   "dependencies_by_type": {
+    "type-fixed-term-employment": [
+     "mod-employment-term",
+     "mod-compensation-hours",
+     "mod-rules-discipline",
+     "mod-employment-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-position-location",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确岗位、地点的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-06-001"
+   ],
+   "type_id": "type-fixed-term-employment",
+   "type_ids": [
+    "type-fixed-term-employment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "价格、政策",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-brand-compliance",
+    "mod-inventory-exit",
+    "mod-sales-target",
+    "mod-territory-channel"
+   ],
+   "dependencies_by_type": {
+    "type-distribution-cooperation": [
+     "mod-territory-channel",
+     "mod-sales-target",
+     "mod-brand-compliance",
+     "mod-inventory-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-price-policy",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确价格、政策的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-001"
+   ],
+   "type_id": "type-distribution-cooperation",
+   "type_ids": [
+    "type-distribution-cooperation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "价格、税费、发票",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-goods-scope",
+    "mod-payment-acceptance"
+   ],
+   "dependencies_by_type": {
+    "type-finished-goods-sale": [
+     "mod-goods-scope",
+     "mod-delivery-risk",
+     "mod-payment-acceptance",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-price-tax-invoice",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确价格、税费、发票的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-02-003"
+   ],
+   "type_id": "type-finished-goods-sale",
+   "type_ids": [
+    "type-finished-goods-sale"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "项目、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-completion-acceptance",
+    "mod-defects-breach",
+    "mod-measurement-payment",
+    "mod-schedule-change"
+   ],
+   "dependencies_by_type": {
+    "type-construction-general-contract": [
+     "mod-schedule-change",
+     "mod-measurement-payment",
+     "mod-completion-acceptance",
+     "mod-defects-breach"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-project-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确项目、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-001"
+   ],
+   "type_id": "type-construction-general-contract",
+   "type_ids": [
+    "type-construction-general-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "验收标准、检验期限、质保期和异议程序可确认",
+    "质量异议与质保责任的联动需按标的物性质（设备/原材料）设计",
+    "法定强制标准（特种设备、安全、环保等）需先核验"
+   ],
+   "clause_group": "质量、质保",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-delivery-risk",
+    "mod-goods-specification",
+    "mod-payment-acceptance"
+   ],
+   "dependencies_by_type": {
+    "type-equipment-material-procurement": [
+     "mod-goods-specification",
+     "mod-delivery-risk",
+     "mod-payment-acceptance",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "验收标准缺失或仅写‘按国家标准’未写具体标准号",
+    "检验期限过短，买受人在期限内难以完成全面检验，被限缩为外观异议（民法典622）",
+    "质量异议通知程序缺失或期限不明，买受人怠于通知视为符合约定（民法典621）",
+    "质保期、质保范围、质保金与返修/更换/退换程序未成组设计",
+    "质量免责条款过宽（如供方只担本体损失、不担加工损失）未提示边界（民法典618）",
+    "质量异议期间与质保期、合理期限、二年期限关系未理顺（买卖合同解释14）",
+    "质量条款空心化：仅写符合国标/行业标准却不明确具体指标、检测方法与验收程序",
+    "未区分初验（数量外观）与终验（性能/产能/试运行），或隐蔽缺陷无追责机制",
+    "质保期自交付日起算而非验收合格日，更换/修理后不重新计算",
+    "质保救济无阶梯（修理→复验→更换→退货/解除），反复维修不达标无退出机制",
+    "买方自行第三方维修但无通知/缺陷记录/费用依据，无法主张合理费用（买卖合同解释16）"
+   ],
+   "legal_checked_at": "2026-08-19",
+   "module_id": "mod-quality-warranty",
+   "placeholders": [
+    "<验收标准>",
+    "<检验期限>",
+    "<质量异议期间>",
+    "<质保期>",
+    "<质保范围>",
+    "<返修/更换程序>"
+   ],
+   "requiredness": "required",
+   "review_objective": "明确验收标准、检验期限、质量保证期、质量异议程序和质保责任，使质量救济完整可执行且与实际检验能力匹配。",
+   "reviewed_at": "2026-08-19",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "buyer",
+    "supplier",
+    "any"
+   ],
+   "scene_tags": [
+    "equipment_purchase",
+    "material_purchase",
+    "acceptance",
+    "warranty"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-wechat-zhipaofeichuan-procurement-202501",
+    "src-wechat-wulilaw-procurement-202412",
+    "src-wechat-caigou-check68-202604",
+    "src-wechat-heli lawyer-procurement-202608",
+    "src-lawyer-sale-contract-guide",
+    "src-wechat-caigoubang-procurement-202607",
+    "src-wechat-xiaoli-procurement-202608",
+    "src-wechat-lvzhengfanqie-procurement-202607",
+    "src-wechat-welegal-procurement-202606",
+    "src-prc-civil-code-2020",
+    "src-internal-procurement-sample-aggregate-202608",
+    "src-internal-procurement-review-opinions-202608",
+    "src-spc-sale-contract-interpretation-2020"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-02-002"
+   ],
+   "type_id": "type-equipment-material-procurement",
+   "type_ids": [
+    "type-equipment-material-procurement"
+   ],
+   "variants": {
+    "balanced": "明确验收标准、检验期限（与检验能力匹配）、质量异议期间和质保期；质保责任与返修/更换/退换成组设计。",
+    "concession": "检验期限适当放宽或按实际检验能力设定；质保期缩短但保留核心返修义务。",
+    "strong_protection": "采购方应使检验期限足以完成全面检验，约定质量异议不因付款/使用而视为放弃（买卖合同解释13），质保与质量保证金绑定；供应方应限定异议期间与程序，避免事后无期限追责，并合理设置免责边界。；质量条款量化到具体指标与检测方法，明确隐蔽缺陷责任，质保期自验收合格日起算且更换后重算，设置救济阶梯。"
+   },
+   "version": "0.4.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "追偿、解除",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-defense-notice",
+    "mod-guarantee-form",
+    "mod-guarantee-period",
+    "mod-guaranteed-obligation"
+   ],
+   "dependencies_by_type": {
+    "type-guarantee-contract": [
+     "mod-guaranteed-obligation",
+     "mod-guarantee-form",
+     "mod-guarantee-period",
+     "mod-defense-notice"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-recourse-release",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确追偿、解除的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-002"
+   ],
+   "type_id": "type-guarantee-contract",
+   "type_ids": [
+    "type-guarantee-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "已核对/已支付事项可列明",
+    "是否存在不可放弃的法定权利需判断"
+   ],
+   "clause_group": "解除、边界",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-certificate-social-insurance",
+    "mod-compensation-settlement",
+    "mod-handover-return",
+    "mod-termination-date"
+   ],
+   "dependencies_by_type": {
+    "type-employment-mutual-termination": [
+     "mod-termination-date",
+     "mod-compensation-settlement",
+     "mod-handover-return",
+     "mod-certificate-social-insurance"
+    ]
+   },
+   "failure_mode": [
+    "权利终结范围无限（放弃一切权利）",
+    "正文有待支付事项却无条件写双方权利义务已终结",
+    "保留的法定权利未列明",
+    "争议未解决却以无争议掩盖"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-release-boundary",
+   "placeholders": [
+    "<权利终结范围>",
+    "<保留事项>",
+    "<争议解决方式>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让权利终结范围与已披露/已核对/已支付事项对应，避免虚假已结清和无边界放弃。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "mutual_termination",
+    "release",
+    "dispute_settlement"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-004"
+   ],
+   "type_id": "type-employment-mutual-termination",
+   "type_ids": [
+    "type-employment-mutual-termination"
+   ],
+   "variants": {
+    "balanced": "权利终结以具体列明的项目/期间/履行完成为基础，保留依法不能放弃的权利和未披露事项。",
+    "concession": "终结范围适度但核心法定权利保留。",
+    "strong_protection": "用人单位立场：履行后生效的条件性终结更稳；劳动者立场：先全面放弃再等对方履行不利，保留未知权利。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "续期、退出",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-lease-object",
+    "mod-rent-deposit",
+    "mod-use-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-property-venue-lease": [
+     "mod-lease-object",
+     "mod-rent-deposit",
+     "mod-use-maintenance",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-renewal-exit",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确续期、退出的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-03-001"
+   ],
+   "type_id": "type-property-venue-lease",
+   "type_ids": [
+    "type-property-venue-lease"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "租金、押金",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-lease-object",
+    "mod-renewal-exit",
+    "mod-use-maintenance"
+   ],
+   "dependencies_by_type": {
+    "type-property-venue-lease": [
+     "mod-lease-object",
+     "mod-use-maintenance",
+     "mod-renewal-exit",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-rent-deposit",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确租金、押金的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-03-001"
+   ],
+   "type_id": "type-property-venue-lease",
+   "type_ids": [
+    "type-property-venue-lease"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "还款",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-covenants-default",
+    "mod-interest-fees",
+    "mod-loan-drawdown",
+    "mod-security-interface"
+   ],
+   "dependencies_by_type": {
+    "type-enterprise-loan": [
+     "mod-loan-drawdown",
+     "mod-interest-fees",
+     "mod-covenants-default",
+     "mod-security-interface"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-repayment",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确还款的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-001"
+   ],
+   "type_id": "type-enterprise-loan",
+   "type_ids": [
+    "type-enterprise-loan"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "陈述保证、赔偿",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-conditions-closing",
+    "mod-exit-adjustment",
+    "mod-governance-rights",
+    "mod-investment-amount"
+   ],
+   "dependencies_by_type": {
+    "type-capital-increase-investment": [
+     "mod-investment-amount",
+     "mod-conditions-closing",
+     "mod-governance-rights",
+     "mod-exit-adjustment"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-representations-indemnity",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确陈述保证、赔偿的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-01-002"
+   ],
+   "type_id": "type-capital-increase-investment",
+   "type_ids": [
+    "type-capital-increase-investment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "交接范围可列明",
+    "是否涉及个人设备/账号需核验"
+   ],
+   "clause_group": "返还、销毁",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-confidential-information",
+    "mod-confidentiality-remedies",
+    "mod-employee-use-restriction",
+    "mod-ip-interface"
+   ],
+   "dependencies_by_type": {
+    "type-employee-confidentiality": [
+     "mod-confidential-information",
+     "mod-employee-use-restriction",
+     "mod-ip-interface",
+     "mod-confidentiality-remedies"
+    ]
+   },
+   "failure_mode": [
+    "返还/删除/退出机制缺失或无法核验",
+    "员工自备设备/账号未列明处理",
+    "交接清单无确认/核验环节",
+    "离职后发现留存资料无处理机制"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-return-destruction",
+   "placeholders": [
+    "<交接清单>",
+    "<删除/退出确认>",
+    "<核验人>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让资料返还/数据删除/账号退出/工作交接机制可执行可核验，防止离职后仍留存保密信息。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "confidentiality",
+    "return",
+    "destruction",
+    "handover"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-spc-trade-secret-interpretation-2020",
+    "src-internal-confidentiality-sample-aggregate-202608",
+    "src-internal-confidentiality-user-templates-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-002"
+   ],
+   "type_id": "type-employee-confidentiality",
+   "type_ids": [
+    "type-employee-confidentiality"
+   ],
+   "variants": {
+    "balanced": "用交接清单（资料/设备/账号/删除/退出/确认），注明不适用项，公司核验并记录。",
+    "concession": "核心资料返还+账号退出明确。",
+    "strong_protection": "用人单位立场：完整清单+公司核验栏+留存资料追责；劳动者立场：清单明确、删除后确认、保留依法权利。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "收益、成本",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-cooperation-scope",
+    "mod-exit-settlement",
+    "mod-governance-decision",
+    "mod-input-contribution"
+   ],
+   "dependencies_by_type": {
+    "type-project-cooperation-joint-operation": [
+     "mod-cooperation-scope",
+     "mod-input-contribution",
+     "mod-governance-decision",
+     "mod-exit-settlement"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-revenue-cost",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确收益、成本的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-002"
+   ],
+   "type_id": "type-project-cooperation-joint-operation",
+   "type_ids": [
+    "type-project-cooperation-joint-operation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "规章、纪律",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-compensation-hours",
+    "mod-employment-exit",
+    "mod-employment-term",
+    "mod-position-location"
+   ],
+   "dependencies_by_type": {
+    "type-fixed-term-employment": [
+     "mod-employment-term",
+     "mod-position-location",
+     "mod-compensation-hours",
+     "mod-employment-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-rules-discipline",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确规章、纪律的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-06-001"
+   ],
+   "type_id": "type-fixed-term-employment",
+   "type_ids": [
+    "type-fixed-term-employment"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "安全、缺陷",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-main-contract-interface",
+    "mod-payment-acceptance",
+    "mod-schedule-coordination",
+    "mod-subcontract-scope"
+   ],
+   "dependencies_by_type": {
+    "type-professional-subcontract": [
+     "mod-subcontract-scope",
+     "mod-main-contract-interface",
+     "mod-schedule-coordination",
+     "mod-payment-acceptance"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-safety-defects",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确安全、缺陷的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-002"
+   ],
+   "type_id": "type-professional-subcontract",
+   "type_ids": [
+    "type-professional-subcontract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "销售、目标",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-brand-compliance",
+    "mod-inventory-exit",
+    "mod-price-policy",
+    "mod-territory-channel"
+   ],
+   "dependencies_by_type": {
+    "type-distribution-cooperation": [
+     "mod-territory-channel",
+     "mod-price-policy",
+     "mod-brand-compliance",
+     "mod-inventory-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-sales-target",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确销售、目标的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-001"
+   ],
+   "type_id": "type-distribution-cooperation",
+   "type_ids": [
+    "type-distribution-cooperation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "工期、变更",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-completion-acceptance",
+    "mod-defects-breach",
+    "mod-measurement-payment",
+    "mod-project-scope"
+   ],
+   "dependencies_by_type": {
+    "type-construction-general-contract": [
+     "mod-project-scope",
+     "mod-measurement-payment",
+     "mod-completion-acceptance",
+     "mod-defects-breach"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-schedule-change",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确工期、变更的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-001"
+   ],
+   "type_id": "type-construction-general-contract",
+   "type_ids": [
+    "type-construction-general-contract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "工期、协调",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-main-contract-interface",
+    "mod-payment-acceptance",
+    "mod-safety-defects",
+    "mod-subcontract-scope"
+   ],
+   "dependencies_by_type": {
+    "type-professional-subcontract": [
+     "mod-subcontract-scope",
+     "mod-main-contract-interface",
+     "mod-payment-acceptance",
+     "mod-safety-defects"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-schedule-coordination",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确工期、协调的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-002"
+   ],
+   "type_id": "type-professional-subcontract",
+   "type_ids": [
+    "type-professional-subcontract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "安全、事件",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-access",
+    "mod-handover-exit",
+    "mod-maintenance-scope",
+    "mod-sla-response"
+   ],
+   "dependencies_by_type": {
+    "type-system-operations-maintenance": [
+     "mod-maintenance-scope",
+     "mod-sla-response",
+     "mod-change-access",
+     "mod-handover-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-security-incident",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确安全、事件的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-003"
+   ],
+   "type_id": "type-system-operations-maintenance",
+   "type_ids": [
+    "type-system-operations-maintenance"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "安全、衔接",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-covenants-default",
+    "mod-interest-fees",
+    "mod-loan-drawdown",
+    "mod-repayment"
+   ],
+   "dependencies_by_type": {
+    "type-enterprise-loan": [
+     "mod-loan-drawdown",
+     "mod-interest-fees",
+     "mod-repayment",
+     "mod-covenants-default"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-security-interface",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确安全、衔接的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-07-001"
+   ],
+   "type_id": "type-enterprise-loan",
+   "type_ids": [
+    "type-enterprise-loan"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "服务、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-change-control",
+    "mod-deliverables-acceptance",
+    "mod-fees-expenses"
+   ],
+   "dependencies_by_type": {
+    "type-general-consulting-service": [
+     "mod-deliverables-acceptance",
+     "mod-fees-expenses",
+     "mod-change-control",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-service-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确服务、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-04-001"
+   ],
+   "type_id": "type-general-consulting-service",
+   "type_ids": [
+    "type-general-consulting-service"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "服务等级、响应",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-access",
+    "mod-handover-exit",
+    "mod-maintenance-scope",
+    "mod-security-incident"
+   ],
+   "dependencies_by_type": {
+    "type-system-operations-maintenance": [
+     "mod-maintenance-scope",
+     "mod-change-access",
+     "mod-security-incident",
+     "mod-handover-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-sla-response",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确服务等级、响应的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-003"
+   ],
+   "type_id": "type-system-operations-maintenance",
+   "type_ids": [
+    "type-system-operations-maintenance"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "服务等级、支持",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-data-processing",
+    "mod-exit-portability",
+    "mod-fee-renewal",
+    "mod-subscription-scope"
+   ],
+   "dependencies_by_type": {
+    "type-saas-subscription": [
+     "mod-subscription-scope",
+     "mod-data-processing",
+     "mod-fee-renewal",
+     "mod-exit-portability"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-sla-support",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确服务等级、支持的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-002"
+   ],
+   "type_id": "type-saas-subscription",
+   "type_ids": [
+    "type-saas-subscription"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "源代码、代码、维护",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-change-control",
+    "mod-development-scope",
+    "mod-ip-ownership",
+    "mod-milestone-acceptance"
+   ],
+   "dependencies_by_type": {
+    "type-commissioned-technology-development": [
+     "mod-development-scope",
+     "mod-milestone-acceptance",
+     "mod-change-control",
+     "mod-ip-ownership"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-source-code-maintenance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确源代码、代码、维护的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-001"
+   ],
+   "type_id": "type-commissioned-technology-development",
+   "type_ids": [
+    "type-commissioned-technology-development"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "分包、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-main-contract-interface",
+    "mod-payment-acceptance",
+    "mod-safety-defects",
+    "mod-schedule-coordination"
+   ],
+   "dependencies_by_type": {
+    "type-professional-subcontract": [
+     "mod-main-contract-interface",
+     "mod-schedule-coordination",
+     "mod-payment-acceptance",
+     "mod-safety-defects"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-subcontract-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确分包、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-08-002"
+   ],
+   "type_id": "type-professional-subcontract",
+   "type_ids": [
+    "type-professional-subcontract"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "订阅、范围",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-data-processing",
+    "mod-exit-portability",
+    "mod-fee-renewal",
+    "mod-sla-support"
+   ],
+   "dependencies_by_type": {
+    "type-saas-subscription": [
+     "mod-sla-support",
+     "mod-data-processing",
+     "mod-fee-renewal",
+     "mod-exit-portability"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-subscription-scope",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确订阅、范围的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-05-002"
+   ],
+   "type_id": "type-saas-subscription",
+   "type_ids": [
+    "type-saas-subscription"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "active",
+   "approval_status": "active",
+   "assumptions": [
+    "解除路径和提出方已确认",
+    "签署日/生效日/最后工作日/解除日的关系需按交易设计"
+   ],
+   "clause_group": "解除、日期",
+   "conflicts": [],
+   "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
+   "dependencies": [
+    "mod-certificate-social-insurance",
+    "mod-compensation-settlement",
+    "mod-handover-return",
+    "mod-release-boundary"
+   ],
+   "dependencies_by_type": {
+    "type-employment-mutual-termination": [
+     "mod-compensation-settlement",
+     "mod-handover-return",
+     "mod-certificate-social-insurance",
+     "mod-release-boundary"
+    ]
+   },
+   "failure_mode": [
+    "解除日/生效日/最后工作日混同，未区分导致工资社保计算混乱",
+    "解除时间取决于一方单独控制的交接确认，无限期拖延",
+    "签署日、生效日、最后工作日、劳动关系解除日不一致但未说明期间义务"
+   ],
+   "legal_checked_at": "2026-08-20",
+   "module_id": "mod-termination-date",
+   "placeholders": [
+    "<签署日>",
+    "<生效日>",
+    "<最后工作日>",
+    "<劳动关系解除日>"
+   ],
+   "requiredness": "required",
+   "review_objective": "让解除日期、协议生效日、最后工作日和劳动关系解除日一致，使工资/社保/假期/交接的计算截止点清晰。",
+   "reviewed_at": "2026-08-20",
+   "reviewer": "Codex_AI_research_candidate",
+   "roles": [
+    "employer",
+    "employee"
+   ],
+   "scene_tags": [
+    "mutual_termination",
+    "resignation",
+    "severance"
+   ],
+   "source_family_ids": [],
+   "source_ids": [
+    "src-prc-labor-contract-law-2012",
+    "src-prc-labor-law-2018",
+    "src-prc-civil-code-2020",
+    "src-internal-termination-sample-aggregate-202608",
+    "src-internal-termination-review-opinions-202608"
+   ],
+   "source_status": "researched_candidate",
+   "type_codes": [
+    "EC-06-004"
+   ],
+   "type_id": "type-employment-mutual-termination",
+   "type_ids": [
+    "type-employment-mutual-termination"
+   ],
+   "variants": {
+    "balanced": "区分签署日、生效日、最后工作日和劳动关系解除日，如不同说明期间出勤/工资/社保/假期义务。",
+    "concession": "签署即生效、约定日解除；期间事项从简但核心日期明确。",
+    "strong_protection": "用人单位立场：解除日与交接、付款、竞业启动联动明确，解除不取决于单方控制事项；劳动者立场：工资/社保计算截止日明确且有利。"
+   },
+   "version": "0.3.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "区域、渠道",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-brand-compliance",
+    "mod-inventory-exit",
+    "mod-price-policy",
+    "mod-sales-target"
+   ],
+   "dependencies_by_type": {
+    "type-distribution-cooperation": [
+     "mod-sales-target",
+     "mod-price-policy",
+     "mod-brand-compliance",
+     "mod-inventory-exit"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-territory-channel",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确区域、渠道的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-09-001"
+   ],
+   "type_id": "type-distribution-cooperation",
+   "type_ids": [
+    "type-distribution-cooperation"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  },
+  {
+   "activation_status": "inactive",
+   "approval_status": "candidate",
+   "assumptions": [
+    "待确认我方角色",
+    "待确认交易事实和议价能力",
+    "待确认是否存在主合同、订单或附件"
+   ],
+   "clause_group": "使用、维护",
+   "conflicts": [],
+   "content_status": "candidate_framework_only",
+   "dependencies": [
+    "mod-breach-termination",
+    "mod-lease-object",
+    "mod-renewal-exit",
+    "mod-rent-deposit"
+   ],
+   "dependencies_by_type": {
+    "type-property-venue-lease": [
+     "mod-lease-object",
+     "mod-rent-deposit",
+     "mod-renewal-exit",
+     "mod-breach-termination"
+    ]
+   },
+   "failure_mode": [
+    "待填充：该模块缺失或失衡的主要失败模式"
+   ],
+   "legal_checked_at": null,
+   "module_id": "mod-use-maintenance",
+   "placeholders": [
+    "<待填：适用对象>",
+    "<待填：触发条件>",
+    "<待填：程序与期限>",
+    "<待填：结果与责任>"
+   ],
+   "requiredness": "conditional",
+   "review_objective": "明确使用、维护的适用对象、触发条件、程序、期限和法律/商业后果，并与相邻模块保持一致。",
+   "reviewed_at": null,
+   "reviewer": null,
+   "roles": [
+    "any"
+   ],
+   "scene_tags": [],
+   "source_family_ids": [],
+   "source_ids": [],
+   "source_status": "professional_sources_missing",
+   "type_codes": [
+    "EC-03-001"
+   ],
+   "type_id": "type-property-venue-lease",
+   "type_ids": [
+    "type-property-venue-lease"
+   ],
+   "variants": {
+    "balanced": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（平衡版本）",
+    "concession": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（让步版本）",
+    "strong_protection": "[待填充：请结合经确认的交易事实、我方角色、专业资料和批准模板补充]（强保护版本）"
+   },
+   "version": "0.1.0"
+  }
+ ],
+ "schema_version": "2.1.0"
+}

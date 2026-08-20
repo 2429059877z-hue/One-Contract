@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+archive/
+config/reviewer_profile.json
+config/review_memory.json
+*.log

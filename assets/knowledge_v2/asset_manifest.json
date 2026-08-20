@@ -1,0 +1,69 @@
+{
+ "active_doctrine_ids": [
+  "doctrine-equity-transfer-closing",
+  "doctrine-goods-transaction-control",
+  "doctrine-employment-exit-settlement",
+  "doctrine-employment-confidentiality",
+  "doctrine-noncompete-enforceability"
+ ],
+ "active_module_ids": [
+  "mod-equity-transfer-capital-liability",
+  "mod-equity-transfer-closing",
+  "mod-equity-transfer-consideration",
+  "mod-equity-transfer-document-tax-consistency",
+  "mod-equity-transfer-governance-transition",
+  "mod-equity-transfer-object",
+  "mod-equity-transfer-preemption-charter",
+  "mod-equity-transfer-representations-indemnity",
+  "mod-goods-specification",
+  "mod-delivery-risk",
+  "mod-payment-acceptance",
+  "mod-quality-warranty",
+  "mod-breach-termination",
+  "mod-termination-date",
+  "mod-compensation-settlement",
+  "mod-handover-return",
+  "mod-certificate-social-insurance",
+  "mod-release-boundary",
+  "mod-confidential-information",
+  "mod-employee-use-restriction",
+  "mod-return-destruction",
+  "mod-ip-interface",
+  "mod-confidentiality-remedies",
+  "mod-noncompete-scope",
+  "mod-noncompete-term-region",
+  "mod-noncompete-compensation",
+  "mod-noncompete-release",
+  "mod-noncompete-remedies"
+ ],
+ "active_type_ids": [
+  "type-equity-transfer",
+  "type-equipment-material-procurement",
+  "type-employee-confidentiality",
+  "type-noncompete",
+  "type-employment-mutual-termination"
+ ],
+ "approval_status": "active",
+ "blocked_by": [],
+ "content_status": "equity_procurement_and_employment_active_other_types_framework_only",
+ "framework_counts": {
+  "docx_skeletons": 20,
+  "experience_cards": 27,
+  "module_groups": 41,
+  "modules": 92,
+  "principles": 20,
+  "sources": 51,
+  "triggers": 19
+ },
+ "install_eligible": true,
+ "runtime_eligible_status": "active",
+ "schema_version": "2.1.0",
+ "state_machine": [
+  "candidate",
+  "lawyer_approved",
+  "regression_passed",
+  "active",
+  "deprecated"
+ ],
+ "taxonomy_version": "2.0.0"
+}

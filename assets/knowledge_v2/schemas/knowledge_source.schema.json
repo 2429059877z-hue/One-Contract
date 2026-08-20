@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contract-copilot/knowledge-source-v2.schema.json",
+  "title": "Knowledge source record",
+  "type": "object",
+  "required": [
+    "source_id", "source_kind", "title", "author", "jurisdiction",
+    "published_at", "verified_at", "knowledge_tags", "used_for", "approval_status"
+  ],
+  "properties": {
+    "source_id": {"type": "string", "pattern": "^src-[a-z0-9-]+$"},
+    "source_kind": {"type": "string"},
+    "title": {"type": "string", "minLength": 1},
+    "author": {"type": "string", "minLength": 1},
+    "jurisdiction": {"type": "string"},
+    "published_at": {"type": "string"},
+    "effective_at": {"type": "string"},
+    "verified_at": {"type": "string"},
+    "url": {"type": "string"},
+    "access_scope": {"type": "string"},
+    "discovery_channel": {"type": "string"},
+    "content_verification": {"type": "string"},
+    "knowledge_tags": {"type": "array", "items": {"type": "string"}},
+    "used_for": {"type": "array", "items": {"type": "string"}},
+    "approval_status": {"const": "candidate"}
+  },
+  "additionalProperties": false
+}
