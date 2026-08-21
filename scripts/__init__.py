@@ -12,7 +12,7 @@
     reviewer.save()
 """
 
-from .docx.reviewer import ContractReviewer
+from .docx_engine.reviewer import ContractReviewer
 from .report.reporting import render_review_report
 from .report.report_docx import write_review_report_docx
 

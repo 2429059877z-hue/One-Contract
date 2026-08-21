@@ -27,9 +27,9 @@ try:
         archive_run,
         create_archive_run_dir,
     )
-    from ..docx.pack import pack_document
-    from ..docx.quality_gate import inspect_docx, run_quality_gate
-    from ..docx.revision_views import resolve_unpacked_revisions
+    from ..docx_engine.pack import pack_document
+    from ..docx_engine.quality_gate import inspect_docx, run_quality_gate
+    from ..docx_engine.revision_views import resolve_unpacked_revisions
     from .plan_loader import (
         enrich_plan,
         get_findings,
@@ -45,13 +45,13 @@ try:
         resolve_review_context,
         resolve_reviewer_profile,
     )
-    from ..docx.reviewer import ContractReviewer
+    from ..docx_engine.reviewer import ContractReviewer
 except ImportError:
     from action_executor import apply_finding
     from archive_service import DEFAULT_ARCHIVE_DIR, archive_run, create_archive_run_dir
-    from scripts.docx.pack import pack_document
-    from scripts.docx.quality_gate import inspect_docx, run_quality_gate
-    from scripts.docx.revision_views import resolve_unpacked_revisions
+    from scripts.docx_engine.pack import pack_document
+    from scripts.docx_engine.quality_gate import inspect_docx, run_quality_gate
+    from scripts.docx_engine.revision_views import resolve_unpacked_revisions
     from plan_loader import (
         enrich_plan,
         get_findings,
@@ -67,7 +67,7 @@ except ImportError:
         resolve_review_context,
         resolve_reviewer_profile,
     )
-    from scripts.docx.reviewer import ContractReviewer
+    from scripts.docx_engine.reviewer import ContractReviewer
 
 
 def unpack_docx(input_docx: Path, output_dir: Path) -> None:

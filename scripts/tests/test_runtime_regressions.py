@@ -97,7 +97,7 @@ class RuntimeRegressionTests(unittest.TestCase):
                 archive.write(path, path.relative_to(unpacked).as_posix())
 
     def test_docx_xml_editor_injects_timestamp_attributes(self) -> None:
-        from scripts.docx.document import DocxXMLEditor
+        from scripts.docx_engine.document import DocxXMLEditor
 
         fixed_timestamp = datetime(2026, 6, 4, 9, 30, tzinfo=timezone.utc)
         xml = (
@@ -135,7 +135,7 @@ class RuntimeRegressionTests(unittest.TestCase):
             )
 
     def test_add_comment_creates_missing_comment_extensible_part(self) -> None:
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         fixed_timestamp = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
         with TemporaryDirectory() as temp_dir:
@@ -154,7 +154,7 @@ class RuntimeRegressionTests(unittest.TestCase):
             )
 
     def test_add_comment_consumes_one_timestamp_per_comment(self) -> None:
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         fixed_timestamp = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
         calls = []
@@ -271,7 +271,7 @@ class RuntimeRegressionTests(unittest.TestCase):
         self.assertEqual(archive_service.DEFAULT_ARCHIVE_DIR, SKILL_ROOT / "archive")
 
     def test_xml_editor_always_saves_utf8(self) -> None:
-        from scripts.docx.utilities import XMLEditor
+        from scripts.docx_engine.utilities import XMLEditor
 
         with TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "part.xml"
@@ -282,7 +282,7 @@ class RuntimeRegressionTests(unittest.TestCase):
             self.assertIn(b'encoding="utf-8"', path.read_bytes()[:100].lower())
 
     def test_normalized_cross_run_locator_creates_real_revisions(self) -> None:
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         with TemporaryDirectory() as temp_dir:
             unpacked = Path(temp_dir) / "unpacked"
@@ -304,7 +304,7 @@ class RuntimeRegressionTests(unittest.TestCase):
             self.assertIsNotNone(reviewer.find_text("协商一致解除", tag="w:p"))
 
     def test_existing_revision_requires_explicit_baseline_strategy(self) -> None:
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         with TemporaryDirectory() as temp_dir:
             unpacked = Path(temp_dir) / "unpacked"
@@ -355,9 +355,9 @@ class RuntimeRegressionTests(unittest.TestCase):
         )
 
     def test_quality_gate_builds_accepted_and_rejected_views(self) -> None:
-        from scripts.docx.pack import pack_document
-        from scripts.docx.quality_gate import run_quality_gate
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.pack import pack_document
+        from scripts.docx_engine.quality_gate import run_quality_gate
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -390,7 +390,7 @@ class RuntimeRegressionTests(unittest.TestCase):
             self.assertTrue(report["semantic_baseline_equal"])
 
     def test_quality_gate_rejects_ascii_xml_declaration(self) -> None:
-        from scripts.docx.quality_gate import inspect_docx
+        from scripts.docx_engine.quality_gate import inspect_docx
 
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -410,7 +410,7 @@ class RuntimeRegressionTests(unittest.TestCase):
 
     def test_accepting_revision_prunes_comment_whose_anchor_disappears(self) -> None:
         from defusedxml import minidom
-        from scripts.docx.revision_views import resolve_unpacked_revisions
+        from scripts.docx_engine.revision_views import resolve_unpacked_revisions
 
         with TemporaryDirectory() as temp_dir:
             unpacked = Path(temp_dir) / "unpacked"
@@ -448,9 +448,9 @@ class RuntimeRegressionTests(unittest.TestCase):
             )
 
     def test_paragraph_replacement_preserves_existing_comment_anchors(self) -> None:
-        from scripts.docx.pack import pack_document
-        from scripts.docx.quality_gate import inspect_docx
-        from scripts.docx.reviewer import ContractReviewer
+        from scripts.docx_engine.pack import pack_document
+        from scripts.docx_engine.quality_gate import inspect_docx
+        from scripts.docx_engine.reviewer import ContractReviewer
 
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

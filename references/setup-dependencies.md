@@ -9,7 +9,7 @@
 1. 本机需要可用的 `python3`（建议 3.9+）。
 2. 需要先安装 Python 包依赖：`defusedxml`、`lxml`、`python-docx`。
 
-OOXML 打包、解包和校验功能已内嵌在 `scripts/docx/` 中，无需额外安装。
+OOXML 打包、解包和校验功能已内嵌在 `scripts/docx_engine/` 中，无需额外安装。
 
 ## 二、必须安装的依赖
 

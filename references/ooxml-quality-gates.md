@@ -69,7 +69,7 @@
 运行：
 
 ```bash
-python scripts/docx/quality_gate.py reviewed.docx \
+python scripts/docx_engine/quality_gate.py reviewed.docx \
   --original original.docx \
   --output-dir qa
 ```
