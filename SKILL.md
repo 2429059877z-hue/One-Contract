@@ -50,7 +50,7 @@ description: 合同起草与审查助手。用于审查、修改、批注、修�
 - `references/employment-termination-antipatterns.md`
 - `references/source-index.md`
 
-其他合同先读 `references/contract-routing.md`，只进入与交易实质相关的 `references/contract-types/` 文件；不要一次加载全部 12 类资料。旧版 `review-framework.md` 与 `revision-strategy.md` 仅作兼容入口。
+其他合同先读 `references/contract-routing.md`，只进入与交易实质相关的 `references/contract-types/` 文件；不要一次加载全部 12 类资料。`references/contract-types/` 下的 12 类目录为 **v1 遗留参考资料**，本 skill 的分类体系以 v2（EC-01 ~ EC-10，见 `enterprise-taxonomy-v2.md`）为准；v1 目录仅作未激活类型的兜底参考，不代表当前正式分类。旧版 `review-framework.md` 与 `revision-strategy.md` 仅作兼容入口。
 
 ## 工作流
 
