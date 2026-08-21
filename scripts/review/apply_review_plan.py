@@ -137,9 +137,15 @@ def main() -> None:
     )
     parser.add_argument("--input", required=True, help="输入 DOCX 路径")
     parser.add_argument("--plan", required=True, help="审查计划 JSON 路径")
-    parser.add_argument("--output", required=True, help="输出 DOCX 路径")
+    parser.add_argument(
+        "--output",
+        help="输出修订版 DOCX 路径；不传时默认生成 <原文件名>-修订版.docx（与输入同目录）",
+    )
     parser.add_argument("--report", help="输出 Markdown 报告路径")
-    parser.add_argument("--report-docx", help="输出 Word 报告路径")
+    parser.add_argument(
+        "--report-docx",
+        help="输出 Word 审查报告路径；不传时默认生成 <原文件名>-审查报告.docx（与输入同目录）",
+    )
     parser.add_argument("--log", help="输出执行日志 JSON 路径")
     parser.add_argument(
         "--archive-dir",
@@ -196,7 +202,10 @@ def main() -> None:
 
     input_docx = Path(args.input).expanduser().resolve()
     plan_path = Path(args.plan).expanduser().resolve()
-    output_docx = Path(args.output).expanduser().resolve()
+    if args.output:
+        output_docx = Path(args.output).expanduser().resolve()
+    else:
+        output_docx = input_docx.with_name(f"{input_docx.stem}-修订版.docx")
     quality_dir = (
         Path(args.quality_dir).expanduser().resolve()
         if args.quality_dir
@@ -261,27 +270,30 @@ def main() -> None:
             plan_meta=plan_meta,
             output_docx=output_docx,
         )
+    input_stem = input_docx.stem
+    if not args.quality_dir and archive_path is not None:
+        quality_dir = archive_path / "quality"
     report_path = (
         Path(args.report).expanduser().resolve()
         if args.report
         else (
-            archive_path / f"{output_docx.stem}_审查报告.md"
+            archive_path / f"{input_stem}-审查报告.md"
             if archive_path
-            else output_docx.with_name(f"{output_docx.stem}_审查报告.md")
+            else output_docx.with_name(f"{input_stem}-审查报告.md")
         )
     )
     report_docx_path = (
         Path(args.report_docx).expanduser().resolve()
         if args.report_docx
-        else output_docx.with_name(f"{output_docx.stem}_审查报告.docx")
+        else output_docx.with_name(f"{input_stem}-审查报告.docx")
     )
     log_path = (
         Path(args.log).expanduser().resolve()
         if args.log
         else (
-            archive_path / f"{output_docx.stem}_执行日志.json"
+            archive_path / f"{input_stem}_执行日志.json"
             if archive_path
-            else output_docx.with_name(f"{output_docx.stem}_执行日志.json")
+            else output_docx.with_name(f"{input_stem}_执行日志.json")
         )
     )
     for path in (report_path, report_docx_path, log_path):
