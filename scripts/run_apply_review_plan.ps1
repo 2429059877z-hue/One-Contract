@@ -188,7 +188,7 @@ else {
     $null
 }
 
-$stageRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("contract-copilot-" + [Guid]::NewGuid().ToString("N"))
+$stageRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("one-contract-" + [Guid]::NewGuid().ToString("N"))
 $stageArchive = Join-Path $stageRoot "archive"
 $stageInput = Join-Path $stageRoot ("input" + [System.IO.Path]::GetExtension($resolvedInput))
 $stagePlan = Join-Path $stageRoot ("review-plan" + [System.IO.Path]::GetExtension($resolvedPlan))

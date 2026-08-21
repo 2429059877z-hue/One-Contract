@@ -150,7 +150,7 @@ def main() -> None:
     parser.add_argument(
         "--archive-dir",
         default=str(DEFAULT_ARCHIVE_DIR),
-        help="归档目录（默认: contract-copilot/archive）",
+        help="归档目录（默认: one-contract/archive）",
     )
     parser.add_argument(
         "--no-archive",

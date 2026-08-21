@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contract-copilot/equity-trigger-v2.schema.json",
+  "$id": "one-contract/equity-trigger-v2.schema.json",
   "title": "Equity-transfer structural-risk trigger",
   "type": "object",
   "required": [

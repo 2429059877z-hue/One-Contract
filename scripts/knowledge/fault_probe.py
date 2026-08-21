@@ -16,7 +16,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Inject a privacy leak and require the independent validator to block it.")
     parser.add_argument("--case", choices=["privacy-path"], required=True)
     parser.parse_args()
-    with TemporaryDirectory(prefix="contract-copilot-fault-") as temp:
+    with TemporaryDirectory(prefix="one-contract-fault-") as temp:
         fixture = Path(temp) / "candidate"
         shutil.copytree(SKILL_ROOT / "assets", fixture / "assets")
         (fixture / "fixture.md").write_text("source=" + "/" + "Users/example/contracts/raw.docx\n", encoding="utf-8")

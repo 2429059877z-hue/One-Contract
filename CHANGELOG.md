@@ -30,7 +30,7 @@
 - 股权转让（`type-equity-transfer` / EC-01-001）资产正式激活为 `active`：8 个条款模块、4 个结构触发器、1 张原则卡、6 张经验卡、3 个联动组、股权来源与基础 DOCX 骨架，`install_eligible=true`，`active_type_ids=['type-equity-transfer']`。
 - 激活后正式 Skill 含完整 v2 知识路由（`enterprise-taxonomy-v2.md` / `modular-knowledge-routing.md` / `select_active_assets.py`），其余 19 类保持 `candidate/inactive` 框架。
 - 表 6 三项判断修正随本版生效：多文本对价不一致**不阻断自动改文**、列明风险清单由业务执行者自行决断；认缴出资允许对内自由约定并提示对外法律风险；尽调确认与权属保证关系按我方立场（受让方不替代 / 出让方可替代减轻）。
-- 激活前正式版已备份：`artifacts/contract-copilot-backup-pre-activation-20260818/`。
+- 激活前正式版已备份：`artifacts/one-contract-backup-pre-activation-20260818/`。
 
 ## [2.2.0] - 2026-08-18
 
@@ -217,7 +217,7 @@
 
 ### 新增
 
-- 新增 `references/setup-dependencies.md`，集中说明 `contract-copilot` 的目录依赖、Python 包依赖、可选系统依赖、推荐安装顺序与常见报错排查。
+- 新增 `references/setup-dependencies.md`，集中说明 `one-contract` 的目录依赖、Python 包依赖、可选系统依赖、推荐安装顺序与常见报错排查。
 - 新增 `scripts/requirements.txt`，固化当前 Python 运行依赖 `defusedxml` 与 `lxml`，便于外部使用者直接执行 `pip install -r`。
 
 ### 改进
@@ -245,11 +245,11 @@
 
 - 将 Windows 兼容策略明确收敛到“包装器处理路径与运行时差异，Python 继续作为唯一审查执行链路”，避免再维护第二套文档操作逻辑。
 - 默认 Word 审查意见书输出现在也经过包装器显式 staging，避免 `output_审查报告.docx` 这类默认衍生文件名在中文路径下直接暴露给 Python 主入口。
-- 调整打包过滤规则：`dist/contract-copilot.zip` 现在会跳过 `.DS_Store`、`__pycache__`、`.pyc`、运行时 `archive/` 内容、`internal-notes/` 内部台账以及 gitignore 命中的本地配置，避免把缓存、归档、来源材料和本地记忆误打进发布包。
+- 调整打包过滤规则：`dist/one-contract.zip` 现在会跳过 `.DS_Store`、`__pycache__`、`.pyc`、运行时 `archive/` 内容、`internal-notes/` 内部台账以及 gitignore 命中的本地配置，避免把缓存、归档、来源材料和本地记忆误打进发布包。
 
 ### 技术优化
 
-- 为共享打包脚本补充回归测试，覆盖“跳过 transient 文件”“跳过 `internal-notes/`”“跳过 gitignore 本地配置”三类场景；重新打包后，当前 `contract-copilot.zip` 已收敛为仅包含技能本体和必要示例文件。
+- 为共享打包脚本补充回归测试，覆盖“跳过 transient 文件”“跳过 `internal-notes/`”“跳过 gitignore 本地配置”三类场景；重新打包后，当前 `one-contract.zip` 已收敛为仅包含技能本体和必要示例文件。
 
 ### 文档完善
 
@@ -265,7 +265,7 @@
 ### 改进
 
 - 将 `README.md` 从内部说明风格重写为面向外部使用者的项目型首页，收敛首页信息密度，重点保留“是什么、怎么装、怎么跑、会产出什么”。
-- 新增面向 Claude Code 的两种安装口径：通过 `legal-skills` 技能集安装，以及手动复制 `contract-copilot/` 目录安装。
+- 新增面向 Claude Code 的两种安装口径：通过 `legal-skills` 技能集安装，以及手动复制 `one-contract/` 目录安装。
 - 新增面向 OpenClaw 与其他本地运行时的通用导入说明，不再把 README 写成仅供当前仓库内部使用的文档。
 - README 中补充首次配置、审查人配置、审查上下文记忆、快速开始、默认输出物和常见说明，降低外部使用门槛。
 
@@ -322,7 +322,7 @@
 
 ### 新增
 
-- 新增 `ARCHITECTURE.md`，将 `contract-copilot` 正式固定为“立场与授权 / 方法论 / 知识清单 / 动作收束 / 文档执行 / 交付呈现 / 治理与验证”七层总纲。
+- 新增 `ARCHITECTURE.md`，将 `one-contract` 正式固定为“立场与授权 / 方法论 / 知识清单 / 动作收束 / 文档执行 / 交付呈现 / 治理与验证”七层总纲。
 
 ### 文档完善
 
@@ -942,7 +942,7 @@
 - 新增回归测试：
   - `scripts/tests/test_action_executor.py`
   - `scripts/tests/test_plan_loader.py`
-- 重新打包并校验 `dist/contract-copilot.zip`，确保与当前源码同步。
+- 重新打包并校验 `dist/one-contract.zip`，确保与当前源码同步。
 
 ### 文档完善
 
@@ -974,7 +974,7 @@
 
 ### 改进
 
-- 删除未使用且为空的目录：`contract-copilot/assets/`、`contract-copilot/config/`。
+- 删除未使用且为空的目录：`one-contract/assets/`、`one-contract/config/`。
 - 保留实际在流程中使用的目录：`references/`、`scripts/`、`templates/`、`archive/`。
 
 ### 技术优化
@@ -1009,7 +1009,7 @@
 - 更新 `SKILL.md`：明确“全量覆盖但不扩类”策略，增加未单列类型归类规则和映射清单入口。
 - 更新 `README.md`：补充映射清单调用顺序，统一审查入口。
 - 更新 `TASKS.md` 与 `DECISIONS.md`：记录“全量映射 + 高风险单列”的执行策略与结果。
-- 完成 `dist/contract-copilot.zip` 打包与目录结构校验。
+- 完成 `dist/one-contract.zip` 打包与目录结构校验。
 
 ### 技术优化
 
@@ -1067,7 +1067,7 @@
 ### 待办事项
 
 - 用真实合同样本补充 `apply_review_plan.py` 的回归用例（含多处同文案匹配与表格场景）。
-- 在发布阶段完成 `dist/contract-copilot.zip` 打包与 marketplace 版本同步。
+- 在发布阶段完成 `dist/one-contract.zip` 打包与 marketplace 版本同步。
 
 ## [1.2.0] - 2026-02-09
 
@@ -1126,5 +1126,5 @@
 
 ### 新增
 
-- 建立 `contract-copilot` 基础目录结构与核心文档。
+- 建立 `one-contract` 基础目录结构与核心文档。
 - 提供基础合同审查参考内容、模板和脚本入口。

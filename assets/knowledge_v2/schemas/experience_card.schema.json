@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contract-copilot/experience-card-v2.schema.json",
+  "$id": "one-contract/experience-card-v2.schema.json",
   "title": "Anonymised review experience card",
   "type": "object",
   "required": [

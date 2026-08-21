@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contract Copilot Scripts - 合同审查文档操作工具
+"""One-Contract Scripts - 合同审查文档操作工具
 
 提供合同审查的文档操作功能，支持批注和修订两种模式。
 
