@@ -31,7 +31,7 @@ description: 合同起草与审查助手。用于审查、修改、批注、修�
 
 1. `references/enterprise-taxonomy-v2.md`：EC-01 至 EC-10、永久 `type_id`、首批20类和分类确认门；
 2. `references/modular-knowledge-routing.md`：合同画像、原则卡和条款模块的检索及联动顺序；
-3. 通过 `scripts/knowledge/select_active_assets.py` 只取得状态为 `active` 的资产；
+3. 通过 `scripts/knowledge/select_active_assets.py` 只取得状态为 `active` 的资产。**必须同时传入** `--our-role`（我方角色）与 `--scene-tag`（场景标签）；不传角色或场景时，带 `scene_tags` 的条款模块会被过滤，只返回原则卡，属预期行为而非缺失。取值须使用资产内的英文枚举（角色如 `buyer`/`supplier`/`employer`/`employee`/`transferee`/`transferor`，场景如 `equipment_purchase`/`material_purchase`/`mutual_termination`/`confidentiality`/`noncompete`），不要使用中文（如"甲方"/"采购方"）——中文取值会被角色过滤判为不匹配。不确定具体值时，先读取该类型 `active` 模块的 `roles` 与 `scene_tags` 字段再传参；
 4. 需要核验来源、批准状态或隐私边界时再读 `references/knowledge-asset-governance.md`。
 
 涉及股权转让（`type-equity-transfer`）审查时，读取 `references/equity-transfer-pilot.md` 并运行 `scripts/knowledge/detect_equity_transfer_triggers.py`；股权转让资产已激活为 `active`，可直接用于正式审查。
@@ -122,7 +122,7 @@ description: 合同起草与审查助手。用于审查、修改、批注、修�
 - 保护利益、判断理由、立场和条款联动；
 - `action`、目标文本/selector 和可直接落文的文本；
 - 未知事实、当前假设和必要批注；
-- 依据类型及来源引用；
+- 依据类型及来源引用；`legal_basis` 字段必须填写（报告器会校验）：有直接法条时写具体法条（如"民法典第510条"），无直接法条时写判断依据说明（如"实务判断：无直接法条，基于对价平衡"）。只填 `basis_type` 不填 `legal_basis` 会导致报告判"缺少依据或来源状态"；
 - 若不改文，说明为什么无法负责任地形成默认文本。
 
 先检查 finding 之间是否冲突，再运行执行器。不得用关键词自动推断法律结论或商务授权。
