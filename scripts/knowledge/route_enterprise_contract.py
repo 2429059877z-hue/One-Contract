@@ -16,6 +16,15 @@ def load_taxonomy() -> dict[str, Any]:
     return json.loads((ASSET_ROOT / "taxonomy_v2.json").read_text(encoding="utf-8"))
 
 
+def type_domain_map(taxonomy: Mapping[str, Any]) -> dict[str, str]:
+    """Return the canonical type-to-domain mapping from the full taxonomy."""
+    return {
+        item["type_id"]: item["domain_code"]
+        for item in taxonomy.get("catalog_types", [])
+        if item.get("type_id") and item.get("domain_code")
+    }
+
+
 def infer_document_kind(title: str) -> str:
     for kind, pattern in (
         ("resolution", r"决议|议事规则|章程"),
@@ -38,34 +47,35 @@ def route(
     taxonomy: Mapping[str, Any],
 ) -> dict[str, Any]:
     scored: list[tuple[int, Mapping[str, Any], list[str], bool]] = []
-    for pilot in taxonomy["pilot_types"]:
+    route_catalog = taxonomy.get("routable_types") or taxonomy.get("pilot_types") or []
+    for contract_type in route_catalog:
         score = 0
         evidence: list[str] = []
         title_hit = False
         structure_aligned = False
-        for pattern in pilot.get("title_patterns", []):
+        for pattern in contract_type.get("title_patterns", []):
             if re.search(pattern, title, re.IGNORECASE):
                 title_hit = True
                 score = max(score, 5)
                 evidence.append(f"title_pattern:{pattern}")
                 break
-        for pattern in pilot.get("negative_patterns", []):
+        for pattern in contract_type.get("negative_patterns", []):
             if re.search(pattern, title, re.IGNORECASE):
                 score -= 6
                 evidence.append(f"negative_pattern:{pattern}")
-        if legacy_type and legacy_type in pilot.get("broad_types", []):
+        if legacy_type and legacy_type in contract_type.get("broad_types", []):
             score += 2
             evidence.append(f"broad_type_alignment:{legacy_type}")
         if transaction_structure:
-            structure_aligned = pilot["name"] in transaction_structure or any(
+            structure_aligned = contract_type["name"] in transaction_structure or any(
                 re.search(pattern, transaction_structure, re.IGNORECASE)
-                for pattern in pilot.get("title_patterns", [])
+                for pattern in contract_type.get("title_patterns", [])
             )
             if structure_aligned:
                 score += 1
                 evidence.append("transaction_structure_alignment")
         if title_hit and score >= 5:
-            scored.append((score, pilot, evidence, structure_aligned))
+            scored.append((score, contract_type, evidence, structure_aligned))
     scored.sort(key=lambda item: (-item[0], item[1]["code"]))
 
     if not scored:
@@ -74,11 +84,13 @@ def route(
         return {
             "primary_type_id": fallback["type_id"],
             "secondary_type_ids": [],
+            "primary_domain_code": domain_code,
+            "secondary_domain_codes": [],
             "document_kind": infer_document_kind(title),
             "our_role": our_role,
             "scene_tags": sorted(set([domain_code, *scene_tags])),
             "classification_status": "low",
-            "evidence": [f"legacy_broad_type:{legacy_type or 'unknown'}", "no_pilot_title_match"],
+            "evidence": [f"legacy_broad_type:{legacy_type or 'unknown'}", "no_routable_title_match"],
             "required_doctrines": [],
             "required_modules": [],
             "human_confirmation_required": True,
@@ -87,6 +99,16 @@ def route(
     top_score, top, evidence, structure_aligned = scored[0]
     second_score = scored[1][0] if len(scored) > 1 else -999
     secondary = [item[1]["type_id"] for item in scored[1:4] if item[0] >= top_score - 1]
+    domain_by_type = type_domain_map(taxonomy)
+    primary_domain_code = top["domain_code"]
+    secondary_domain_codes = sorted(
+        {
+            domain_by_type.get(type_id)
+            for type_id in secondary
+            if domain_by_type.get(type_id)
+            and domain_by_type.get(type_id) != primary_domain_code
+        }
+    )
     broad_aligned = legacy_type in top.get("broad_types", [])
     if top_score >= 8 and broad_aligned and top_score - second_score >= 2:
         confidence = "high"
@@ -104,6 +126,8 @@ def route(
     return {
         "primary_type_id": top["type_id"],
         "secondary_type_ids": secondary,
+        "primary_domain_code": primary_domain_code,
+        "secondary_domain_codes": secondary_domain_codes,
         "document_kind": infer_document_kind(title),
         "our_role": our_role or "unknown",
         "scene_tags": sorted(set([top["domain_code"], top["name"], *scene_tags])),

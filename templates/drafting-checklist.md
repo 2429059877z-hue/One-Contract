@@ -1,7 +1,7 @@
 # 合同起草信息清单
 
-> 目的：把映射清单生成的“起草路由卡”落成可填写工作台，避免只凭一个简单清单就直接起草全文。
-> 用法：先用 `references/contract-routing.md` 产出“主合同类型 + 主文件 + 推荐交付包型 + 配套协议类型”，再按本清单补事实，最后回到对应主文件和 `templates/条款库.md` 生成条款。
+> 目的：把 v2 分类结果和事实账本落成可填写工作台，避免只凭一个简单清单就直接起草全文。
+> 用法：先用 `references/enterprise-taxonomy-v2.md` 形成稳定合同画像，再用 `references/modular-knowledge-routing.md` 按状态取得可用资产并按本清单补齐事实。没有 `active` 专项资产时，只使用通用原则、可核验来源和 `templates/clause-library.md` 生成候选条款。
 
 ## 一、起草路由卡
 

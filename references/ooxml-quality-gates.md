@@ -71,7 +71,8 @@
 ```bash
 python scripts/docx_engine/quality_gate.py reviewed.docx \
   --original original.docx \
-  --output-dir qa
+  --output-dir qa \
+  --visual-policy allow-structural
 ```
 
 质量门检查：
@@ -100,7 +101,7 @@ XML 可解析不等于 Word 可用，关系和渲染仍是独立门。
 
 ## 七、渲染与人工检查
 
-使用 documents 技能的 `render_docx.py`：
+质量门在找到 LibreOffice、`pdfinfo` 和 `pdftoppm` 时会自动生成 PDF 和逐页 PNG。也可在需要时使用 documents 技能的 `render_docx.py` 复核：
 
 ```bash
 env TMPDIR=/private/tmp python render_docx.py reviewed.docx --output_dir qa/render-reviewed --emit_pdf
@@ -118,6 +119,8 @@ env TMPDIR=/private/tmp python render_docx.py qa/rejected.docx --output_dir qa/r
 - 审阅件与原件的非目标格式差异。
 
 LibreOffice 通过只证明该引擎下的可加载和渲染。未做 Microsoft Word GUI 实机测试时，明确标注“Word 实机未验证”。
+
+无渲染命令时，`--visual-policy allow-structural` 可返回 `STRUCTURAL_ONLY` 并继续执行，但必须标注“结构验证版”，不得冒充视觉终版。`--visual-policy require` 则把缺失渲染环境视为硬失败。
 
 ## 八、失败闭环
 

@@ -4,13 +4,13 @@
 
 本文件定位为“起草支撑层”，不是独立于 `references/` 之外的另一套知识体系。起草时应先使用：
 
-1. `references/review-framework.md` 确认结构性条款骨架；
-2. `references/contract-routing.md` 定位合同类型；
-3. `templates/合同起草信息清单.md` 收集主合同类型、配套协议类型和待补事实；
-4. 对应 `references/XX-合同类型/` 主文件确认该类合同的专属条款和风险点；
+1. `references/review-doctrine.md` 确认原则型审查和起草方法；
+2. `references/enterprise-taxonomy-v2.md` 定位合同类型；
+3. `references/modular-knowledge-routing.md` 按状态取得可用的原则卡和条款模块；
+4. `templates/drafting-checklist.md` 收集主合同类型、配套协议类型和待补事实；
 5. 最后再从本条款库抽取可复用的通用候选措辞。
 
-后续条款库的扩充，优先从 12 类合同主文件中反向抽取高频共性条款，而不是平行维护另一套“起草 reference”。
+后续条款库的扩充，只接收已通过状态门的 v2 模块中可复用的通用措辞，不直接从 v1 归档复制条款。
 本条款库只负责提供可复用措辞，不负责替代映射清单和主文件去确定合同骨架。
 
 ## 一、通用条款
@@ -351,5 +351,5 @@
 
 1. 本条款库中的条款仅供参考，使用时应根据具体合同类型、交易背景和双方地位进行调整。
 2. 【】内的内容为需要根据实际情况填写的变量。
-3. 起草时应先结合 `references/review-framework.md` 与对应合同类型主文件，确认条款是否完整、顺序是否合理，再引用本条款库中的措辞。
+3. 起草时应先结合 `references/review-doctrine.md`、v2 合同画像和可用的 `active` 专项资产，确认条款是否完整、顺序是否合理，再引用本条款库中的措辞。
 4. 审查时如发现多个合同类型重复出现的高频稳定条款，可回收整理后补入本条款库。

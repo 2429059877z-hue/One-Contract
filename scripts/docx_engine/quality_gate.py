@@ -7,6 +7,8 @@ import argparse
 import json
 import posixpath
 import re
+import shutil
+import subprocess
 import tempfile
 import unicodedata
 import zipfile
@@ -37,6 +39,7 @@ STORY_PATTERN = re.compile(
     r"^word/(document|header\d+|footer\d+|footnotes|endnotes)\.xml$"
 )
 ENCODING_RE = re.compile(br"<\?xml[^>]*encoding=[\"']([^\"']+)[\"']", re.I)
+VISUAL_POLICIES = {"require", "allow-structural", "structural-only"}
 
 
 def _local_name(tag: str) -> str:
@@ -269,6 +272,156 @@ def inspect_docx(docx_path: Path) -> dict[str, Any]:
     }
 
 
+def _png_dimensions(path: Path) -> tuple[int, int] | None:
+    data = path.read_bytes()[:24]
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return None
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def render_docx_evidence(
+    docx_path: Path,
+    *,
+    output_dir: Path,
+    visual_policy: str = "allow-structural",
+) -> dict[str, Any]:
+    """Render DOCX to PDF/PNG and return machine-checkable page evidence.
+
+    This gate proves that LibreOffice can render non-empty pages.  It deliberately
+    does not claim that a human/agent has checked overlap, clipping or typography.
+    """
+    if visual_policy not in VISUAL_POLICIES:
+        raise ValueError(f"unsupported visual_policy: {visual_policy}")
+    docx_path = Path(docx_path).resolve()
+    output_dir = Path(output_dir).resolve()
+    commands = {
+        "soffice": shutil.which("soffice") or shutil.which("libreoffice"),
+        "pdfinfo": shutil.which("pdfinfo"),
+        "pdftoppm": shutil.which("pdftoppm"),
+    }
+    missing = [name for name, path in commands.items() if not path]
+    if visual_policy == "structural-only":
+        return {
+            "status": "STRUCTURAL_ONLY",
+            "delivery_level": "structural_validation",
+            "visual_final_eligible": False,
+            "visual_inspection_status": "not_performed",
+            "reason": "visual_policy=structural-only; 未执行渲染，不得冒充视觉终版",
+            "commands": commands,
+            "errors": [],
+            "pages": [],
+        }
+    if missing:
+        status = "FAIL" if visual_policy == "require" else "STRUCTURAL_ONLY"
+        errors = [f"缺少渲染命令: {', '.join(missing)}"] if status == "FAIL" else []
+        return {
+            "status": status,
+            "delivery_level": "blocked" if status == "FAIL" else "structural_validation",
+            "visual_final_eligible": False,
+            "visual_inspection_status": "blocked" if status == "FAIL" else "not_performed",
+            "reason": (
+                "渲染环境不完整；仅可标注为结构验证版，不得冒充视觉终版"
+            ),
+            "commands": commands,
+            "missing_commands": missing,
+            "errors": errors,
+            "pages": [],
+        }
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = output_dir / f"{docx_path.stem}.pdf"
+    if pdf_path.exists() or list(output_dir.glob(f"{docx_path.stem}-*.png")):
+        raise FileExistsError(f"refusing to overwrite render evidence in: {output_dir}")
+    errors: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="one-contract-lo-") as profile_dir:
+        command = [
+            str(commands["soffice"]),
+            f"-env:UserInstallation={Path(profile_dir).resolve().as_uri()}",
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(output_dir),
+            str(docx_path),
+        ]
+        completed = subprocess.run(
+            command, text=True, capture_output=True, check=False, timeout=60
+        )
+    if completed.returncode != 0 or not pdf_path.is_file() or pdf_path.stat().st_size == 0:
+        errors.append(
+            "LibreOffice 渲染失败: "
+            + (completed.stderr.strip() or completed.stdout.strip() or f"exit={completed.returncode}")
+        )
+    pages_expected = 0
+    pdfinfo_output = ""
+    if not errors:
+        info = subprocess.run(
+            [str(commands["pdfinfo"]), str(pdf_path)],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        pdfinfo_output = info.stdout
+        match = re.search(r"^Pages:\s*(\d+)\s*$", info.stdout, re.MULTILINE)
+        if info.returncode != 0 or not match:
+            errors.append("无法读取渲染 PDF 页数")
+        else:
+            pages_expected = int(match.group(1))
+            if pages_expected < 1:
+                errors.append("渲染 PDF 页数为 0")
+    if not errors:
+        images = subprocess.run(
+            [
+                str(commands["pdftoppm"]), "-png", "-r", "120", str(pdf_path),
+                str(output_dir / docx_path.stem),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=60,
+        )
+        if images.returncode != 0:
+            errors.append(
+                "PDF 转 PNG 失败: "
+                + (images.stderr.strip() or images.stdout.strip() or f"exit={images.returncode}")
+            )
+    page_paths = sorted(output_dir.glob(f"{docx_path.stem}-*.png"))
+    page_evidence: list[dict[str, Any]] = []
+    for page in page_paths:
+        dimensions = _png_dimensions(page)
+        if dimensions is None or min(dimensions) < 100:
+            errors.append(f"PNG 页面无效或尺寸异常: {page.name}")
+            continue
+        page_evidence.append(
+            {
+                "path": str(page),
+                "bytes": page.stat().st_size,
+                "width": dimensions[0],
+                "height": dimensions[1],
+            }
+        )
+    if pages_expected and len(page_evidence) != pages_expected:
+        errors.append(f"PNG 页数与 PDF 不一致: {len(page_evidence)} != {pages_expected}")
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "delivery_level": "rendered_evidence_ready" if not errors else "blocked",
+        "visual_final_eligible": False,
+        "visual_inspection_status": "required" if not errors else "blocked",
+        "reason": (
+            "已生成逐页渲染证据；仍须人工或视觉代理检查裁切、重叠、缺字和字体替代"
+            if not errors
+            else "渲染失败，不得对外交付"
+        ),
+        "commands": commands,
+        "pdf": str(pdf_path) if pdf_path.exists() else None,
+        "pdf_pages": pages_expected,
+        "pdfinfo": pdfinfo_output,
+        "pages": page_evidence,
+        "errors": errors,
+    }
+
+
 def run_quality_gate(
     reviewed_docx: Path,
     *,
@@ -276,6 +429,7 @@ def run_quality_gate(
     output_dir: Path,
     baseline_view: str = "reject",
     require_revisions: bool = False,
+    visual_policy: str = "structural-only",
 ) -> dict[str, Any]:
     reviewed_docx = Path(reviewed_docx)
     original_docx = Path(original_docx)
@@ -323,6 +477,30 @@ def run_quality_gate(
         compatibility["python-docx"] = f"FAIL: {exc}"
         errors.append(f"python-docx 兼容性检查失败: {exc}")
 
+    visual_validation = {
+        name: render_docx_evidence(
+            path,
+            output_dir=output_dir / "render" / name,
+            visual_policy=visual_policy,
+        )
+        for name, path in (("reviewed", reviewed_docx), ("accepted", accepted), ("rejected", rejected))
+    }
+    errors.extend(
+        f"{name} visual: {error}"
+        for name, validation in visual_validation.items()
+        if validation.get("status") == "FAIL"
+        for error in validation.get("errors", [])
+    )
+    delivery_level = (
+        "blocked"
+        if errors
+        else (
+            "structural_validation"
+            if any(item.get("status") == "STRUCTURAL_ONLY" for item in visual_validation.values())
+            else "rendered_evidence_ready"
+        )
+    )
+
     report = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -338,6 +516,17 @@ def run_quality_gate(
         "rejected_resolution": rejected_resolution,
         "packages": package_reports,
         "compatibility": compatibility,
+        "visual_policy": visual_policy,
+        "visual_validation": visual_validation,
+        "delivery_level": delivery_level,
+        "visual_final_eligible": False,
+        "visual_inspection_status": (
+            "blocked"
+            if errors
+            else "not_performed"
+            if delivery_level == "structural_validation"
+            else "required"
+        ),
         "errors": errors,
     }
     report_path.write_text(
@@ -353,6 +542,12 @@ def main() -> int:
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--baseline-view", choices=("accept", "reject", "raw"), default="reject")
     parser.add_argument("--require-revisions", action="store_true")
+    parser.add_argument(
+        "--visual-policy",
+        choices=sorted(VISUAL_POLICIES),
+        default="allow-structural",
+        help="require=缺渲染即失败；allow-structural=无工具时仅结构版；structural-only=显式跳过渲染",
+    )
     args = parser.parse_args()
     report = run_quality_gate(
         args.reviewed,
@@ -360,6 +555,7 @@ def main() -> int:
         output_dir=args.output_dir,
         baseline_view=args.baseline_view,
         require_revisions=args.require_revisions,
+        visual_policy=args.visual_policy,
     )
     print(json.dumps({"status": report["status"], "errors": report["errors"]}, ensure_ascii=False))
     return 0 if report["status"] == "PASS" else 1

@@ -36,15 +36,15 @@ python3 -m pip install -r scripts/requirements.txt
 
 ## 三、可选但推荐的系统依赖
 
-### 1. `soffice`
+### 1. `soffice`、`pdfinfo` 与 `pdftoppm`
 
 用途：
 
-- 用于把审阅件、接受版、拒绝版和报告渲染为 PDF/PNG，检查分页、裁切、重叠、表格和字体替代。
+- `soffice` 用于把审阅件、接受版、拒绝版和报告渲染为 PDF；`pdfinfo` 读取页数，`pdftoppm` 生成逐页 PNG，供检查分页、裁切、重叠、表格和字体替代。
 
 说明：
 
-- `quality_gate.py` 的 ZIP/XML/关系/语义检查不依赖 `soffice`；但没有渲染证据时不得宣称已完成最终视觉检查。
+- `quality_gate.py` 的 ZIP/XML/关系/语义检查不依赖上述三项工具；默认仅在三项工具齐备时自动形成完整渲染证据。缺少任一项时只能标注为“结构验证版”。
 
 适合安装的场景：
 
@@ -107,11 +107,11 @@ python3 scripts/review/apply_review_plan.py \
 
 - 重新安装 `scripts/requirements.txt`；严格质量门会把无法重新打开 DOCX 记为失败。
 
-### 4. 缺少 `soffice`
+### 4. 缺少 `soffice`、`pdfinfo` 或 `pdftoppm`
 
 说明：
 
-- 结构质量门仍可运行，但缺少 LibreOffice 渲染证据。
+- 结构质量门仍可运行，但无法形成完整的 PDF/逐页 PNG 渲染证据。
 - 在交付说明中标注渲染未验证，并在可用环境补做；不要把 executor 或 `python-docx` 成功等同于视觉兼容通过。
 
 ## 七、维护规则

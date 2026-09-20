@@ -179,6 +179,42 @@ def resolve_delivery_action(
     return action
 
 
+def resolve_directed_block(
+    finding: dict[str, Any], *, action: str
+) -> dict[str, Any] | None:
+    """Return the scoped block when this exact finding/action is prohibited.
+
+    A P0 elsewhere in the plan never stops unrelated findings.  The caller must
+    either attach an explicit block to this finding or provide an exact
+    output_kind match through plan_loader's trigger-result bridge.
+    """
+    block = finding.get("directed_block")
+    if not isinstance(block, dict) or not _is_truthy(block.get("active")):
+        return None
+    prohibited_actions = {
+        normalize_action(item, default="")
+        for item in block.get("prohibited_actions", [])
+        if str(item).strip()
+    }
+    prohibited_outputs = {
+        str(item).strip() for item in block.get("prohibited_outputs", []) if str(item).strip()
+    }
+    output_kind = str(finding.get("output_kind") or "").strip()
+    action_blocked = action in (prohibited_actions or DIRECT_EDIT_ACTIONS)
+    output_blocked = bool(output_kind and output_kind in prohibited_outputs)
+    if not (action_blocked or output_blocked):
+        return None
+    return {
+        "reason": str(block.get("reason") or "该项动作已被定向阻断").strip(),
+        "scope": "this_finding",
+        "attempted_action": action,
+        "output_kind": output_kind or None,
+        "trigger_ids": list(block.get("trigger_ids") or []),
+        "prohibited_outputs": list(block.get("prohibited_outputs") or []),
+        "required_outputs": list(block.get("required_outputs") or []),
+    }
+
+
 def resolve_action_tag(finding: dict[str, Any], action: str) -> str:
     selector = finding.get("selector")
     if isinstance(selector, dict) and selector.get("tag"):
@@ -235,7 +271,16 @@ def build_comment_text(finding: dict[str, Any]) -> str:
     lines.append(
         f"【修改建议】{str(finding.get('suggestion') or finding.get('fix') or '未提及/待补充').strip()}"
     )
-    basis = str(finding.get("basis") or finding.get("principle_basis") or "").strip()
+    basis_value = (
+        finding.get("legal_basis")
+        or finding.get("basis")
+        or finding.get("principle_basis")
+        or ""
+    )
+    if isinstance(basis_value, list):
+        basis = "；".join(str(item).strip() for item in basis_value if str(item).strip())
+    else:
+        basis = str(basis_value).strip()
     if basis:
         lines.append(f"【判断依据】{basis}")
     unknowns = finding.get("unknown_facts") or finding.get("assumptions")
@@ -261,7 +306,12 @@ def resolve_revision_comment(
     state = normalize_evidence_state(finding)
     has_reason = bool(
         str(finding.get("risk") or finding.get("description") or "").strip()
-        or str(finding.get("basis") or finding.get("principle_basis") or "").strip()
+        or str(
+            finding.get("legal_basis")
+            or finding.get("basis")
+            or finding.get("principle_basis")
+            or ""
+        ).strip()
     )
     if state == "reasonable_assumption" or _is_truthy(finding.get("keep_comment_on_revision")):
         return build_comment_text(finding)
@@ -301,6 +351,17 @@ def apply_finding(
         "status": "skipped",
         "message": "",
     }
+    directed_block = resolve_directed_block(finding, action=action)
+    if directed_block is not None:
+        result.update(
+            status="directed_blocked",
+            message=(
+                "已仅阻断本 finding 的命中动作，其他审查项继续执行："
+                f"{directed_block['reason']}"
+            ),
+            directed_block=directed_block,
+        )
+        return result
     if action in {"none", "skip"}:
         result["message"] = "不适用或按计划跳过"
         return result

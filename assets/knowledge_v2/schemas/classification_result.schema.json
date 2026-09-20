@@ -27,6 +27,10 @@
       "minLength": 1,
       "type": "string"
     },
+    "primary_domain_code": {
+      "pattern": "^EC-(0[1-9]|10)$",
+      "type": "string"
+    },
     "primary_type_id": {
       "minLength": 1,
       "type": "string"
@@ -58,11 +62,21 @@
       },
       "type": "array",
       "uniqueItems": true
+    },
+    "secondary_domain_codes": {
+      "items": {
+        "pattern": "^EC-(0[1-9]|10)$",
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
     }
   },
   "required": [
     "primary_type_id",
     "secondary_type_ids",
+    "primary_domain_code",
+    "secondary_domain_codes",
     "document_kind",
     "our_role",
     "scene_tags",

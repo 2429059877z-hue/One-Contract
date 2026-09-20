@@ -42,6 +42,28 @@ MERGEABLE_EQUAL_SEGMENT_PATTERN = re.compile(
 )
 INVISIBLE_TEXT_CHARS = {"\u200b", "\u200c", "\u200d", "\u2060", "\ufeff"}
 
+#: \u6bb5\u843d/\u5b57\u7b26\u5c5e\u6027\u4e0e\u6279\u6ce8\u951a\u70b9\u7b49**\u975e\u6b63\u6587**\u5143\u7d20\u3002\u6587\u672c\u62bd\u53d6\u5fc5\u987b\u6574\u68f5\u8df3\u8fc7\uff1a
+#: \u4e0d\u8df3\u8fc7 `w:pPr` \u4f1a\u628a `w:pPr/w:tabs/w:tab`\uff08\u5236\u8868\u4f4d**\u5b9a\u4e49**\uff09\u8bfb\u6210\u6b63\u6587\u5236\u8868\u7b26 `\t`\uff0c
+#: \u6bb5\u843d\u91cd\u5199\u65f6\u53c8\u628a\u5b83\u4eec\u5f53\u6587\u672c\u5199\u56de\uff0c\u4f7f\u4fee\u8ba2\u540e\u7684\u6bb5\u843d\u51ed\u7a7a\u591a\u51fa\u5236\u8868\u7b26
+#: \uff08\u5b9e\u6d4b\uff1a\u67d0\u6761\u88ab\u4fee\u8ba2\u7684\u6bb5\u843d\u6bb5\u9996\u591a\u51fa 2 \u4e2a `\t`\uff0c"\u62d2\u7edd\u5168\u90e8\u4fee\u8ba2"\u89c6\u56fe\u56e0\u6b64\u4e0e\u539f\u7a3f\u4e0d\u4e00\u81f4\uff09\u3002
+_NON_CONTENT_ELEMENT_TAGS = frozenset(
+    {
+        "w:pPr",
+        "w:rPr",
+        "w:sectPr",
+        "w:tblPr",
+        "w:trPr",
+        "w:tcPr",
+        "w:commentRangeStart",
+        "w:commentRangeEnd",
+        "w:commentReference",
+        "w:bookmarkStart",
+        "w:bookmarkEnd",
+        "w:proofErr",
+        "w:lastRenderedPageBreak",
+    }
+)
+
 
 class ContractReviewer:
     """合同审查操作封装类
@@ -354,8 +376,15 @@ class ContractReviewer:
         return self.doc["word/document.xml"]._get_element_text(node)
 
     def _get_accepted_text(self, node):
-        """Return the final/accepted text view for a node containing revisions."""
+        """Return the final/accepted text view for a node containing revisions.
+
+        **只收正文**：段落属性、字符属性与批注锚点等元素整棵跳过
+        （见 `_NON_CONTENT_ELEMENT_TAGS`）。否则 `w:pPr/w:tabs` 里的制表位定义
+        会被读成正文制表符，并在段落重写时写回成字面 `\\t`。
+        """
         if getattr(node, "nodeType", None) != node.ELEMENT_NODE:
+            return ""
+        if getattr(node, "tagName", "") in _NON_CONTENT_ELEMENT_TAGS:
             return ""
         if getattr(node, "tagName", "") in {"w:del", "w:moveFrom", "w:delText"}:
             return ""
@@ -602,10 +631,15 @@ class ContractReviewer:
         return nodes[0] if nodes else None
 
     def _build_paragraph_xml(self, paragraph_node, text):
-        escaped = html.escape(text, quote=False)
+        """整段重写：保留段落属性与**首个正文 run 的字符格式**。
+
+        此前这里产出的是裸 `<w:r>`，会丢掉原段落的字体/字号等字符格式；
+        段落属性里的制表位定义也一度被当成正文制表符（见 `_get_accepted_text`）。
+        """
         ppr = self._get_direct_child(paragraph_node, "w:pPr")
         ppr_xml = ppr.toxml() if ppr is not None else ""
-        return f"<w:p>{ppr_xml}<w:r><w:t>{escaped}</w:t></w:r></w:p>"
+        template_run = self._get_first_text_run(paragraph_node)
+        return f"<w:p>{ppr_xml}{self._build_run_xml(text, template_run)}</w:p>"
 
     def _build_fragment_paragraph_xml(
         self,

@@ -3,7 +3,8 @@
   {
    "activation_status": "active",
    "approval_status": "active",
-   "auto_action": "list_risks_not_block",
+   "auto_action": "directed_block_only",
+   "directed_block_scope": "exact_prohibited_output_or_explicit_finding_only",
    "evidence_state": "major_choice",
    "false_positive_guards": [
     "后签文件真实、透明地变更了原协议，且付款、申报和会计处理均按最终安排执行",
@@ -60,7 +61,8 @@
   {
    "activation_status": "active",
    "approval_status": "active",
-   "auto_action": "list_risks_not_block",
+   "auto_action": "directed_block_only",
+   "directed_block_scope": "exact_prohibited_output_or_explicit_finding_only",
    "evidence_state": "major_choice",
    "false_positive_guards": [
     "其他交易有独立合同、真实履行、公允对价和一致账税处理"
@@ -99,7 +101,8 @@
   {
    "activation_status": "active",
    "approval_status": "active",
-   "auto_action": "evidence_driven_compliant_revision",
+   "auto_action": "directed_block_only",
+   "directed_block_scope": "exact_prohibited_output_or_explicit_finding_only",
    "evidence_state": "major_choice",
    "false_positive_guards": [
     "已完成实缴且证据完整"
@@ -177,27 +180,25 @@
    "version": "0.3.0"
   },
   {
-   "trigger_id": "TRG-GD-SPEC-GAP",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "标的物或规格标准缺失不可识别",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "标的物为通用品且规格在行业惯例中不言自明",
+    "双方以历史订单持续供货，规格已在既有文件中明确"
+   ],
    "hard_signals": [
     "标的物仅写品名，无规格型号、数量或单位",
     "规格标准引用附件/技术协议/样品但附件缺失或版本不明",
     "质量标准引用国家/行业标准但未写标准号或版本"
    ],
-   "supporting_signals": [
-    "清单与订单、发票、交付内容不一致",
-    "定制设备或专用原材料无技术协议/图纸/样品确认书基准"
-   ],
-   "false_positive_guards": [
-    "标的物为通用品且规格在行业惯例中不言自明",
-    "双方以历史订单持续供货，规格已在既有文件中明确"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "标的物或规格标准缺失不可识别",
+   "prohibited_outputs": [
+    "虚构规格参数",
+    "凭空补充技术标准"
+   ],
    "required_modules": [
     "mod-goods-specification"
    ],
@@ -205,39 +206,39 @@
     "标的物清单补全建议",
     "规格标准落笔或批注"
    ],
-   "prohibited_outputs": [
-    "虚构规格参数",
-    "凭空补充技术标准"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-internal-procurement-sample-aggregate-202608",
     "src-internal-procurement-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "清单与订单、发票、交付内容不一致",
+    "定制设备或专用原材料无技术协议/图纸/样品确认书基准"
+   ],
+   "trigger_id": "TRG-GD-SPEC-GAP",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-DELIVERY-UNBOUNDED",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "交付与风险转移节点不清",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "现货当场交付，风险与所有权同步转移且无争议",
+    "双方长期合作，交付安排稳定明确"
+   ],
    "hard_signals": [
     "交付时间未写明或仅写‘以通知为准’且无逾期后果",
     "交付地点不明或与实际收货地不符",
     "交付方式（自提/送货/代办运输）与风险转移时点不一致"
    ],
-   "supporting_signals": [
-    "运费、装卸费、包装费归属不明",
-    "无交付凭证（出库单/签收单/送货单）约定"
-   ],
-   "false_positive_guards": [
-    "现货当场交付，风险与所有权同步转移且无争议",
-    "双方长期合作，交付安排稳定明确"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "交付与风险转移节点不清",
+   "prohibited_outputs": [
+    "虚构交付时间",
+    "未经确认指定承运方"
+   ],
    "required_modules": [
     "mod-delivery-risk"
    ],
@@ -245,39 +246,38 @@
     "交付时间/地点/方式落笔",
     "风险转移时点明确"
    ],
-   "prohibited_outputs": [
-    "虚构交付时间",
-    "未经确认指定承运方"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-civil-code-2020",
     "src-internal-procurement-sample-aggregate-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "运费、装卸费、包装费归属不明",
+    "无交付凭证（出库单/签收单/送货单）约定"
+   ],
+   "trigger_id": "TRG-GD-DELIVERY-UNBOUNDED",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-ACCEPTANCE-WINDOW",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "验收异议期间缺失或过短",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "标的物为标准化成品，外观检验即可完成",
+    "验收标准已以样品或技术协议明确且期限合理"
+   ],
    "hard_signals": [
     "无验收标准或仅写‘按国家标准’未写标准号",
     "检验期限过短，买受人在期限内难以完成全面检验（民法典622）",
     "无质量异议通知程序或期限不明（民法典621）"
    ],
-   "supporting_signals": [
-    "质保期、质保范围与返修/更换/退换程序未成组设计",
-    "质量异议期间与质保期、合理期限、二年期限关系混乱"
-   ],
-   "false_positive_guards": [
-    "标的物为标准化成品，外观检验即可完成",
-    "验收标准已以样品或技术协议明确且期限合理"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "验收异议期间缺失或过短",
+   "prohibited_outputs": [
+    "虚构验收结论"
+   ],
    "required_modules": [
     "mod-quality-warranty",
     "mod-goods-specification"
@@ -287,38 +287,39 @@
     "检验期限调整",
     "质量异议程序补全"
    ],
-   "prohibited_outputs": [
-    "虚构验收结论"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-civil-code-2020",
     "src-spc-sale-contract-interpretation-2020",
     "src-internal-procurement-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "质保期、质保范围与返修/更换/退换程序未成组设计",
+    "质量异议期间与质保期、合理期限、二年期限关系混乱"
+   ],
+   "trigger_id": "TRG-GD-ACCEPTANCE-WINDOW",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-PAYMENT-BACKTOBACK",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "背靠背付款条款未识别效力风险",
-   "severity": "P1",
-   "hard_signals": [
-    "约定以第三方（总包/最终用户）向买方付款为前提再付款给供方",
-    "大型企业与中小企业之间约定背靠背付款且无期限上限"
-   ],
-   "supporting_signals": [
-    "付款条件与第三方回款强绑定，供方对付款无确定性保障",
-    "合同未约定第三方未付款时的救济"
-   ],
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "list_risks_not_block",
+   "evidence_state": "reasonable_assumption",
    "false_positive_guards": [
     "双方均为平等市场主体的常规结算安排，无大小企业地位差异",
     "背靠背条款已明确合理期限和替代救济"
    ],
-   "evidence_state": "reasonable_assumption",
+   "hard_signals": [
+    "约定以第三方（总包/最终用户）向买方付款为前提再付款给供方",
+    "大型企业与中小企业之间约定背靠背付款且无期限上限"
+   ],
    "human_confirmation_required": true,
-   "auto_action": "list_risks_not_block",
+   "name": "背靠背付款条款未识别效力风险",
+   "prohibited_outputs": [
+    "直接删除背靠背条款而不提示",
+    "断言条款绝对无效"
+   ],
    "required_modules": [
     "mod-payment-acceptance"
    ],
@@ -326,40 +327,40 @@
     "背靠背条款效力风险提示",
     "付款保障建议（期限/担保/替代救济）"
    ],
-   "prohibited_outputs": [
-    "直接删除背靠背条款而不提示",
-    "断言条款绝对无效"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-spc-large-small-enterprise-payment-2024",
     "src-internal-procurement-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "付款条件与第三方回款强绑定，供方对付款无确定性保障",
+    "合同未约定第三方未付款时的救济"
+   ],
+   "trigger_id": "TRG-GD-PAYMENT-BACKTOBACK",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-COUNTERPARTY-GAP",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "签约主体资质缺失或收款账户不一致",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "list_risks_not_block",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "主体为长期合作供应商，资质与信用状况已核实",
+    "收款账户变更已有书面盖章确认"
+   ],
    "hard_signals": [
     "签约主体名称与营业执照全称不一致，或以项目部/内设机构名义签约",
     "特殊行业（特种设备/危化品/食品/医疗器械等）缺经营许可或资质证书",
     "收款账户非对公账户，或收款主体与签约主体不一致",
     "签约主体处于经营异常、失信被执行或注销清算状态"
    ],
-   "supporting_signals": [
-    "注册资本虚高但实缴为0，无实际经营场所或社保记录",
-    "分公司签约但无总公司授权"
-   ],
-   "false_positive_guards": [
-    "主体为长期合作供应商，资质与信用状况已核实",
-    "收款账户变更已有书面盖章确认"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": true,
-   "auto_action": "list_risks_not_block",
+   "name": "签约主体资质缺失或收款账户不一致",
+   "prohibited_outputs": [
+    "虚构主体信息",
+    "直接更换签约主体"
+   ],
    "required_modules": [
     "mod-goods-specification"
    ],
@@ -367,41 +368,40 @@
     "主体资质与收款一致性风险提示",
     "补正建议（营业执照附件/授权/对公账户）"
    ],
-   "prohibited_outputs": [
-    "虚构主体信息",
-    "直接更换签约主体"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-wechat-caigoubang-procurement-202607",
     "src-wechat-caigou-check68-202604",
     "src-wechat-lvzhengfanqie-procurement-202607",
     "src-internal-procurement-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "注册资本虚高但实缴为0，无实际经营场所或社保记录",
+    "分公司签约但无总公司授权"
+   ],
+   "trigger_id": "TRG-GD-COUNTERPARTY-GAP",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-ACCEPTANCE-SIGNED",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "签收被解释为验收合格",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "标的物为标准化成品，外观检验即可完成且双方已明示签收即终验",
+    "合同明确区分签收与终验且已设置终验程序"
+   ],
    "hard_signals": [
     "约定收货签收即视为验收合格，或验收仅以签收单为准",
     "未区分数量外观初验与性能/产能终验",
     "收货人未限定，任何人员签收均有效"
    ],
-   "supporting_signals": [
-    "隐蔽缺陷无追责机制，签收后即免除供方质量责任",
-    "无明确验收期限或验收程序"
-   ],
-   "false_positive_guards": [
-    "标的物为标准化成品，外观检验即可完成且双方已明示签收即终验",
-    "合同明确区分签收与终验且已设置终验程序"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "签收被解释为验收合格",
+   "prohibited_outputs": [
+    "虚构验收结论"
+   ],
    "required_modules": [
     "mod-quality-warranty",
     "mod-delivery-risk"
@@ -411,39 +411,40 @@
     "限定有权签收人员",
     "补隐蔽缺陷追责条款"
    ],
-   "prohibited_outputs": [
-    "虚构验收结论"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-wechat-xiaoli-procurement-202608",
     "src-wechat-wulilaw-procurement-202412",
     "src-internal-procurement-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "隐蔽缺陷无追责机制，签收后即免除供方质量责任",
+    "无明确验收期限或验收程序"
+   ],
+   "trigger_id": "TRG-GD-ACCEPTANCE-SIGNED",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-GD-QUALITY-EMPTY",
-   "type_id": "type-equipment-material-procurement",
-   "version": "0.1.0",
-   "name": "质量条款空心化（标准不明确）",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "标的物为标准化通用品，行业标准明确且双方以历史订单持续供货",
+    "技术协议或样品封存已明确具体指标"
+   ],
    "hard_signals": [
     "仅写符合国家标准/行业标准，未写具体标准号、版本或量化指标",
     "验收标准无检测方法、验收程序或第三方检测机制",
     "仅写验收合格后付款，无验收主体、标准和期限"
    ],
-   "supporting_signals": [
-    "标的物为定制设备或专用原材料，仅凭国标无法判定",
-    "无隐蔽缺陷条款，签收即视为质量无异议"
-   ],
-   "false_positive_guards": [
-    "标的物为标准化通用品，行业标准明确且双方以历史订单持续供货",
-    "技术协议或样品封存已明确具体指标"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "质量条款空心化（标准不明确）",
+   "prohibited_outputs": [
+    "凭空设定技术指标",
+    "虚构检测方法"
+   ],
    "required_modules": [
     "mod-quality-warranty",
     "mod-goods-specification"
@@ -453,42 +454,42 @@
     "明确标准号与版本",
     "补验收程序"
    ],
-   "prohibited_outputs": [
-    "凭空设定技术指标",
-    "虚构检测方法"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-wechat-caigoubang-procurement-202607",
     "src-wechat-xiaoli-procurement-202608",
-    "src-wechat-heli lawyer-procurement-202608",
+    "src-wechat-heli-lawyer-procurement-202608",
     "src-internal-procurement-sample-aggregate-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "标的物为定制设备或专用原材料，仅凭国标无法判定",
+    "无隐蔽缺陷条款，签收即视为质量无异议"
+   ],
+   "trigger_id": "TRG-GD-QUALITY-EMPTY",
+   "type_id": "type-equipment-material-procurement",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-ET-COMPENSATION-ERROR",
-   "type_id": "type-employment-mutual-termination",
-   "version": "0.1.0",
-   "name": "经济补偿判断或标准错误",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "双方对经济补偿另有合法约定",
+    "劳动者主动提出且明确放弃补偿"
+   ],
    "hard_signals": [
     "用人单位提出协商解除但未约定经济补偿",
     "劳动者主动提出解除却被协议表述为用人单位提出",
     "经济补偿金额明显不符合47条标准（每满一年1个月/6个月以上按1年/不满6个月半个月）",
     "高工资未按3倍封顶或超12年"
    ],
-   "supporting_signals": [
-    "一次性总额无法识别是否含经济补偿",
-    "协议未区分提出方"
-   ],
-   "false_positive_guards": [
-    "双方对经济补偿另有合法约定",
-    "劳动者主动提出且明确放弃补偿"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "经济补偿判断或标准错误",
+   "prohibited_outputs": [
+    "虚构经济补偿金额",
+    "把劳动者主动解除写成用人单位提出"
+   ],
    "required_modules": [
     "mod-compensation-settlement",
     "mod-termination-date"
@@ -498,38 +499,39 @@
     "补偿标准核对",
     "提出方表述修正"
    ],
-   "prohibited_outputs": [
-    "虚构经济补偿金额",
-    "把劳动者主动解除写成用人单位提出"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-internal-termination-sample-aggregate-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "一次性总额无法识别是否含经济补偿",
+    "协议未区分提出方"
+   ],
+   "trigger_id": "TRG-ET-COMPENSATION-ERROR",
+   "type_id": "type-employment-mutual-termination",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-ET-FORCED-WAIVER",
-   "type_id": "type-employment-mutual-termination",
-   "version": "0.1.0",
-   "name": "以程序义务为条件迫使全面放弃",
-   "severity": "P0",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "list_risks_not_block",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "权利终结以实际履行为条件且范围具体",
+    "法定义务与可协商款项已分开"
+   ],
    "hard_signals": [
     "以不开离职证明/不发工资/不办社保转移为条件",
     "要求劳动者在付款/交接前无条件放弃全部权利",
     "未区分已核对与未核对事项的全面终结"
    ],
-   "supporting_signals": [
-    "劳动者拒绝签署即不发工资/证明的表述"
-   ],
-   "false_positive_guards": [
-    "权利终结以实际履行为条件且范围具体",
-    "法定义务与可协商款项已分开"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": true,
-   "auto_action": "list_risks_not_block",
+   "name": "以程序义务为条件迫使全面放弃",
+   "prohibited_outputs": [
+    "把法定程序义务写成可放弃",
+    "虚构劳动者自愿放弃"
+   ],
    "required_modules": [
     "mod-release-boundary",
     "mod-certificate-social-insurance"
@@ -539,38 +541,38 @@
     "终结范围与履行条件对应",
     "法定权利保留"
    ],
-   "prohibited_outputs": [
-    "把法定程序义务写成可放弃",
-    "虚构劳动者自愿放弃"
-   ],
+   "severity": "P0",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-internal-termination-review-opinions-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "劳动者拒绝签署即不发工资/证明的表述"
+   ],
+   "trigger_id": "TRG-ET-FORCED-WAIVER",
+   "type_id": "type-employment-mutual-termination",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-ET-DATE-MISMATCH",
-   "type_id": "type-employment-mutual-termination",
-   "version": "0.1.0",
-   "name": "解除日期节点混同或依赖单方控制",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "日期节点已区分且期间义务明确",
+    "解除条件客观可完成"
+   ],
    "hard_signals": [
     "解除日/生效日/最后工作日混同未区分",
     "解除时间取决于一方单独控制的交接确认",
     "工资/社保计算截止日与解除日不一致未说明"
    ],
-   "supporting_signals": [
-    "正文未写解除日期或仅写双方协商"
-   ],
-   "false_positive_guards": [
-    "日期节点已区分且期间义务明确",
-    "解除条件客观可完成"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "解除日期节点混同或依赖单方控制",
+   "prohibited_outputs": [
+    "虚构解除日期",
+    "把单方控制事项作为解除条件"
+   ],
    "required_modules": [
     "mod-termination-date",
     "mod-handover-return"
@@ -580,37 +582,37 @@
     "工资社保截止日明确",
     "交接条件客观"
    ],
-   "prohibited_outputs": [
-    "虚构解除日期",
-    "把单方控制事项作为解除条件"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-internal-termination-sample-aggregate-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "正文未写解除日期或仅写双方协商"
+   ],
+   "trigger_id": "TRG-ET-DATE-MISMATCH",
+   "type_id": "type-employment-mutual-termination",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-CF-SCOPE-OVERBROAD",
-   "type_id": "type-employee-confidentiality",
-   "version": "0.1.0",
-   "name": "保密范围过宽不可识别",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "范围按岗位实际接触列举且可识别"
+   ],
    "hard_signals": [
     "保密范围笼统写一切未公开信息",
     "范围与岗位实际接触不匹配",
     "未区分商业秘密/一般经验/公开信息"
    ],
-   "supporting_signals": [
-    "普通岗位被签过宽保密协议"
-   ],
-   "false_positive_guards": [
-    "范围按岗位实际接触列举且可识别"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "保密范围过宽不可识别",
+   "prohibited_outputs": [
+    "虚构保密信息",
+    "把公开信息写成保密信息"
+   ],
    "required_modules": [
     "mod-confidential-information",
     "mod-employee-use-restriction"
@@ -619,37 +621,36 @@
     "保密范围按岗位实际接触明确",
     "例外情形写明"
    ],
-   "prohibited_outputs": [
-    "虚构保密信息",
-    "把公开信息写成保密信息"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-spc-trade-secret-interpretation-2020",
     "src-internal-confidentiality-user-templates-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "普通岗位被签过宽保密协议"
+   ],
+   "trigger_id": "TRG-CF-SCOPE-OVERBROAD",
+   "type_id": "type-employee-confidentiality",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-CF-IP-CONFLICT",
-   "type_id": "type-employee-confidentiality",
-   "version": "0.1.0",
-   "name": "保密义务与知识产权/职务成果冲突",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "职务成果权属已明确且与保密义务衔接"
+   ],
    "hard_signals": [
     "职务成果权属未明确",
     "保密条款与知识产权条款重复或冲突",
     "员工申明非职务成果机制缺失"
    ],
-   "supporting_signals": [
-    "技术岗位但职务成果归属不明"
-   ],
-   "false_positive_guards": [
-    "职务成果权属已明确且与保密义务衔接"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "保密义务与知识产权/职务成果冲突",
+   "prohibited_outputs": [
+    "虚构职务成果归属"
+   ],
    "required_modules": [
     "mod-ip-interface",
     "mod-confidential-information"
@@ -658,36 +659,36 @@
     "职务成果权属明确",
     "与保密义务衔接不冲突"
    ],
-   "prohibited_outputs": [
-    "虚构职务成果归属"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-civil-code-2020",
     "src-internal-confidentiality-user-templates-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "技术岗位但职务成果归属不明"
+   ],
+   "trigger_id": "TRG-CF-IP-CONFLICT",
+   "type_id": "type-employee-confidentiality",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-NC-INELIGIBLE-PERSON",
-   "type_id": "type-noncompete",
-   "version": "0.1.0",
-   "name": "竞业限制主体不适格",
-   "severity": "P1",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "list_risks_not_block",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "员工确属高级管理人员/高级技术人员/保密义务人"
+   ],
    "hard_signals": [
     "普通岗位员工被签竞业限制",
     "员工不属于高管/高级技工/保密义务人",
     "岗位不足以知悉商业秘密"
    ],
-   "supporting_signals": [
-    "保安/前台/生产普工等一般岗位"
-   ],
-   "false_positive_guards": [
-    "员工确属高级管理人员/高级技术人员/保密义务人"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "list_risks_not_block",
+   "name": "竞业限制主体不适格",
+   "prohibited_outputs": [
+    "认定不适格条款必然无效（需结合岗位）"
+   ],
    "required_modules": [
     "mod-noncompete-scope"
    ],
@@ -695,36 +696,36 @@
     "主体适格性判断",
     "无效风险提示（最高法案例）"
    ],
-   "prohibited_outputs": [
-    "认定不适格条款必然无效（需结合岗位）"
-   ],
+   "severity": "P1",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-spc-guiding-case-32-2022",
     "src-internal-noncompete-user-templates-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "保安/前台/生产普工等一般岗位"
+   ],
+   "trigger_id": "TRG-NC-INELIGIBLE-PERSON",
+   "type_id": "type-noncompete",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-NC-TERM-EXCEED",
-   "type_id": "type-noncompete",
-   "version": "0.1.0",
-   "name": "竞业限制期限超二年",
-   "severity": "P0",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "期限不超过二年且从离职后起算"
+   ],
    "hard_signals": [
     "竞业限制期限超过二年",
     "期限计算含在职期间导致实质超限"
    ],
-   "supporting_signals": [
-    "离职后竞业期限从入职算起"
-   ],
-   "false_positive_guards": [
-    "期限不超过二年且从离职后起算"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "竞业限制期限超二年",
+   "prohibited_outputs": [
+    "保留超二年期限"
+   ],
    "required_modules": [
     "mod-noncompete-term-region"
    ],
@@ -732,36 +733,36 @@
     "期限修订为不超过二年",
     "起算点明确为离职后"
    ],
-   "prohibited_outputs": [
-    "保留超二年期限"
-   ],
+   "severity": "P0",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-mohrss-noncompete-guide-2025"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "离职后竞业期限从入职算起"
+   ],
+   "trigger_id": "TRG-NC-TERM-EXCEED",
+   "type_id": "type-noncompete",
+   "version": "0.1.0"
   },
   {
-   "trigger_id": "TRG-NC-NO-COMPENSATION",
-   "type_id": "type-noncompete",
-   "version": "0.1.0",
-   "name": "未约定竞业限制补偿",
-   "severity": "P0",
+   "activation_status": "active",
+   "approval_status": "active",
+   "auto_action": "revise",
+   "evidence_state": "confirmed",
+   "false_positive_guards": [
+    "补偿已按月约定且标准明确"
+   ],
    "hard_signals": [
     "约定竞业限制但未约定经济补偿",
     "补偿仅口头承诺未写入",
     "补偿金额/支付方式空白"
    ],
-   "supporting_signals": [
-    "竞业条款存在但补偿条款缺失"
-   ],
-   "false_positive_guards": [
-    "补偿已按月约定且标准明确"
-   ],
-   "evidence_state": "confirmed",
    "human_confirmation_required": false,
-   "auto_action": "revise",
+   "name": "未约定竞业限制补偿",
+   "prohibited_outputs": [
+    "虚构补偿金额"
+   ],
    "required_modules": [
     "mod-noncompete-compensation"
    ],
@@ -769,16 +770,18 @@
     "按月补偿条款",
     "补偿标准与支付方式明确"
    ],
-   "prohibited_outputs": [
-    "虚构补偿金额"
-   ],
+   "severity": "P0",
    "source_ids": [
     "src-prc-labor-contract-law-2012",
     "src-internal-noncompete-sample-aggregate-202608"
    ],
-   "approval_status": "active",
-   "activation_status": "active"
+   "supporting_signals": [
+    "竞业条款存在但补偿条款缺失"
+   ],
+   "trigger_id": "TRG-NC-NO-COMPENSATION",
+   "type_id": "type-noncompete",
+   "version": "0.1.0"
   }
  ],
- "schema_version": "2.1.0"
+ "schema_version": "2.2.0"
 }

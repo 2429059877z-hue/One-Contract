@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,39 @@ else:
     from .report_docx import write_review_report_docx
 
 RISK_ORDER = {"P0": 0, "P1": 1, "P2": 2}
+PENDING_MARKER_RE = re.compile(r"【待填\s*[:：]\s*([^】]+?)\s*】")
+
+#: `coverage_level` → 报告里写给律师看的审查深度。
+#: 取值来自 `select_active_assets.py`，**不得为了好看写高一级**（SKILL.md §1）。
+COVERAGE_DEPTH_LABELS = {
+    "domain_and_type": "三层（类型级）",
+    "domain_only": "两层（域级）",
+    "global_only": "一层（全局）",
+}
+
+#: 报告章节契约：与 `templates/review-report-template.md`、`SKILL.md` 一一对应。
+#: 生成器按此**逐节自检**，缺一节即报错——避免再出现"文档要求了、实现没做"的静默缺口。
+REPORT_SECTION_CONTRACT_PATH = Path(__file__).with_name("report-sections.json")
+PENDING_KEYS = (
+    "pending_items",
+    "to_fill_items",
+    "missing_information",
+    "missing_fields",
+    "待填事项",
+)
+TAX_SUGGESTION_KEYS = (
+    "tax_suggestions",
+    "tax_advice",
+    "tax_recommendations",
+    "tax_notes",
+    "tax_suggestion",
+    "tax_recommendation",
+    "涉税建议",
+)
+TAX_SIGNAL_RE = re.compile(
+    r"(?:\btax\b|涉税|税务|纳税|税费|税率|含税|不含税|价税|发票|开票|完税|代扣代缴|申报)",
+    re.IGNORECASE,
+)
 
 
 def _normalize_risk_level(value: Any) -> str:
@@ -80,6 +114,139 @@ def _to_text_list(value: Any) -> list[str]:
     if isinstance(value, str) and value.strip():
         return [value.strip()]
     return []
+
+
+def _walk_text_values(value: Any) -> list[str]:
+    """Return every non-empty text leaf while preserving document order."""
+    if isinstance(value, dict):
+        texts: list[str] = []
+        for child in value.values():
+            texts.extend(_walk_text_values(child))
+        return texts
+    if isinstance(value, (list, tuple, set)):
+        texts = []
+        for child in value:
+            texts.extend(_walk_text_values(child))
+        return texts
+    return _to_text_list(value)
+
+
+def _append_unique(items: list[str], value: Any) -> None:
+    text = _first_text(value).strip(" 。；;，,")
+    if text and text not in items:
+        items.append(text)
+
+
+def _pending_labels(value: Any) -> list[str]:
+    labels: list[str] = []
+    for text in _walk_text_values(value):
+        markers = PENDING_MARKER_RE.findall(text)
+        if markers:
+            for marker in markers:
+                _append_unique(labels, marker)
+        else:
+            _append_unique(labels, text)
+    return labels
+
+
+def _collect_pending_items(
+    plan: dict[str, Any],
+    summary: dict[str, Any],
+    meta: dict[str, Any],
+    findings: list[dict[str, Any]],
+) -> list[str]:
+    """Collect only fill items, explicit lists and explicit placeholder markers."""
+    labels: list[str] = []
+    for container in (plan, summary, meta):
+        for key in PENDING_KEYS:
+            for label in _pending_labels(container.get(key)):
+                _append_unique(labels, label)
+
+    for finding in findings:
+        for key in PENDING_KEYS:
+            for label in _pending_labels(finding.get(key)):
+                _append_unique(labels, label)
+        if finding.get("pending_kind") == "fill":
+            for value in (finding.get("unknown_facts"), finding.get("assumptions")):
+                for label in _pending_labels(value):
+                    _append_unique(labels, label)
+
+    # Markers may also be embedded in replacement text, comments or summaries.
+    for text in _walk_text_values(plan):
+        for label in PENDING_MARKER_RE.findall(text):
+            _append_unique(labels, label)
+    return labels
+
+
+def _is_tax_finding(item: dict[str, Any]) -> bool:
+    explicit = item.get("report_bucket")
+    if explicit in {"general", "mixed"}:
+        return False
+    if explicit == "tax":
+        return True
+    if any(item.get(key) for key in TAX_SUGGESTION_KEYS):
+        return True
+    signal_values = [
+        item.get("category"),
+        item.get("clause_group"),
+        item.get("basis_type"),
+        item.get("tags"),
+        item.get("title"),
+        item.get("risk"),
+        item.get("description"),
+    ]
+    signal_text = " ".join(_walk_text_values(signal_values))
+    return bool(TAX_SIGNAL_RE.search(signal_text))
+
+
+def _is_tax_text(value: Any) -> bool:
+    return bool(TAX_SIGNAL_RE.search(" ".join(_walk_text_values(value))))
+
+
+def _as_tax_suggestion(value: Any) -> str:
+    text = _first_text(value).strip(" 。；;，,")
+    if not text:
+        return ""
+    if text.startswith(("建议", "可考虑", "宜")):
+        return text
+    return f"建议{text}"
+
+
+def _collect_tax_suggestions(
+    plan: dict[str, Any],
+    summary: dict[str, Any],
+    meta: dict[str, Any],
+    findings: list[dict[str, Any]],
+) -> list[str]:
+    suggestions: list[str] = []
+    for container in (plan, summary, meta):
+        for key in TAX_SUGGESTION_KEYS:
+            for text in _walk_text_values(container.get(key)):
+                _append_unique(suggestions, _as_tax_suggestion(text))
+    for text in _walk_text_values(summary.get("key_recommendations")):
+        if _is_tax_text(text):
+            _append_unique(suggestions, _as_tax_suggestion(text))
+
+    for finding in findings:
+        explicit_bucket = finding.get("report_bucket")
+        if explicit_bucket == "general":
+            continue
+        if explicit_bucket not in {"tax", "mixed"} and not _is_tax_finding(finding):
+            continue
+        finding_suggestions: list[str] = []
+        for key in TAX_SUGGESTION_KEYS:
+            for text in _walk_text_values(finding.get(key)):
+                _append_unique(finding_suggestions, _as_tax_suggestion(text))
+        if not finding_suggestions and explicit_bucket != "mixed":
+            _append_unique(
+                finding_suggestions,
+                _as_tax_suggestion(_resolve_review_direction(finding)),
+            )
+        title = _first_text(finding.get("title"), finding.get("risk"))
+        for suggestion in finding_suggestions:
+            rendered = f"{title}：{suggestion}" if title else suggestion
+            _append_unique(suggestions, rendered)
+    return suggestions
 
 
 def _merge_report_meta(
@@ -349,21 +516,58 @@ def _resolve_review_direction(item: dict[str, Any]) -> str:
         item.get("fix"),
         item.get("comment"),
         item.get("rationale"),
+        # 纯税务 finding 用 `tax_advice` 承载意见；此前不在候选键里，
+        # 于是 `report_bucket=tax` 的条目会被完整性检查误判为"缺少审查意见"。
+        item.get("tax_advice"),
         item.get("replacement_text"),
         item.get("recommended_text"),
         item.get("insert_text"),
     )
 
 
+def _directed_block_applies(item: dict[str, Any]) -> bool:
+    block = item.get("directed_block")
+    if not isinstance(block, dict) or not bool(block.get("active")):
+        return False
+    action = str(item.get("action") or "auto").strip().lower().replace("_", "-")
+    prohibited_actions = {
+        str(value).strip().lower().replace("_", "-")
+        for value in block.get("prohibited_actions", [])
+        if str(value).strip()
+    }
+    output_kind = str(item.get("output_kind") or "").strip()
+    prohibited_outputs = {
+        str(value).strip() for value in block.get("prohibited_outputs", []) if str(value).strip()
+    }
+    if prohibited_actions and action in prohibited_actions:
+        return True
+    if output_kind and output_kind in prohibited_outputs:
+        return True
+    return not prohibited_actions and action in {"auto", "replace", "insert", "delete"}
+
+
 def _report_completeness_errors(
     meta: dict[str, Any],
     findings: list[dict[str, Any]],
+    plan: dict[str, Any] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     if not _first_text(meta.get("contract_name"), meta.get("title")):
         errors.append("缺少合同名称")
     if not _first_text(meta.get("party_role"), meta.get("role")):
         errors.append("缺少审查立场")
+    provenance = meta.get("classification_provenance")
+    provenance = provenance if isinstance(provenance, dict) else {}
+    if not _first_text(provenance.get("coverage_level")):
+        errors.append(
+            "缺少覆盖层级（meta.classification_provenance.coverage_level）——"
+            "SKILL.md §1 要求写明本次审查深度"
+        )
+    if plan is not None and not isinstance(plan.get("linkage_checklist"), dict):
+        errors.append(
+            "缺少条款联动必检清单（linkage_checklist）——五组：付款交付验收／变更解除违约／"
+            "保密数据知识产权／责任限制赔偿保险／到期退出交接，每组须登记 checked 或 not_applicable+理由"
+        )
     for item in findings:
         finding_id = _safe_line(item.get("id"), fallback="未编号")
         if not _resolve_review_direction(item):
@@ -377,12 +581,23 @@ def _resolve_key_recommendations(
     summary: dict[str, Any],
     findings: list[dict[str, Any]],
 ) -> list[str]:
-    recommendations = _to_text_list(summary.get("key_recommendations"))
+    blocked_directions = {
+        _resolve_review_direction(item)
+        for item in findings
+        if _directed_block_applies(item) and _resolve_review_direction(item)
+    }
+    recommendations = [
+        item
+        for item in _to_text_list(summary.get("key_recommendations"))
+        if not _is_tax_text(item) and item not in blocked_directions
+    ]
     if recommendations:
         return recommendations
 
     derived: list[str] = []
     for item in findings:
+        if _directed_block_applies(item):
+            continue
         suggestion = _resolve_review_direction(item)
         if suggestion and suggestion not in derived:
             derived.append(suggestion)
@@ -469,8 +684,10 @@ def _resolve_high_risk_alerts(findings: list[dict[str, Any]]) -> list[dict[str, 
                 "title": _safe_line(item.get("title") or item.get("risk")),
                 "clause": _safe_line(item.get("clause") or item.get("clause_position")),
                 "risk": _safe_line(item.get("risk") or item.get("description")),
-                "suggestion": _safe_line(
-                    _resolve_review_direction(item)
+                "suggestion": (
+                    "该具体输出已定向阻断；仅保留合规核验、补正、保全和退出方向。"
+                    if _directed_block_applies(item)
+                    else _safe_line(_resolve_review_direction(item))
                 ),
             }
         )
@@ -492,6 +709,11 @@ def _execution_status_lines(
         for item in results
         if isinstance(item, dict) and item.get("status") == "failed"
     ]
+    directed_items = [
+        item
+        for item in results
+        if isinstance(item, dict) and item.get("status") == "directed_blocked"
+    ]
     quality = execution.get("quality_gate")
     quality = quality if isinstance(quality, dict) else {}
     quality_errors = quality.get("errors")
@@ -500,9 +722,21 @@ def _execution_status_lines(
     )
     # 对外审查意见书正常时不披露执行/质量门等技术状态；
     # 仅当存在未落文项目、质量门错误或报告未闭合时，给出简短警示与必要详情。
-    if not failed_items and not quality_errors and not report_errors:
+    structural_only = quality.get("delivery_level") == "structural_validation"
+    if not failed_items and not directed_items and not quality_errors and not report_errors and not structural_only:
         return []
-    lines = ["", "> 提示：本次审查存在未完成事项，不得作为正式交付版本；请人工复核后再作处理。"]
+    lines = [""]
+    if failed_items or quality_errors or report_errors:
+        lines.append("> 提示：本次审查存在未完成事项，不得作为正式交付版本；请人工复核后再作处理。")
+    if directed_items:
+        lines.append("> 定向阻断：下列具体输出/动作已停止，其他不受影响的审查项已继续执行。")
+        for item in directed_items:
+            lines.append(
+                f"> - {_safe_line(item.get('id'), fallback='未编号')}："
+                f"{_safe_line(item.get('message'), fallback='已定向阻断')}"
+            )
+    if structural_only:
+        lines.append("> 交付级别：当前仅为结构验证版，未取得完整渲染证据，不得冒充视觉终版。")
     if failed_items:
         lines.append("> 未完整落文项目：")
         for item in failed_items:
@@ -519,6 +753,193 @@ def _execution_status_lines(
     return lines
 
 
+#: 法条引用抽取：`《法名》…第X条`。用于产出「待复核法条清单」。
+CITATION_RE = re.compile(
+    r"(《[^》]{2,60}》[^。；;，,、\n]{0,24}?第[〇零一二三四五六七八九十百千0-9]+条(?:之[〇零一二三四五六七八九十]+)?)"
+)
+
+
+def collect_legal_citations(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """从全部 `legal_basis` 中抽取法条引用，产出「待复核法条清单」。
+
+    本库条文在建库时经元典核验并随文标注了日期，但**那是冻结时点的结论**；
+    引用会随法律修改而过时。离线的定位不变，这份清单让"要不要复核"
+    成为使用方**可执行的选择**，而不是隐性假设。
+    """
+    collected: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        basis = _resolve_legal_basis(item)
+        for citation in CITATION_RE.findall(basis):
+            normalized = citation.strip()
+            if normalized in seen:
+                continue
+            seen.add(normalized)
+            collected.append(
+                {
+                    "citation": normalized,
+                    "finding_id": item.get("id"),
+                    "risk_level": item.get("risk_level"),
+                    "legal_basis": basis,
+                }
+            )
+    return collected
+
+
+def _load_section_contract() -> dict[str, Any]:
+    try:
+        data = json.loads(REPORT_SECTION_CONTRACT_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _enforce_section_contract(report_text: str) -> list[str]:
+    """按章节契约逐节自检，返回缺失项。缺节不得静默通过。"""
+    contract = _load_section_contract()
+    missing: list[str] = []
+    for title in contract.get("required_sections", []):
+        if f"## {title}" not in report_text:
+            missing.append(str(title))
+    for title in contract.get("required_subsections", []):
+        if f"### {title}" not in report_text:
+            missing.append(str(title))
+    return missing
+
+
+def _resolve_coverage_section(
+    meta: dict[str, Any],
+    summary: dict[str, Any],
+    contract_type: str,
+) -> list[str]:
+    """「5. 审查依据与覆盖层级」——SKILL.md §1 要求的强制小节。
+
+    数据源：`meta.classification_provenance`（分类三步与 `select_active_assets.py` 的产物）。
+    取不到 `coverage_level` 时**如实写「未记录」**并由完整性检查报出，不得省略整节。
+    写法是**中性事实说明**：不是风险提示，也不是免责声明。
+    """
+    provenance = meta.get("classification_provenance")
+    provenance = provenance if isinstance(provenance, dict) else {}
+    level = _first_text(
+        provenance.get("coverage_level"),
+        summary.get("coverage_level"),
+    )
+    depth = COVERAGE_DEPTH_LABELS.get(level, "未记录")
+    type_id = _first_text(
+        provenance.get("primary_type_id"),
+        meta.get("primary_type_id"),
+        summary.get("primary_type_id"),
+    )
+    domain_code = _first_text(
+        provenance.get("primary_domain_code"),
+        summary.get("confirmed_domain_code"),
+        summary.get("primary_domain_code"),
+    )
+    assets = _first_text(summary.get("coverage_assets"), provenance.get("coverage_assets"))
+    stub_topics = _to_text_list(summary.get("stub_topics"))
+
+    hit = contract_type
+    suffix = f"（{type_id}）" if type_id else ""
+    if domain_code:
+        suffix += f"；主大类 {domain_code}"
+    lines = [
+        "### 5. 审查依据与覆盖层级",
+        "",
+        f"- 命中类型：{hit}{suffix}",
+        f"- 本项目已审查深度：{depth}",
+        f"- 生效资产：{_safe_line(assets)}",
+    ]
+    if stub_topics:
+        lines.append(
+            "- 本类型下暂无具体检查项的议题："
+            + "、".join(_safe_line(topic) for topic in stub_topics)
+        )
+    else:
+        lines.append("- 本类型下暂无具体检查项的议题：无")
+    if level == "domain_only":
+        lines.append(
+            "- 说明：本次生效的是该大类在本域共通层面的审查目标与判断坐标；"
+            "该类型特有的风险点可能未被覆盖。"
+        )
+    elif level == "global_only":
+        lines.append("- 说明：本次仅有全局规则生效，未加载大类或类型级资产，审查深度受限。")
+    lines.append("")
+    return lines
+
+
+def _resolve_source_comment_section(plan: dict, execution: dict | None) -> list[str]:
+    """「源文档批注意见处理」：对方每条批注各自的下落。
+
+    只在 **plan 里有 `responses`** 或**源文档存在悬空批注**时渲染。
+    正文修订之外，这一节回答的是"对方提的意见，我们逐条怎么处理了"——
+    此前这类信息只散落在批注与对话里，报告上看不到。
+    """
+    try:
+        from scripts.review.comment_targets import RESPONSE_STANCES
+    except ImportError:  # pragma: no cover - 包内运行时走相对导入
+        from review.comment_targets import RESPONSE_STANCES
+
+    responses = plan.get("responses")
+    responses = responses if isinstance(responses, list) else []
+    execution = execution if isinstance(execution, dict) else {}
+    exec_by_id = {
+        str(item.get("id")): item
+        for item in (execution.get("responses") or [])
+        if isinstance(item, dict)
+    }
+    orphans = execution.get("orphan_comments")
+    orphans = orphans if isinstance(orphans, dict) else {}
+    orphan_items = orphans.get("orphans") if isinstance(orphans.get("orphans"), list) else []
+
+    if not responses and not orphan_items:
+        return []
+
+    lines = ["## 源文档批注意见处理", ""]
+    if responses:
+        lines.append(f"- 源文档批注意见共 {len(responses)} 条，逐条处理口径如下：")
+        lines.append("")
+        for index, item in enumerate(responses, start=1):
+            if not isinstance(item, dict):
+                continue
+            stance = str(item.get("stance") or "")
+            label = RESPONSE_STANCES.get(stance, stance or "未标注口径")
+            executed = exec_by_id.get(str(item.get("id")), {})
+            author = executed.get("source_author") or item.get("source_author") or "未标注作者"
+            source_text = _first_text(item.get("source_text"), item.get("summary")) or ""
+            title = f"{index}. 【{label}】{source_text or '源文档批注意见'}（{author}）"
+            lines.append(title)
+            evidence = _first_text(item.get("evidence"))
+            if evidence:
+                lines.append(f"  - 依据／落点：{evidence}")
+            text = _first_text(item.get("text"))
+            if text:
+                lines.append(f"  - 回复：{text}")
+            status = executed.get("status")
+            if status == "failed":
+                lines.append(f"  - 执行状态：未完成——{executed.get('message', '')}")
+            elif status == "skipped":
+                lines.append(f"  - 执行状态：{executed.get('message', '')}")
+            lines.append("")
+    if orphan_items:
+        lines.append(
+            f"- 源文档另有 {len(orphan_items)} 条批注在正文中没有任何锚点"
+            "（Word 修订窗格不可见）。其内容如下，未随本次修订处理："
+        )
+        lines.append("")
+        for index, item in enumerate(orphan_items, start=1):
+            if not isinstance(item, dict):
+                continue
+            author = item.get("author") or "未标注作者"
+            date = item.get("date") or ""
+            text = _first_text(item.get("text")) or ""
+            suffix = f"（{date}）" if date else ""
+            lines.append(f"{index}. {text}——{author}{suffix}")
+        lines.append("")
+    return lines
+
+
 def render_review_report(
     plan: dict[str, Any],
     execution: dict[str, Any] | None = None,
@@ -528,6 +949,9 @@ def render_review_report(
     meta = _merge_report_meta(plan_meta, execution)
     summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
     findings = collect_findings(plan)
+    non_tax_findings = [item for item in findings if not _is_tax_finding(item)]
+    pending_items = _collect_pending_items(plan, summary, meta, findings)
+    tax_suggestions = _collect_tax_suggestions(plan, summary, meta, findings)
 
     timestamp = generated_at or datetime.now().strftime("%Y-%m-%d %H:%M")
     contract_name = _safe_line(meta.get("contract_name") or meta.get("title"))
@@ -575,11 +999,14 @@ def render_review_report(
     )
     overall_opinion = _resolve_overall_opinion(
         summary=summary,
-        findings=findings,
+        findings=non_tax_findings,
         overall=overall,
         conclusion=conclusion,
     )
-    key_recommendations = _resolve_key_recommendations(summary=summary, findings=findings)
+    key_recommendations = _resolve_key_recommendations(
+        summary=summary,
+        findings=non_tax_findings,
+    )
     recipient = _resolve_recipient(my_party=my_party, other_parties=other_parties)
     opening_paragraph = _resolve_opening_paragraph(
         contract_name=contract_name,
@@ -587,7 +1014,7 @@ def render_review_report(
         contract_type=contract_type,
         party_role=party_role,
     )
-    high_risk_alerts = _resolve_high_risk_alerts(findings)
+    high_risk_alerts = _resolve_high_risk_alerts(non_tax_findings)
 
     lines: list[str] = [
         f"# 关于《{contract_name}》的审查意见书",
@@ -637,6 +1064,13 @@ def render_review_report(
             "",
             f"- 核心权利义务：{rights_obligations}",
             "",
+        ]
+    )
+
+    lines.extend(_resolve_coverage_section(meta, summary, contract_type))
+
+    lines.extend(
+        [
             "## 二、综合审查意见",
             "",
             f"- 总体风险等级：{overall}",
@@ -650,7 +1084,7 @@ def render_review_report(
         for recommendation in key_recommendations:
             lines.append(f"  - {_safe_line(recommendation)}")
 
-    report_errors = _report_completeness_errors(meta, findings)
+    report_errors = _report_completeness_errors(meta, findings, plan)
     lines.extend(_execution_status_lines(execution, report_errors))
 
     lines.extend(["", "## 三、重要风险提示", ""])
@@ -667,17 +1101,21 @@ def render_review_report(
 
     lines.extend(["## 四、详细审查意见", ""])
 
-    if not findings:
+    if not non_tax_findings:
         lines.extend(["- 未识别到需要提示的具体审查问题。", ""])
     else:
-        for index, item in enumerate(findings, start=1):
+        for index, item in enumerate(non_tax_findings, start=1):
             title = _safe_line(item.get("title") or item.get("risk"))
-            review_comment = _safe_line(_resolve_review_direction(item))
+            block = item.get("directed_block")
+            is_directed_blocked = _directed_block_applies(item)
+            review_comment = (
+                "该具体输出已定向阻断；仅保留合规核验、补正、保全和退出方向。"
+                if is_directed_blocked
+                else _safe_line(_resolve_review_direction(item))
+            )
             target_text = _first_text(item.get("target_text"), item.get("search"))
-            revision_text = _first_text(
-                item.get("replacement_text"),
-                item.get("recommended_text"),
-                item.get("insert_text"),
+            revision_text = "" if is_directed_blocked else _first_text(
+                item.get("replacement_text"), item.get("recommended_text"), item.get("insert_text")
             )
             lines.append(f"### {index}. {title}")
             lines.append("")
@@ -693,8 +1131,21 @@ def render_review_report(
                 lines.append(f"- 原条款：{target_text}")
             if revision_text:
                 lines.append(f"- 建议修改：{revision_text}")
+            if is_directed_blocked:
+                lines.append(f"- 定向阻断理由：{_safe_line(block.get('reason'))}")
+                required_outputs = _to_text_list(block.get("required_outputs"))
+                if required_outputs:
+                    lines.append(f"- 允许/必要输出：{'；'.join(required_outputs)}")
+            pending_kind = item.get("pending_kind")
+            unknown_facts = _to_text_list(item.get("unknown_facts"))
+            if pending_kind == "verify" and unknown_facts:
+                lines.append(f"- 待核验事实：{'；'.join(unknown_facts)}")
+            elif pending_kind == "authorization" and unknown_facts:
+                lines.append(f"- 待授权事项：{'；'.join(unknown_facts)}")
             lines.append(f"- 法律依据：{_resolve_legal_basis(item)}")
             lines.append("")
+
+    lines.extend(_resolve_source_comment_section(plan, execution))
 
     lines.extend(
         [
@@ -712,7 +1163,29 @@ def render_review_report(
         ]
     )
 
-    return "\n".join(lines)
+    lines.extend(["## 【待填事项汇总】", ""])
+    if pending_items:
+        for item in pending_items:
+            lines.append(f"- 【待填：{item}】——请在签署或交付前核实并补齐。")
+    else:
+        lines.append("- 当前未识别需汇总的待填事项。")
+
+    lines.extend(["", "## 【涉税建议】", ""])
+    if tax_suggestions:
+        for suggestion in tax_suggestions:
+            lines.append(f"- {suggestion}")
+    else:
+        lines.append("- 本次审查未识别需单独汇总的涉税事项。")
+
+    report_text = "\n".join(lines)
+    missing_sections = _enforce_section_contract(report_text)
+    if missing_sections:
+        raise RuntimeError(
+            "审查报告缺少契约要求的章节："
+            + "、".join(missing_sections)
+            + "（契约见 scripts/report/report-sections.json）"
+        )
+    return report_text
 
 
 def main() -> None:

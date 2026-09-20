@@ -1,8 +1,8 @@
 {
  "assets": [
   {
-   "activation_status": "active",
-   "approval_status": "active",
+   "activation_status": "inactive",
+   "approval_status": "candidate",
    "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
    "document_kind": "substantive_agreement_skeleton",
    "name": "股权转让基础骨架",
@@ -40,8 +40,8 @@
    "version": "0.1.0"
   },
   {
-   "activation_status": "active",
-   "approval_status": "active",
+   "activation_status": "inactive",
+   "approval_status": "candidate",
    "content_status": "candidate_user_materials_ingested_awaiting_lawyer_approval",
    "document_kind": "base_skeleton",
    "name": "设备、原材料采购基础骨架",
@@ -144,8 +144,8 @@
    "version": "0.1.0"
   },
   {
-   "activation_status": "active",
-   "approval_status": "active",
+   "activation_status": "inactive",
+   "approval_status": "candidate",
    "content_status": "candidate_framework_only",
    "document_kind": "base_skeleton",
    "name": "员工保密基础骨架",
@@ -157,8 +157,8 @@
    "version": "0.1.0"
   },
   {
-   "activation_status": "active",
-   "approval_status": "active",
+   "activation_status": "inactive",
+   "approval_status": "candidate",
    "content_status": "candidate_framework_only",
    "document_kind": "base_skeleton",
    "name": "竞业限制基础骨架",
@@ -170,8 +170,8 @@
    "version": "0.1.0"
   },
   {
-   "activation_status": "active",
-   "approval_status": "active",
+   "activation_status": "inactive",
+   "approval_status": "candidate",
    "content_status": "candidate_framework_only",
    "document_kind": "base_skeleton",
    "name": "协商解除劳动关系基础骨架",
@@ -261,5 +261,5 @@
    "version": "0.1.0"
   }
  ],
- "schema_version": "2.1.0"
+ "schema_version": "2.2.0"
 }

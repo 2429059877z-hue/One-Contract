@@ -65,6 +65,34 @@ PARTY_ROLE_ALIASES = {
     "中立": "中立",
     "other": "其他",
     "其他": "其他",
+    "buyer": "采购方",
+    "purchaser": "采购方",
+    "采购方": "采购方",
+    "买方": "买方",
+    "supplier": "供应方",
+    "seller": "卖方",
+    "供应方": "供应方",
+    "卖方": "卖方",
+    "client": "委托方",
+    "委托方": "委托方",
+    "service_provider": "服务方",
+    "服务方": "服务方",
+    "lessor": "出租方",
+    "出租方": "出租方",
+    "lessee": "承租方",
+    "承租方": "承租方",
+    "transferor": "转让方",
+    "转让方": "转让方",
+    "transferee": "受让方",
+    "受让方": "受让方",
+    "employer": "用人单位",
+    "用人单位": "用人单位",
+    "employee": "劳动者",
+    "劳动者": "劳动者",
+    "target_company": "标的公司",
+    "标的公司": "标的公司",
+    "guarantor": "保证人",
+    "保证人": "保证人",
 }
 
 REVIEW_INTENSITY_ALIASES = {
@@ -577,6 +605,11 @@ def resolve_reviewer_profile(
     save_profile(profile)
     if not profile_exists:
         print(f"已保存审查人配置：{PROFILE_PATH}", file=sys.stderr)
+        # GOV-008：该身份为自述留痕，写入时即向操作者明示
+        print(
+            "注意：该审查人身份为本机自述留痕，不构成身份认证、电子签名或不可抵赖证明。",
+            file=sys.stderr,
+        )
     return load_profile()
 
 

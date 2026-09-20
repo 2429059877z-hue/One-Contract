@@ -1,7 +1,9 @@
 {
   "catalog_types": [
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-01",
       "domain_name": "公司治理、投资与股权",
@@ -10,13 +12,15 @@
       "type_name": "股权转让"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-01",
       "domain_name": "公司治理、投资与股权",
       "type_code": "EC-01-002",
       "type_id": "type-capital-increase-investment",
-      "type_name": "增资投资"
+      "type_name": "增资投资",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -109,13 +113,15 @@
       "type_name": "股东会决议模板"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-01",
       "domain_name": "公司治理、投资与股权",
       "type_code": "EC-01-013",
       "type_id": "type-catalog-22adcacf81bb5aa39c21",
-      "type_name": "股东出资协议"
+      "type_name": "股东出资协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -172,13 +178,15 @@
       "type_name": "股权并购重组框架协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-01",
       "domain_name": "公司治理、投资与股权",
       "type_code": "EC-01-020",
       "type_id": "type-catalog-d0c6ccc9d1385ef8aa70",
-      "type_name": "股权激励授予协议"
+      "type_name": "股权激励授予协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -217,16 +225,75 @@
       "type_name": "项目合伙合作协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-01",
+      "domain_name": "公司治理、投资与股权",
+      "type_code": "EC-01-025",
+      "type_id": "type-business-asset-acquisition",
+      "type_name": "经营性资产收购",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-01",
+      "domain_name": "公司治理、投资与股权",
+      "type_code": "EC-01-026",
+      "type_id": "type-employee-holding-platform",
+      "type_name": "员工持股平台",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-01",
+      "domain_name": "公司治理、投资与股权",
+      "type_code": "EC-01-027",
+      "type_id": "type-company-merger-division",
+      "type_name": "公司合并与分立",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-01",
+      "domain_name": "公司治理、投资与股权",
+      "type_code": "EC-01-028",
+      "type_id": "type-shareholders-agreement",
+      "type_name": "股东协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-01",
+      "domain_name": "公司治理、投资与股权",
+      "type_code": "EC-01-029",
+      "type_id": "type-valuation-adjustment-agreement",
+      "type_name": "估值调整/对赌协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-001",
       "type_id": "type-annual-framework-sales-procurement",
-      "type_name": "年度框架购销"
+      "type_name": "年度框架购销",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
@@ -235,31 +302,26 @@
       "type_name": "设备、原材料采购"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-003",
       "type_id": "type-finished-goods-sale",
-      "type_name": "产成品销售"
+      "type_name": "产成品销售",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
-      "build_scope": "catalog_only",
-      "domain_code": "EC-02",
-      "domain_name": "买卖、采购与供应",
-      "type_code": "EC-02-004",
-      "type_id": "type-catalog-1014ede879c758eda98f",
-      "type_name": "不动产买卖居间协议"
-    },
-    {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-005",
       "type_id": "type-catalog-3e1a84a93ef453168a33",
-      "type_name": "二手动产转让合同"
+      "type_name": "二手动产转让合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -280,22 +342,26 @@
       "type_name": "公益捐赠协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-008",
       "type_id": "type-catalog-dc66464f8f3d56429fb4",
-      "type_name": "包装加工协议"
+      "type_name": "包装加工协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-009",
       "type_id": "type-catalog-d74b1085a9c0558887e0",
-      "type_name": "印刷加工协议"
+      "type_name": "印刷加工协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -325,31 +391,37 @@
       "type_name": "厂区热力使用协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-013",
       "type_id": "type-catalog-5835b442936c59dfa5a2",
-      "type_name": "商品代销行纪协议"
+      "type_name": "商品代销行纪协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-014",
       "type_id": "type-catalog-fdb96040c8065d369839",
-      "type_name": "固定资产转让合同"
+      "type_name": "固定资产转让合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-015",
       "type_id": "type-catalog-91b6b43a193c50248803",
-      "type_name": "定作协议"
+      "type_name": "定作协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -379,13 +451,15 @@
       "type_name": "所有权保留买卖合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-019",
       "type_id": "type-catalog-77cd83f2fffa5124ba69",
-      "type_name": "来料加工承揽合同"
+      "type_name": "来料加工承揽合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -397,22 +471,26 @@
       "type_name": "样品协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-021",
       "type_id": "type-catalog-75478e2ce5d058d69dcc",
-      "type_name": "设备寄售行纪合同"
+      "type_name": "设备寄售行纪合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-02",
       "domain_name": "买卖、采购与供应",
       "type_code": "EC-02-022",
       "type_id": "type-catalog-271a3344fbdb55ff9b11",
-      "type_name": "资产赠与协议"
+      "type_name": "资产赠与协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -424,7 +502,20 @@
       "type_name": "项目资助协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-02",
+      "domain_name": "买卖、采购与供应",
+      "type_code": "EC-02-024",
+      "type_id": "type-charitable-donation",
+      "type_name": "公益赠与",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-03",
       "domain_name": "租赁与资产使用",
@@ -460,7 +551,20 @@
       "type_name": "车辆租赁协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-03",
+      "domain_name": "租赁与资产使用",
+      "type_code": "EC-03-005",
+      "type_id": "type-equipment-lease",
+      "type_name": "设备租赁",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
@@ -473,36 +577,20 @@
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
-      "type_code": "EC-04-002",
-      "type_id": "type-catalog-7ab06178906253e9aab3",
-      "type_name": "EPC总承包协议"
-    },
-    {
-      "approval_status": "candidate",
-      "build_scope": "catalog_only",
-      "domain_code": "EC-04",
-      "domain_name": "服务、委托与专业支持",
-      "type_code": "EC-04-003",
-      "type_id": "type-catalog-b7189ac7d4465c3482e6",
-      "type_name": "专项培训与服务期协议"
-    },
-    {
-      "approval_status": "candidate",
-      "build_scope": "catalog_only",
-      "domain_code": "EC-04",
-      "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-004",
       "type_id": "type-catalog-c326e7cf2211539fb655",
       "type_name": "临床试验委托服务协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-005",
       "type_id": "type-catalog-b605f55f2b8e5a20a898",
-      "type_name": "仓储框架合作合同"
+      "type_name": "仓储框架合作合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -523,22 +611,26 @@
       "type_name": "全国物流框架合作协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-008",
       "type_id": "type-catalog-ed3838322a3e5157b17f",
-      "type_name": "公路货物运输合同"
+      "type_name": "公路货物运输合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-009",
       "type_id": "type-catalog-5a17061d515e5fbb8e4b",
-      "type_name": "写字楼物业管理合同"
+      "type_name": "写字楼物业管理合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -568,22 +660,26 @@
       "type_name": "危险化学品仓储专项合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-013",
       "type_id": "type-catalog-2f1d542ce5325dce8b16",
-      "type_name": "厂房物业服务协议"
+      "type_name": "厂房物业服务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-014",
       "type_id": "type-catalog-3a620311a1e65966a546",
-      "type_name": "园区物业服务协议"
+      "type_name": "园区物业服务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -667,22 +763,26 @@
       "type_name": "林地流转协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-024",
       "type_id": "type-catalog-89be6c7df4b450f498ca",
-      "type_name": "样品保管协议"
+      "type_name": "样品保管协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-025",
       "type_id": "type-catalog-cc0fdfe5365656ebb5c0",
-      "type_name": "档案托管保管合同"
+      "type_name": "档案托管保管合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -712,22 +812,26 @@
       "type_name": "艺人独家经纪协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-029",
       "type_id": "type-catalog-172b8263a626548ea367",
-      "type_name": "设备保管协议"
+      "type_name": "设备保管协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-030",
       "type_id": "type-catalog-16bd66a46cde5e32ab52",
-      "type_name": "设备维修协议"
+      "type_name": "设备维修协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -748,13 +852,15 @@
       "type_name": "证照托管保管合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-033",
       "type_id": "type-catalog-5f668e3efe5256128820",
-      "type_name": "货物仓储保管协议"
+      "type_name": "货物仓储保管协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -793,13 +899,15 @@
       "type_name": "采矿权合作合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-04",
       "domain_name": "服务、委托与专业支持",
       "type_code": "EC-04-038",
       "type_id": "type-catalog-bc06add6e44a51ec8f5d",
-      "type_name": "项目居间服务协议"
+      "type_name": "项目居间服务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -811,22 +919,48 @@
       "type_name": "高级管理人员对外授权委托书"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-04",
+      "domain_name": "服务、委托与专业支持",
+      "type_code": "EC-04-041",
+      "type_id": "type-business-outsourcing",
+      "type_name": "业务外包",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-04",
+      "domain_name": "服务、委托与专业支持",
+      "type_code": "EC-04-045",
+      "type_id": "type-catalog-1014ede879c758eda98f",
+      "type_name": "不动产买卖居间协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-05",
       "domain_name": "技术、数据与知识产权",
       "type_code": "EC-05-001",
       "type_id": "type-commissioned-technology-development",
-      "type_name": "技术、软件委托开发"
+      "type_name": "技术、软件委托开发",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-05",
       "domain_name": "技术、数据与知识产权",
       "type_code": "EC-05-002",
       "type_id": "type-saas-subscription",
-      "type_name": "SaaS订阅"
+      "type_name": "SaaS订阅",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -838,22 +972,26 @@
       "type_name": "系统运维"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-05",
       "domain_name": "技术、数据与知识产权",
       "type_code": "EC-05-004",
       "type_id": "type-catalog-02da85dd09c65e989162",
-      "type_name": "专利实施许可协议"
+      "type_name": "专利实施许可协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-05",
       "domain_name": "技术、数据与知识产权",
       "type_code": "EC-05-005",
       "type_id": "type-catalog-2e14d51f65905c1d83eb",
-      "type_name": "专利转让合同"
+      "type_name": "专利转让合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -910,25 +1048,119 @@
       "type_name": "数据授权使用协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-05",
       "domain_name": "技术、数据与知识产权",
       "type_code": "EC-05-012",
       "type_id": "type-catalog-7bd1e8a1ec8f50afb3f3",
-      "type_name": "软件著作权转让合同"
+      "type_name": "软件著作权转让合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-013",
+      "type_id": "type-copyright-license",
+      "type_name": "著作权许可",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-014",
+      "type_id": "type-copyright-transfer",
+      "type_name": "著作权转让",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-015",
+      "type_id": "type-software-license",
+      "type_name": "软件许可",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-016",
+      "type_id": "type-cooperative-technology-development",
+      "type_name": "合作开发",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-017",
+      "type_id": "type-trademark-assignment",
+      "type_name": "商标转让",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-018",
+      "type_id": "type-trademark-license",
+      "type_name": "商标许可",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-019",
+      "type_id": "type-privacy-policy",
+      "type_name": "隐私政策",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "type_code": "EC-05-020",
+      "type_id": "type-user-platform-terms",
+      "type_name": "用户/平台服务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
       "type_code": "EC-06-001",
       "type_id": "type-fixed-term-employment",
-      "type_name": "固定期限劳动合同"
+      "type_name": "固定期限劳动合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
@@ -937,7 +1169,9 @@
       "type_name": "员工保密"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
@@ -946,7 +1180,9 @@
       "type_name": "竞业限制"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
@@ -955,13 +1191,15 @@
       "type_name": "协商解除劳动关系"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
       "type_code": "EC-06-005",
       "type_id": "type-catalog-c6c35da909325b1e8010",
-      "type_name": "劳务派遣协议"
+      "type_name": "劳务派遣协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -991,13 +1229,15 @@
       "type_name": "员工通勤客运协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
       "type_code": "EC-06-009",
       "type_id": "type-catalog-513d309f5f2557839489",
-      "type_name": "在校学生实习协议"
+      "type_name": "在校学生实习协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1036,13 +1276,15 @@
       "type_name": "绩效考核确认协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-06",
       "domain_name": "劳动、人事与用工",
       "type_code": "EC-06-014",
       "type_id": "type-catalog-2cb6f95fd4675a41ac94",
-      "type_name": "自然人劳务协议"
+      "type_name": "自然人劳务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1063,31 +1305,81 @@
       "type_name": "调岗补充协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-06",
+      "domain_name": "劳动、人事与用工",
+      "type_code": "EC-06-018",
+      "type_id": "type-open-ended-employment",
+      "type_name": "无固定期限劳动合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-06",
+      "domain_name": "劳动、人事与用工",
+      "type_code": "EC-06-019",
+      "type_id": "type-part-time-employment",
+      "type_name": "非全日制用工",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-06",
+      "domain_name": "劳动、人事与用工",
+      "type_code": "EC-06-020",
+      "type_id": "type-overage-worker-engagement",
+      "type_name": "超龄劳动者/退休返聘",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-06",
+      "domain_name": "劳动、人事与用工",
+      "type_code": "EC-06-024",
+      "type_id": "type-catalog-b7189ac7d4465c3482e6",
+      "type_name": "专项培训与服务期协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-001",
       "type_id": "type-enterprise-loan",
-      "type_name": "企业借款"
+      "type_name": "企业借款",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-002",
       "type_id": "type-guarantee-contract",
-      "type_name": "保证合同"
+      "type_name": "保证合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-003",
       "type_id": "type-catalog-f1d84eb865c5520aabb6",
-      "type_name": "不动产抵押合同"
+      "type_name": "不动产抵押合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1108,13 +1400,15 @@
       "type_name": "分期还款协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-006",
       "type_id": "type-catalog-660e2f0a63f3521d91d7",
-      "type_name": "动产质押合同"
+      "type_name": "动产质押合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1144,13 +1438,15 @@
       "type_name": "大额交易定金合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-010",
       "type_id": "type-catalog-1687876a608c58538e7d",
-      "type_name": "履约保证金质押协议"
+      "type_name": "履约保证金质押协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1216,13 +1512,15 @@
       "type_name": "直租式融资租赁合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-018",
       "type_id": "type-catalog-e9720b90e8b6573cbc75",
-      "type_name": "知识产权质押合同"
+      "type_name": "知识产权质押合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1243,22 +1541,26 @@
       "type_name": "第三方反担保协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-021",
       "type_id": "type-catalog-68da0a69155052c69fb1",
-      "type_name": "股权质押合同"
+      "type_name": "股权质押合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-07",
       "domain_name": "融资、借贷与担保",
       "type_code": "EC-07-022",
       "type_id": "type-catalog-c91a32ba9b6c52f28db1",
-      "type_name": "自然人无偿借款协议"
+      "type_name": "自然人无偿借款协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1270,34 +1572,53 @@
       "type_name": "雇主责任保险合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-07",
+      "domain_name": "融资、借贷与担保",
+      "type_code": "EC-07-024",
+      "type_id": "type-movable-mortgage",
+      "type_name": "动产抵押",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-001",
       "type_id": "type-construction-general-contract",
-      "type_name": "建设工程总包"
+      "type_name": "建设工程总包",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-002",
       "type_id": "type-professional-subcontract",
-      "type_name": "专业分包"
+      "type_name": "专业分包",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-003",
       "type_id": "type-catalog-52b0fd380db9532ba4c7",
-      "type_name": "劳务分包合同"
+      "type_name": "劳务分包合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
@@ -1306,7 +1627,9 @@
       "type_name": "商品房现售买卖合同"
     },
     {
-      "approval_status": "candidate",
+      "activated_at": "2026-09-13",
+      "activation_status": "active",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
@@ -1315,13 +1638,15 @@
       "type_name": "商品房预售买卖合同"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-006",
       "type_id": "type-catalog-334efaa84d4653c5ac1f",
-      "type_name": "地产项目代建协议"
+      "type_name": "地产项目代建协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1333,49 +1658,158 @@
       "type_name": "地产项目合作开发协议"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-008",
       "type_id": "type-catalog-b0387ae377a85b2ea92c",
-      "type_name": "工程勘察合同"
+      "type_name": "工程勘察合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-009",
       "type_id": "type-catalog-fdf42f59d0405718a6e5",
-      "type_name": "工程监理服务协议"
+      "type_name": "工程监理服务协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "catalog_only",
       "domain_code": "EC-08",
       "domain_name": "建设工程与房地产",
       "type_code": "EC-08-010",
       "type_id": "type-catalog-108431b0274d5eb19ffa",
-      "type_name": "工程设计合同"
+      "type_name": "工程设计合同",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-012",
+      "type_id": "type-secondhand-housing-sale",
+      "type_name": "二手房买卖",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-013",
+      "type_id": "type-real-estate-joint-development",
+      "type_name": "房地产合作开发/联建",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-014",
+      "type_id": "type-land-use-right-exchange",
+      "type_name": "土地使用权置换",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-015",
+      "type_id": "type-state-owned-land-use-right-grant",
+      "type_name": "国有建设用地使用权出让",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-016",
+      "type_id": "type-land-preliminary-cooperation",
+      "type_name": "土地前期合作/选择权安排",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-017",
+      "type_id": "type-land-use-right-transfer",
+      "type_name": "国有建设用地使用权转让",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-018",
+      "type_id": "type-expropriation-relocation-compensation",
+      "type_name": "征收搬迁补偿",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-019",
+      "type_id": "type-construction-internal-contracting",
+      "type_name": "建设工程内部承包",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-08",
+      "domain_name": "建设工程与房地产",
+      "type_code": "EC-08-023",
+      "type_id": "type-catalog-7ab06178906253e9aab3",
+      "type_name": "EPC总承包协议",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
+    },
+    {
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-09",
       "domain_name": "合作、经销与营销",
       "type_code": "EC-09-001",
       "type_id": "type-distribution-cooperation",
-      "type_name": "经销合作"
+      "type_name": "经销合作",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
-      "approval_status": "candidate",
+      "approval_status": "active",
       "build_scope": "pilot_20",
       "domain_code": "EC-09",
       "domain_name": "合作、经销与营销",
       "type_code": "EC-09-002",
       "type_id": "type-project-cooperation-joint-operation",
-      "type_name": "项目合作、联营"
+      "type_name": "项目合作、联营",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -1475,6 +1909,17 @@
       "type_code": "EC-09-013",
       "type_id": "type-catalog-cb0ec097acd953bc87b3",
       "type_name": "达人签约合同"
+    },
+    {
+      "approval_status": "active",
+      "build_scope": "approved_migration",
+      "domain_code": "EC-09",
+      "domain_name": "合作、经销与营销",
+      "type_code": "EC-09-014",
+      "type_id": "type-advertising-service",
+      "type_name": "广告设计、制作与投放服务",
+      "activation_status": "active",
+      "activated_at": "2026-09-17"
     },
     {
       "approval_status": "candidate",
@@ -2329,6 +2774,2356 @@
       "type_id": "type-guarantee-contract"
     }
   ],
-  "schema_version": "2.0.0",
+  "routable_types": [
+    {
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "code": "EC-02-001",
+      "domain_code": "EC-02",
+      "name": "年度框架购销",
+      "required_doctrines": [
+        "doctrine-goods-transaction-control"
+      ],
+      "required_modules": [
+        "mod-goods-scope",
+        "mod-order-mechanism",
+        "mod-payment-acceptance",
+        "mod-delivery-risk",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "年度.{0,8}(?:框架|购销|采购|销售)",
+        "(?:框架|年度)购销",
+        "框架(?:采购|销售|供货)"
+      ],
+      "type_id": "type-annual-framework-sales-procurement"
+    },
+    {
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "code": "EC-02-002",
+      "domain_code": "EC-02",
+      "name": "设备、原材料采购",
+      "required_doctrines": [
+        "doctrine-goods-transaction-control"
+      ],
+      "required_modules": [
+        "mod-goods-specification",
+        "mod-delivery-risk",
+        "mod-payment-acceptance",
+        "mod-quality-warranty",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "设备.{0,5}(?:采购|购买|买卖|供货)",
+        "原材料.{0,5}(?:采购|购买|买卖|供货)",
+        "(?:采购|购买).{0,5}(?:设备|原材料)"
+      ],
+      "type_id": "type-equipment-material-procurement"
+    },
+    {
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "code": "EC-02-003",
+      "domain_code": "EC-02",
+      "name": "产成品销售",
+      "required_doctrines": [
+        "doctrine-goods-transaction-control"
+      ],
+      "required_modules": [
+        "mod-goods-scope",
+        "mod-price-tax-invoice",
+        "mod-delivery-risk",
+        "mod-payment-acceptance",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "(?:产品|商品|货物|成品).{0,5}(?:销售|买卖|供货)",
+        "销售合同",
+        "产品购销"
+      ],
+      "type_id": "type-finished-goods-sale",
+      "negative_patterns": [
+        "商品房",
+        "期房",
+        "现房",
+        "预售"
+      ]
+    },
+    {
+      "broad_types": [
+        "marketing_distribution"
+      ],
+      "code": "EC-09-001",
+      "domain_code": "EC-09",
+      "name": "经销合作",
+      "required_doctrines": [
+        "doctrine-distribution-channel-control"
+      ],
+      "required_modules": [
+        "mod-territory-channel",
+        "mod-sales-target",
+        "mod-price-policy",
+        "mod-brand-compliance",
+        "mod-inventory-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "经销",
+        "分销",
+        "渠道.{0,5}(?:合作|代理|销售)",
+        "代理销售"
+      ],
+      "type_id": "type-distribution-cooperation"
+    },
+    {
+      "broad_types": [
+        "service_consulting"
+      ],
+      "code": "EC-04-001",
+      "domain_code": "EC-04",
+      "name": "综合咨询服务",
+      "negative_patterns": [
+        "法律顾问",
+        "律师",
+        "技术咨询"
+      ],
+      "required_doctrines": [
+        "doctrine-service-deliverable-control"
+      ],
+      "required_modules": [
+        "mod-service-scope",
+        "mod-deliverables-acceptance",
+        "mod-fees-expenses",
+        "mod-change-control",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "咨询服务",
+        "管理咨询",
+        "顾问服务",
+        "综合.{0,3}咨询"
+      ],
+      "type_id": "type-general-consulting-service"
+    },
+    {
+      "broad_types": [
+        "lease_property"
+      ],
+      "code": "EC-03-001",
+      "domain_code": "EC-03",
+      "name": "房屋、场地租赁",
+      "required_doctrines": [
+        "doctrine-lease-use-exit-control"
+      ],
+      "required_modules": [
+        "mod-lease-object",
+        "mod-rent-deposit",
+        "mod-use-maintenance",
+        "mod-renewal-exit",
+        "mod-lease-title-sale",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "房屋租赁",
+        "场地租赁",
+        "商铺租赁",
+        "厂房租赁",
+        "办公.{0,3}租赁",
+        "租赁合同"
+      ],
+      "type_id": "type-property-venue-lease"
+    },
+    {
+      "broad_types": [
+        "employment_hr"
+      ],
+      "code": "EC-06-001",
+      "domain_code": "EC-06",
+      "name": "固定期限劳动合同",
+      "negative_patterns": [
+        "保密",
+        "无固定期限",
+        "竞业",
+        "终止",
+        "解除"
+      ],
+      "required_doctrines": [
+        "doctrine-employment-mandatory-boundaries"
+      ],
+      "required_modules": [
+        "mod-employment-term",
+        "mod-position-location",
+        "mod-compensation-hours",
+        "mod-rules-discipline",
+        "mod-employment-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "固定期限劳动合同",
+        "劳动合同书",
+        "劳动合同"
+      ],
+      "type_id": "type-fixed-term-employment"
+    },
+    {
+      "broad_types": [
+        "employment_hr",
+        "confidentiality_data"
+      ],
+      "code": "EC-06-002",
+      "domain_code": "EC-06",
+      "name": "员工保密",
+      "required_doctrines": [
+        "doctrine-employment-confidentiality"
+      ],
+      "required_modules": [
+        "mod-confidential-information",
+        "mod-employee-use-restriction",
+        "mod-return-destruction",
+        "mod-ip-interface",
+        "mod-confidentiality-remedies"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "员工.{0,5}保密",
+        "保密.{0,5}(?:员工|劳动|任职)",
+        "劳动保密协议"
+      ],
+      "type_id": "type-employee-confidentiality"
+    },
+    {
+      "broad_types": [
+        "employment_hr"
+      ],
+      "code": "EC-06-003",
+      "domain_code": "EC-06",
+      "name": "竞业限制",
+      "required_doctrines": [
+        "doctrine-noncompete-enforceability"
+      ],
+      "required_modules": [
+        "mod-noncompete-scope",
+        "mod-noncompete-term-region",
+        "mod-noncompete-compensation",
+        "mod-noncompete-release",
+        "mod-noncompete-remedies"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "竞业限制",
+        "竞业禁止",
+        "保密及竞业"
+      ],
+      "type_id": "type-noncompete"
+    },
+    {
+      "broad_types": [
+        "employment_hr",
+        "settlement_debt"
+      ],
+      "code": "EC-06-004",
+      "domain_code": "EC-06",
+      "name": "协商解除劳动关系",
+      "required_doctrines": [
+        "doctrine-employment-exit-settlement"
+      ],
+      "required_modules": [
+        "mod-termination-date",
+        "mod-compensation-settlement",
+        "mod-handover-return",
+        "mod-certificate-social-insurance",
+        "mod-release-boundary"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "协商解除",
+        "解除劳动(?:合同|关系)",
+        "劳动关系终止",
+        "离职协议"
+      ],
+      "type_id": "type-employment-mutual-termination"
+    },
+    {
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "code": "EC-08-001",
+      "domain_code": "EC-08",
+      "name": "建设工程总包",
+      "negative_patterns": [
+        "分包"
+      ],
+      "required_doctrines": [
+        "doctrine-construction-performance-control"
+      ],
+      "required_modules": [
+        "mod-project-scope",
+        "mod-schedule-change",
+        "mod-measurement-payment",
+        "mod-completion-acceptance",
+        "mod-defects-breach"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "建设工程.{0,5}(?:总承包|总包|施工)",
+        "工程总承包",
+        "施工总承包",
+        "总包合同"
+      ],
+      "type_id": "type-construction-general-contract"
+    },
+    {
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "code": "EC-08-002",
+      "domain_code": "EC-08",
+      "name": "专业分包",
+      "negative_patterns": [
+        "劳务分包"
+      ],
+      "required_doctrines": [
+        "doctrine-construction-subcontract-control"
+      ],
+      "required_modules": [
+        "mod-subcontract-scope",
+        "mod-main-contract-interface",
+        "mod-schedule-coordination",
+        "mod-payment-acceptance",
+        "mod-safety-defects"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "专业分包",
+        "工程分包",
+        "分包合同"
+      ],
+      "type_id": "type-professional-subcontract"
+    },
+    {
+      "broad_types": [
+        "technology_software_ip"
+      ],
+      "code": "EC-05-001",
+      "domain_code": "EC-05",
+      "name": "技术、软件委托开发",
+      "required_doctrines": [
+        "doctrine-development-delivery-ip"
+      ],
+      "required_modules": [
+        "mod-development-scope",
+        "mod-milestone-acceptance",
+        "mod-change-control",
+        "mod-ip-ownership",
+        "mod-source-code-maintenance"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "技术开发",
+        "软件.{0,5}(?:委托)?开发",
+        "系统开发",
+        "委托开发"
+      ],
+      "type_id": "type-commissioned-technology-development"
+    },
+    {
+      "broad_types": [
+        "technology_software_ip",
+        "service_consulting"
+      ],
+      "code": "EC-05-002",
+      "domain_code": "EC-05",
+      "name": "SaaS订阅",
+      "required_doctrines": [
+        "doctrine-saas-continuity-data"
+      ],
+      "required_modules": [
+        "mod-subscription-scope",
+        "mod-sla-support",
+        "mod-data-processing",
+        "mod-fee-renewal",
+        "mod-exit-portability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "SaaS",
+        "软件即服务",
+        "云服务.{0,5}(?:订阅|协议|合同)",
+        "软件订阅"
+      ],
+      "type_id": "type-saas-subscription"
+    },
+    {
+      "broad_types": [
+        "cooperation_joint_venture"
+      ],
+      "code": "EC-09-002",
+      "domain_code": "EC-09",
+      "name": "项目合作、联营",
+      "required_doctrines": [
+        "doctrine-cooperation-governance-exit"
+      ],
+      "required_modules": [
+        "mod-cooperation-scope",
+        "mod-input-contribution",
+        "mod-governance-decision",
+        "mod-revenue-cost",
+        "mod-exit-settlement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "项目合作",
+        "联营",
+        "联合运营",
+        "合作经营",
+        "运营合作"
+      ],
+      "type_id": "type-project-cooperation-joint-operation"
+    },
+    {
+      "broad_types": [
+        "investment_equity_ma"
+      ],
+      "code": "EC-01-001",
+      "domain_code": "EC-01",
+      "name": "股权转让",
+      "required_doctrines": [
+        "doctrine-equity-transfer-closing"
+      ],
+      "required_modules": [
+        "mod-equity-object",
+        "mod-price-payment",
+        "mod-conditions-closing",
+        "mod-representations-indemnity",
+        "mod-governance-transition"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "股权转让",
+        "股份转让",
+        "出资份额转让"
+      ],
+      "type_id": "type-equity-transfer"
+    },
+    {
+      "broad_types": [
+        "investment_equity_ma"
+      ],
+      "code": "EC-01-002",
+      "domain_code": "EC-01",
+      "name": "增资投资",
+      "negative_patterns": [
+        "股权转让"
+      ],
+      "required_doctrines": [
+        "doctrine-investment-governance-exit"
+      ],
+      "required_modules": [
+        "mod-investment-amount",
+        "mod-conditions-closing",
+        "mod-governance-rights",
+        "mod-representations-indemnity",
+        "mod-exit-adjustment"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "增资",
+        "增资扩股",
+        "投资协议",
+        "增资认购"
+      ],
+      "type_id": "type-capital-increase-investment"
+    },
+    {
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "code": "EC-07-001",
+      "domain_code": "EC-07",
+      "name": "企业借款",
+      "negative_patterns": [
+        "保证",
+        "担保"
+      ],
+      "required_doctrines": [
+        "doctrine-loan-repayment-security"
+      ],
+      "required_modules": [
+        "mod-loan-drawdown",
+        "mod-interest-fees",
+        "mod-repayment",
+        "mod-covenants-default",
+        "mod-security-interface"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "借款合同",
+        "企业借款",
+        "贷款合同",
+        "资金拆借"
+      ],
+      "type_id": "type-enterprise-loan"
+    },
+    {
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "code": "EC-07-002",
+      "domain_code": "EC-07",
+      "name": "保证合同",
+      "negative_patterns": [
+        "保函"
+      ],
+      "required_doctrines": [
+        "doctrine-guarantee-scope-period"
+      ],
+      "required_modules": [
+        "mod-guaranteed-obligation",
+        "mod-guarantee-form",
+        "mod-guarantee-period",
+        "mod-defense-notice",
+        "mod-recourse-release"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "保证合同",
+        "保证协议",
+        "担保合同",
+        "连带责任保证"
+      ],
+      "type_id": "type-guarantee-contract"
+    },
+    {
+      "broad_types": [
+        "commercial_housing_sale",
+        "real_estate_sale"
+      ],
+      "code": "EC-08-004",
+      "domain_code": "EC-08",
+      "name": "商品房现售买卖合同",
+      "negative_patterns": [
+        "预售",
+        "期房"
+      ],
+      "required_doctrines": [
+        "doctrine-commercial-housing-completed-sale"
+      ],
+      "required_modules": [
+        "mod-commercial-housing-sale-eligibility-permit",
+        "mod-commercial-housing-property-disclosure",
+        "mod-commercial-housing-policy-financing",
+        "mod-commercial-housing-document-advertising-consistency",
+        "mod-commercial-housing-area-price-adjustment",
+        "mod-commercial-housing-payment-supervision",
+        "mod-commercial-housing-delivery-standard-remedies",
+        "mod-commercial-housing-registration-remedies"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "商品房.{0,4}现售",
+        "现房.{0,4}买卖",
+        "新建商品房.{0,6}现售"
+      ],
+      "type_id": "type-catalog-abe9bdc8c200506c93cd"
+    },
+    {
+      "broad_types": [
+        "commercial_housing_presale",
+        "real_estate_sale"
+      ],
+      "code": "EC-08-005",
+      "domain_code": "EC-08",
+      "name": "商品房预售买卖合同",
+      "negative_patterns": [
+        "现售",
+        "现房"
+      ],
+      "required_doctrines": [
+        "doctrine-commercial-housing-presale"
+      ],
+      "required_modules": [
+        "mod-commercial-housing-sale-eligibility-permit",
+        "mod-commercial-housing-property-disclosure",
+        "mod-commercial-housing-policy-financing",
+        "mod-commercial-housing-document-advertising-consistency",
+        "mod-commercial-housing-area-price-adjustment",
+        "mod-commercial-housing-payment-supervision",
+        "mod-commercial-housing-delivery-standard-remedies",
+        "mod-commercial-housing-registration-remedies"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "商品房.{0,4}预售",
+        "期房.{0,4}买卖",
+        "预售.{0,4}合同"
+      ],
+      "type_id": "type-catalog-dfd7bd98afd650ff925c"
+    },
+    {
+      "type_id": "type-catalog-22adcacf81bb5aa39c21",
+      "code": "EC-01-013",
+      "domain_code": "EC-01",
+      "name": "股东出资协议",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-capital-contribution-real"
+      ],
+      "required_modules": [
+        "mod-contribution-subject-amount",
+        "mod-contribution-noncash",
+        "mod-contribution-verification",
+        "mod-contribution-default-loss",
+        "mod-contribution-creditor"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "股东.{0,4}出资",
+        "出资协议"
+      ]
+    },
+    {
+      "type_id": "type-catalog-d0c6ccc9d1385ef8aa70",
+      "code": "EC-01-020",
+      "domain_code": "EC-01",
+      "name": "股权激励授予协议",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-equity-incentive-vesting-exit"
+      ],
+      "required_modules": [
+        "mod-incentive-instrument-source",
+        "mod-incentive-grant-vesting",
+        "mod-incentive-price-tax",
+        "mod-incentive-leaver",
+        "mod-incentive-governance-transfer"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "股权激励",
+        "激励.{0,4}授予"
+      ]
+    },
+    {
+      "type_id": "type-business-asset-acquisition",
+      "code": "EC-01-025",
+      "domain_code": "EC-01",
+      "name": "经营性资产收购",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-asset-acquisition-perimeter"
+      ],
+      "required_modules": [
+        "mod-asset-acquisition-perimeter",
+        "mod-asset-acquisition-diligence",
+        "mod-asset-acquisition-price-tax",
+        "mod-asset-acquisition-transfer",
+        "mod-asset-acquisition-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "经营性资产",
+        "资产收购"
+      ]
+    },
+    {
+      "type_id": "type-employee-holding-platform",
+      "code": "EC-01-026",
+      "domain_code": "EC-01",
+      "name": "员工持股平台",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-equity-incentive-vesting-exit"
+      ],
+      "required_modules": [
+        "mod-incentive-instrument-source",
+        "mod-incentive-grant-vesting",
+        "mod-incentive-price-tax",
+        "mod-incentive-leaver",
+        "mod-incentive-governance-transfer"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "员工持股",
+        "持股平台"
+      ]
+    },
+    {
+      "type_id": "type-company-merger-division",
+      "code": "EC-01-027",
+      "domain_code": "EC-01",
+      "name": "公司合并与分立",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-merger-division-creditor"
+      ],
+      "required_modules": [
+        "mod-merger-division-structure",
+        "mod-merger-division-resolution",
+        "mod-merger-division-creditor",
+        "mod-merger-division-allocation",
+        "mod-merger-division-closing"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "公司.{0,4}合并",
+        "公司.{0,4}分立",
+        "合并分立"
+      ]
+    },
+    {
+      "type_id": "type-shareholders-agreement",
+      "code": "EC-01-028",
+      "domain_code": "EC-01",
+      "name": "股东协议",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-shareholders-charter-governance"
+      ],
+      "required_modules": [
+        "mod-shareholders-capital",
+        "mod-shareholders-governance",
+        "mod-shareholders-transfer",
+        "mod-shareholders-deadlock",
+        "mod-shareholders-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "股东协议"
+      ]
+    },
+    {
+      "type_id": "type-valuation-adjustment-agreement",
+      "code": "EC-01-029",
+      "domain_code": "EC-01",
+      "name": "估值调整/对赌协议",
+      "broad_types": [
+        "corporate_governance",
+        "investment_equity_ma"
+      ],
+      "required_doctrines": [
+        "doctrine-vam-validity-performance"
+      ],
+      "required_modules": [
+        "mod-vam-subject-path",
+        "mod-vam-trigger-audit",
+        "mod-vam-formula",
+        "mod-vam-capital-procedure",
+        "mod-vam-security-alternative"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "对赌",
+        "估值调整"
+      ]
+    },
+    {
+      "type_id": "type-catalog-3e1a84a93ef453168a33",
+      "code": "EC-02-005",
+      "domain_code": "EC-02",
+      "name": "二手动产转让合同",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-goods-transaction-control"
+      ],
+      "required_modules": [
+        "mod-goods-scope",
+        "mod-goods-specification",
+        "mod-delivery-risk",
+        "mod-payment-acceptance",
+        "mod-breach-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "二手动产",
+        "二手.{0,4}动产"
+      ]
+    },
+    {
+      "type_id": "type-catalog-dc66464f8f3d56429fb4",
+      "code": "EC-02-008",
+      "domain_code": "EC-02",
+      "name": "包装加工协议",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-work-contract-result-control"
+      ],
+      "required_modules": [
+        "mod-work-result-spec",
+        "mod-work-materials",
+        "mod-work-subcontract",
+        "mod-work-acceptance",
+        "mod-work-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "包装加工"
+      ]
+    },
+    {
+      "type_id": "type-catalog-d74b1085a9c0558887e0",
+      "code": "EC-02-009",
+      "domain_code": "EC-02",
+      "name": "印刷加工协议",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-work-contract-result-control"
+      ],
+      "required_modules": [
+        "mod-work-result-spec",
+        "mod-work-materials",
+        "mod-work-subcontract",
+        "mod-work-acceptance",
+        "mod-work-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "印刷加工"
+      ]
+    },
+    {
+      "type_id": "type-catalog-5835b442936c59dfa5a2",
+      "code": "EC-02-013",
+      "domain_code": "EC-02",
+      "name": "商品代销行纪协议",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-commission-possession-settlement"
+      ],
+      "required_modules": [
+        "mod-commission-object-instructions",
+        "mod-commission-possession-risk",
+        "mod-commission-counterparty",
+        "mod-commission-fee-settlement",
+        "mod-commission-unsold-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "商品代销",
+        "代销行纪"
+      ]
+    },
+    {
+      "type_id": "type-catalog-fdb96040c8065d369839",
+      "code": "EC-02-014",
+      "domain_code": "EC-02",
+      "name": "固定资产转让合同",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-asset-acquisition-perimeter"
+      ],
+      "required_modules": [
+        "mod-asset-acquisition-perimeter",
+        "mod-asset-acquisition-diligence",
+        "mod-asset-acquisition-price-tax",
+        "mod-asset-acquisition-transfer",
+        "mod-asset-acquisition-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "固定资产.{0,4}转让"
+      ]
+    },
+    {
+      "type_id": "type-catalog-91b6b43a193c50248803",
+      "code": "EC-02-015",
+      "domain_code": "EC-02",
+      "name": "定作协议",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-work-contract-result-control"
+      ],
+      "required_modules": [
+        "mod-work-result-spec",
+        "mod-work-materials",
+        "mod-work-subcontract",
+        "mod-work-acceptance",
+        "mod-work-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "定作"
+      ]
+    },
+    {
+      "type_id": "type-catalog-77cd83f2fffa5124ba69",
+      "code": "EC-02-019",
+      "domain_code": "EC-02",
+      "name": "来料加工承揽合同",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-work-contract-result-control"
+      ],
+      "required_modules": [
+        "mod-work-result-spec",
+        "mod-work-materials",
+        "mod-work-subcontract",
+        "mod-work-acceptance",
+        "mod-work-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "来料加工",
+        "加工承揽"
+      ]
+    },
+    {
+      "type_id": "type-catalog-75478e2ce5d058d69dcc",
+      "code": "EC-02-021",
+      "domain_code": "EC-02",
+      "name": "设备寄售行纪合同",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-commission-possession-settlement"
+      ],
+      "required_modules": [
+        "mod-commission-object-instructions",
+        "mod-commission-possession-risk",
+        "mod-commission-counterparty",
+        "mod-commission-fee-settlement",
+        "mod-commission-unsold-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "设备寄售",
+        "寄售行纪",
+        "寄售协议"
+      ]
+    },
+    {
+      "type_id": "type-catalog-271a3344fbdb55ff9b11",
+      "code": "EC-02-022",
+      "domain_code": "EC-02",
+      "name": "资产赠与协议",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-gift-delivery-revocation"
+      ],
+      "required_modules": [
+        "mod-gift-object-title",
+        "mod-gift-delivery-registration",
+        "mod-gift-obligation",
+        "mod-gift-revocation",
+        "mod-gift-defect-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "资产赠与",
+        "赠与协议"
+      ]
+    },
+    {
+      "type_id": "type-charitable-donation",
+      "code": "EC-02-024",
+      "domain_code": "EC-02",
+      "name": "公益赠与",
+      "broad_types": [
+        "procurement_supply"
+      ],
+      "required_doctrines": [
+        "doctrine-gift-delivery-revocation"
+      ],
+      "required_modules": [
+        "mod-gift-object-title",
+        "mod-gift-delivery-registration",
+        "mod-gift-obligation",
+        "mod-gift-revocation",
+        "mod-gift-defect-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "公益赠与",
+        "公益捐赠",
+        "捐赠协议"
+      ]
+    },
+    {
+      "type_id": "type-equipment-lease",
+      "code": "EC-03-005",
+      "domain_code": "EC-03",
+      "name": "设备租赁",
+      "broad_types": [
+        "lease_property"
+      ],
+      "required_doctrines": [
+        "doctrine-equipment-lease-use-return"
+      ],
+      "required_modules": [
+        "mod-equipment-lease-object",
+        "mod-equipment-lease-delivery",
+        "mod-equipment-lease-use",
+        "mod-equipment-lease-rent",
+        "mod-equipment-lease-return"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "设备租赁",
+        "设备.{0,4}租赁合同"
+      ]
+    },
+    {
+      "type_id": "type-catalog-b605f55f2b8e5a20a898",
+      "code": "EC-04-005",
+      "domain_code": "EC-04",
+      "name": "仓储框架合作合同",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-custody-warehouse-evidence"
+      ],
+      "required_modules": [
+        "mod-custody-object-condition",
+        "mod-custody-receipt-record",
+        "mod-custody-standard-risk",
+        "mod-custody-fee-lien",
+        "mod-custody-return-claim"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "仓储.{0,4}框架",
+        "仓储合作"
+      ]
+    },
+    {
+      "type_id": "type-catalog-ed3838322a3e5157b17f",
+      "code": "EC-04-008",
+      "domain_code": "EC-04",
+      "name": "公路货物运输合同",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-transport-cargo-delivery"
+      ],
+      "required_modules": [
+        "mod-transport-cargo",
+        "mod-transport-route-time",
+        "mod-transport-documents",
+        "mod-transport-loss-liability",
+        "mod-transport-freight-insurance"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "公路.{0,4}货物运输",
+        "公路运输",
+        "货物运输合同"
+      ]
+    },
+    {
+      "type_id": "type-catalog-5a17061d515e5fbb8e4b",
+      "code": "EC-04-009",
+      "domain_code": "EC-04",
+      "name": "写字楼物业管理合同",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-property-service-governance-handover"
+      ],
+      "required_modules": [
+        "mod-property-service-authority",
+        "mod-property-service-standards",
+        "mod-property-service-fees",
+        "mod-property-service-safety",
+        "mod-property-service-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "写字楼"
+      ]
+    },
+    {
+      "type_id": "type-catalog-2f1d542ce5325dce8b16",
+      "code": "EC-04-013",
+      "domain_code": "EC-04",
+      "name": "厂房物业服务协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-property-service-governance-handover"
+      ],
+      "required_modules": [
+        "mod-property-service-authority",
+        "mod-property-service-standards",
+        "mod-property-service-fees",
+        "mod-property-service-safety",
+        "mod-property-service-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "厂房物业",
+        "厂房.{0,4}服务"
+      ]
+    },
+    {
+      "type_id": "type-catalog-3a620311a1e65966a546",
+      "code": "EC-04-014",
+      "domain_code": "EC-04",
+      "name": "园区物业服务协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-property-service-governance-handover"
+      ],
+      "required_modules": [
+        "mod-property-service-authority",
+        "mod-property-service-standards",
+        "mod-property-service-fees",
+        "mod-property-service-safety",
+        "mod-property-service-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "园区物业",
+        "园区.{0,4}服务"
+      ]
+    },
+    {
+      "type_id": "type-catalog-89be6c7df4b450f498ca",
+      "code": "EC-04-024",
+      "domain_code": "EC-04",
+      "name": "样品保管协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-custody-warehouse-evidence"
+      ],
+      "required_modules": [
+        "mod-custody-object-condition",
+        "mod-custody-receipt-record",
+        "mod-custody-standard-risk",
+        "mod-custody-fee-lien",
+        "mod-custody-return-claim"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "样品保管",
+        "样品.{0,4}保管"
+      ]
+    },
+    {
+      "type_id": "type-catalog-cc0fdfe5365656ebb5c0",
+      "code": "EC-04-025",
+      "domain_code": "EC-04",
+      "name": "档案托管保管合同",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-custody-warehouse-evidence"
+      ],
+      "required_modules": [
+        "mod-custody-object-condition",
+        "mod-custody-receipt-record",
+        "mod-custody-standard-risk",
+        "mod-custody-fee-lien",
+        "mod-custody-return-claim"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "档案托管",
+        "档案保管"
+      ]
+    },
+    {
+      "type_id": "type-catalog-172b8263a626548ea367",
+      "code": "EC-04-029",
+      "domain_code": "EC-04",
+      "name": "设备保管协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-custody-warehouse-evidence"
+      ],
+      "required_modules": [
+        "mod-custody-object-condition",
+        "mod-custody-receipt-record",
+        "mod-custody-standard-risk",
+        "mod-custody-fee-lien",
+        "mod-custody-return-claim"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "设备保管",
+        "设备.{0,4}保管"
+      ]
+    },
+    {
+      "type_id": "type-catalog-16bd66a46cde5e32ab52",
+      "code": "EC-04-030",
+      "domain_code": "EC-04",
+      "name": "设备维修协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-work-contract-result-control"
+      ],
+      "required_modules": [
+        "mod-work-result-spec",
+        "mod-work-materials",
+        "mod-work-subcontract",
+        "mod-work-acceptance",
+        "mod-work-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "设备维修",
+        "维修协议"
+      ]
+    },
+    {
+      "type_id": "type-catalog-5f668e3efe5256128820",
+      "code": "EC-04-033",
+      "domain_code": "EC-04",
+      "name": "货物仓储保管协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-custody-warehouse-evidence"
+      ],
+      "required_modules": [
+        "mod-custody-object-condition",
+        "mod-custody-receipt-record",
+        "mod-custody-standard-risk",
+        "mod-custody-fee-lien",
+        "mod-custody-return-claim"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "货物仓储",
+        "仓储保管"
+      ]
+    },
+    {
+      "type_id": "type-catalog-bc06add6e44a51ec8f5d",
+      "code": "EC-04-038",
+      "domain_code": "EC-04",
+      "name": "项目居间服务协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-brokerage-causation-fee"
+      ],
+      "required_modules": [
+        "mod-brokerage-opportunity",
+        "mod-brokerage-duties",
+        "mod-brokerage-fee-trigger",
+        "mod-brokerage-tail"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "项目居间",
+        "居间服务协议"
+      ]
+    },
+    {
+      "type_id": "type-business-outsourcing",
+      "code": "EC-04-041",
+      "domain_code": "EC-04",
+      "name": "业务外包",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-outsourcing-result-management"
+      ],
+      "required_modules": [
+        "mod-outsourcing-scope-sla",
+        "mod-outsourcing-personnel-boundary",
+        "mod-outsourcing-fee-acceptance",
+        "mod-outsourcing-compliance-data",
+        "mod-outsourcing-transition"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "业务外包",
+        "外包服务"
+      ]
+    },
+    {
+      "type_id": "type-catalog-1014ede879c758eda98f",
+      "code": "EC-04-045",
+      "domain_code": "EC-04",
+      "name": "不动产买卖居间协议",
+      "broad_types": [
+        "agency_entrustment",
+        "legal_service",
+        "logistics_warehousing",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-brokerage-causation-fee"
+      ],
+      "required_modules": [
+        "mod-brokerage-opportunity",
+        "mod-brokerage-duties",
+        "mod-brokerage-fee-trigger",
+        "mod-brokerage-tail"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "不动产.{0,4}居间",
+        "不动产居间",
+        "房屋居间",
+        "房产居间"
+      ]
+    },
+    {
+      "type_id": "type-catalog-02da85dd09c65e989162",
+      "code": "EC-05-004",
+      "domain_code": "EC-05",
+      "name": "专利实施许可协议",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-patent-validity-scope"
+      ],
+      "required_modules": [
+        "mod-patent-status-chain",
+        "mod-patent-license-scope",
+        "mod-patent-transfer-registration",
+        "mod-patent-improvement",
+        "mod-patent-invalidation-infringement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "专利.{0,4}实施许可",
+        "专利实施"
+      ]
+    },
+    {
+      "type_id": "type-catalog-2e14d51f65905c1d83eb",
+      "code": "EC-05-005",
+      "domain_code": "EC-05",
+      "name": "专利转让合同",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-patent-validity-scope"
+      ],
+      "required_modules": [
+        "mod-patent-status-chain",
+        "mod-patent-license-scope",
+        "mod-patent-transfer-registration",
+        "mod-patent-improvement",
+        "mod-patent-invalidation-infringement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "专利转让"
+      ]
+    },
+    {
+      "type_id": "type-catalog-7bd1e8a1ec8f50afb3f3",
+      "code": "EC-05-012",
+      "domain_code": "EC-05",
+      "name": "软件著作权转让合同",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-copyright-rights-chain"
+      ],
+      "required_modules": [
+        "mod-copyright-work-rights",
+        "mod-copyright-license-scope",
+        "mod-copyright-transfer-delivery",
+        "mod-copyright-moral-thirdparty",
+        "mod-copyright-royalty-infringement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "软件著作权.{0,4}转让",
+        "软著转让"
+      ]
+    },
+    {
+      "type_id": "type-copyright-license",
+      "code": "EC-05-013",
+      "domain_code": "EC-05",
+      "name": "著作权许可",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-copyright-rights-chain"
+      ],
+      "required_modules": [
+        "mod-copyright-work-rights",
+        "mod-copyright-license-scope",
+        "mod-copyright-transfer-delivery",
+        "mod-copyright-moral-thirdparty",
+        "mod-copyright-royalty-infringement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "著作权许可",
+        "版权许可"
+      ]
+    },
+    {
+      "type_id": "type-copyright-transfer",
+      "code": "EC-05-014",
+      "domain_code": "EC-05",
+      "name": "著作权转让",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-copyright-rights-chain"
+      ],
+      "required_modules": [
+        "mod-copyright-work-rights",
+        "mod-copyright-license-scope",
+        "mod-copyright-transfer-delivery",
+        "mod-copyright-moral-thirdparty",
+        "mod-copyright-royalty-infringement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "著作权转让",
+        "版权转让"
+      ]
+    },
+    {
+      "type_id": "type-software-license",
+      "code": "EC-05-015",
+      "domain_code": "EC-05",
+      "name": "软件许可",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-software-license-use-continuity"
+      ],
+      "required_modules": [
+        "mod-software-license-metrics",
+        "mod-software-delivery-acceptance",
+        "mod-software-update-support",
+        "mod-software-data-security",
+        "mod-software-audit-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "软件许可",
+        "软件.{0,4}授权"
+      ]
+    },
+    {
+      "type_id": "type-cooperative-technology-development",
+      "code": "EC-05-016",
+      "domain_code": "EC-05",
+      "name": "合作开发",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-development-delivery-ip"
+      ],
+      "required_modules": [
+        "mod-development-scope",
+        "mod-milestone-acceptance",
+        "mod-ip-ownership",
+        "mod-source-code-maintenance",
+        "mod-tech-risk-failure"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "合作开发",
+        "合作.{0,4}技术开发",
+        "技术合作开发"
+      ],
+      "negative_patterns": [
+        "土地",
+        "房地产",
+        "联建"
+      ]
+    },
+    {
+      "type_id": "type-trademark-assignment",
+      "code": "EC-05-017",
+      "domain_code": "EC-05",
+      "name": "商标转让",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-trademark-transfer-registration"
+      ],
+      "required_modules": [
+        "mod-trademark-status-scope",
+        "mod-trademark-similar-marks",
+        "mod-trademark-transfer-application",
+        "mod-trademark-materials-handover",
+        "mod-trademark-rejection-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "商标转让"
+      ]
+    },
+    {
+      "type_id": "type-trademark-license",
+      "code": "EC-05-018",
+      "domain_code": "EC-05",
+      "name": "商标许可",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-trademark-license-quality"
+      ],
+      "required_modules": [
+        "mod-trademark-license-scope",
+        "mod-trademark-license-filing",
+        "mod-trademark-quality-control",
+        "mod-trademark-material-use",
+        "mod-trademark-termination-goodwill"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "商标许可"
+      ]
+    },
+    {
+      "type_id": "type-privacy-policy",
+      "code": "EC-05-019",
+      "domain_code": "EC-05",
+      "name": "隐私政策",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-privacy-lawful-transparent"
+      ],
+      "required_modules": [
+        "mod-privacy-data-map",
+        "mod-privacy-consent-rights",
+        "mod-privacy-thirdparty",
+        "mod-privacy-sensitive-crossborder",
+        "mod-privacy-retention-security"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "隐私政策"
+      ]
+    },
+    {
+      "type_id": "type-user-platform-terms",
+      "code": "EC-05-020",
+      "domain_code": "EC-05",
+      "name": "用户/平台服务协议",
+      "broad_types": [
+        "confidentiality_data",
+        "technology_software_ip"
+      ],
+      "required_doctrines": [
+        "doctrine-platform-terms-fair-notice"
+      ],
+      "required_modules": [
+        "mod-user-account-service",
+        "mod-user-format-notice",
+        "mod-user-content-ip",
+        "mod-user-transaction-consumer",
+        "mod-user-suspension-dispute"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "用户协议",
+        "平台服务协议",
+        "用户服务协议"
+      ]
+    },
+    {
+      "type_id": "type-catalog-c6c35da909325b1e8010",
+      "code": "EC-06-005",
+      "domain_code": "EC-06",
+      "name": "劳务派遣协议",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-labor-dispatch-triangle"
+      ],
+      "required_modules": [
+        "mod-dispatch-license-position",
+        "mod-dispatch-employer-duties",
+        "mod-dispatch-user-management",
+        "mod-dispatch-fee-settlement",
+        "mod-dispatch-liability-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "劳务派遣"
+      ]
+    },
+    {
+      "type_id": "type-catalog-513d309f5f2557839489",
+      "code": "EC-06-009",
+      "domain_code": "EC-06",
+      "name": "在校学生实习协议",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-student-internship-education-safety"
+      ],
+      "required_modules": [
+        "mod-internship-status-school",
+        "mod-internship-content-hours",
+        "mod-internship-allowance-insurance",
+        "mod-internship-safety-incident",
+        "mod-internship-exit-certificate"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "实习协议",
+        "学生实习"
+      ]
+    },
+    {
+      "type_id": "type-catalog-2cb6f95fd4675a41ac94",
+      "code": "EC-06-014",
+      "domain_code": "EC-06",
+      "name": "自然人劳务协议",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-personal-service-status-safety"
+      ],
+      "required_modules": [
+        "mod-personal-service-status",
+        "mod-personal-service-scope",
+        "mod-personal-service-fee-tax",
+        "mod-personal-service-safety",
+        "mod-personal-service-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "自然人劳务",
+        "劳务协议"
+      ]
+    },
+    {
+      "type_id": "type-open-ended-employment",
+      "code": "EC-06-018",
+      "domain_code": "EC-06",
+      "name": "无固定期限劳动合同",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-employment-mandatory-boundaries"
+      ],
+      "required_modules": [
+        "mod-employment-term",
+        "mod-position-location",
+        "mod-compensation-hours",
+        "mod-rules-discipline",
+        "mod-employment-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "无固定期限"
+      ]
+    },
+    {
+      "type_id": "type-part-time-employment",
+      "code": "EC-06-019",
+      "domain_code": "EC-06",
+      "name": "非全日制用工",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-parttime-statutory-boundaries"
+      ],
+      "required_modules": [
+        "mod-parttime-hours",
+        "mod-parttime-wage-cycle",
+        "mod-parttime-no-probation",
+        "mod-parttime-insurance-safety",
+        "mod-parttime-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "非全日制"
+      ]
+    },
+    {
+      "type_id": "type-overage-worker-engagement",
+      "code": "EC-06-020",
+      "domain_code": "EC-06",
+      "name": "超龄劳动者/退休返聘",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-overage-worker-current-status"
+      ],
+      "required_modules": [
+        "mod-overage-status-benefit",
+        "mod-overage-work-pay",
+        "mod-overage-social-insurance",
+        "mod-overage-safety-health",
+        "mod-overage-termination"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "退休返聘",
+        "超龄",
+        "返聘"
+      ]
+    },
+    {
+      "type_id": "type-catalog-b7189ac7d4465c3482e6",
+      "code": "EC-06-024",
+      "domain_code": "EC-06",
+      "name": "专项培训与服务期协议",
+      "broad_types": [
+        "employment_hr"
+      ],
+      "required_doctrines": [
+        "doctrine-training-service-period"
+      ],
+      "required_modules": [
+        "mod-training-special-cost",
+        "mod-training-service-period",
+        "mod-training-breach-liquidated",
+        "mod-training-employer-breach",
+        "mod-training-certificate-return"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "服务期",
+        "专项培训"
+      ]
+    },
+    {
+      "type_id": "type-catalog-f1d84eb865c5520aabb6",
+      "code": "EC-07-003",
+      "domain_code": "EC-07",
+      "name": "不动产抵押合同",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-mortgage-perfection-priority"
+      ],
+      "required_modules": [
+        "mod-mortgage-property",
+        "mod-mortgage-secured-scope",
+        "mod-mortgage-registration",
+        "mod-mortgage-possession-disposal",
+        "mod-mortgage-enforcement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "不动产抵押",
+        "房产抵押",
+        "房屋抵押"
+      ]
+    },
+    {
+      "type_id": "type-catalog-660e2f0a63f3521d91d7",
+      "code": "EC-07-006",
+      "domain_code": "EC-07",
+      "name": "动产质押合同",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-pledge-perfection-control"
+      ],
+      "required_modules": [
+        "mod-pledge-object-rights",
+        "mod-pledge-delivery-registration",
+        "mod-pledge-custody-value",
+        "mod-pledge-priority-change",
+        "mod-pledge-enforcement-release"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "动产质押"
+      ]
+    },
+    {
+      "type_id": "type-catalog-1687876a608c58538e7d",
+      "code": "EC-07-010",
+      "domain_code": "EC-07",
+      "name": "履约保证金质押协议",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-pledge-perfection-control"
+      ],
+      "required_modules": [
+        "mod-pledge-object-rights",
+        "mod-pledge-delivery-registration",
+        "mod-pledge-custody-value",
+        "mod-pledge-priority-change",
+        "mod-pledge-enforcement-release"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "保证金质押",
+        "履约保证金"
+      ]
+    },
+    {
+      "type_id": "type-catalog-e9720b90e8b6573cbc75",
+      "code": "EC-07-018",
+      "domain_code": "EC-07",
+      "name": "知识产权质押合同",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-pledge-perfection-control"
+      ],
+      "required_modules": [
+        "mod-pledge-object-rights",
+        "mod-pledge-delivery-registration",
+        "mod-pledge-custody-value",
+        "mod-pledge-priority-change",
+        "mod-pledge-enforcement-release"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "知识产权质押",
+        "知产质押"
+      ]
+    },
+    {
+      "type_id": "type-catalog-68da0a69155052c69fb1",
+      "code": "EC-07-021",
+      "domain_code": "EC-07",
+      "name": "股权质押合同",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-pledge-perfection-control"
+      ],
+      "required_modules": [
+        "mod-pledge-object-rights",
+        "mod-pledge-delivery-registration",
+        "mod-pledge-custody-value",
+        "mod-pledge-priority-change",
+        "mod-pledge-enforcement-release"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "股权质押"
+      ]
+    },
+    {
+      "type_id": "type-catalog-c91a32ba9b6c52f28db1",
+      "code": "EC-07-022",
+      "domain_code": "EC-07",
+      "name": "自然人无偿借款协议",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-loan-repayment-security"
+      ],
+      "required_modules": [
+        "mod-loan-drawdown",
+        "mod-interest-fees",
+        "mod-repayment",
+        "mod-covenants-default",
+        "mod-security-interface"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "无偿借款",
+        "自然人借款"
+      ]
+    },
+    {
+      "type_id": "type-movable-mortgage",
+      "code": "EC-07-024",
+      "domain_code": "EC-07",
+      "name": "动产抵押",
+      "broad_types": [
+        "loan_financing_guarantee"
+      ],
+      "required_doctrines": [
+        "doctrine-mortgage-perfection-priority"
+      ],
+      "required_modules": [
+        "mod-mortgage-property",
+        "mod-mortgage-secured-scope",
+        "mod-mortgage-registration",
+        "mod-mortgage-possession-disposal",
+        "mod-mortgage-enforcement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "动产抵押"
+      ]
+    },
+    {
+      "type_id": "type-catalog-52b0fd380db9532ba4c7",
+      "code": "EC-08-003",
+      "domain_code": "EC-08",
+      "name": "劳务分包合同",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-construction-subcontract-control"
+      ],
+      "required_modules": [
+        "mod-subcontract-scope",
+        "mod-main-contract-interface",
+        "mod-schedule-coordination",
+        "mod-payment-acceptance",
+        "mod-safety-defects"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "劳务分包"
+      ]
+    },
+    {
+      "type_id": "type-catalog-334efaa84d4653c5ac1f",
+      "code": "EC-08-006",
+      "domain_code": "EC-08",
+      "name": "地产项目代建协议",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-project-management-authority"
+      ],
+      "required_modules": [
+        "mod-project-management-authority",
+        "mod-project-management-target",
+        "mod-project-management-procurement",
+        "mod-project-management-fee",
+        "mod-project-management-handover"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "代建"
+      ]
+    },
+    {
+      "type_id": "type-catalog-b0387ae377a85b2ea92c",
+      "code": "EC-08-008",
+      "domain_code": "EC-08",
+      "name": "工程勘察合同",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-survey-design-quality"
+      ],
+      "required_modules": [
+        "mod-survey-design-basis",
+        "mod-survey-design-qualification",
+        "mod-survey-design-deliverables",
+        "mod-survey-design-change",
+        "mod-survey-design-fee-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "工程勘察",
+        "勘察合同"
+      ]
+    },
+    {
+      "type_id": "type-catalog-fdf42f59d0405718a6e5",
+      "code": "EC-08-009",
+      "domain_code": "EC-08",
+      "name": "工程监理服务协议",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-supervision-independent-duty"
+      ],
+      "required_modules": [
+        "mod-supervision-scope-authority",
+        "mod-supervision-personnel",
+        "mod-supervision-instruction",
+        "mod-supervision-quality-safety",
+        "mod-supervision-fee-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "工程监理",
+        "监理服务"
+      ]
+    },
+    {
+      "type_id": "type-catalog-108431b0274d5eb19ffa",
+      "code": "EC-08-010",
+      "domain_code": "EC-08",
+      "name": "工程设计合同",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-survey-design-quality"
+      ],
+      "required_modules": [
+        "mod-survey-design-basis",
+        "mod-survey-design-qualification",
+        "mod-survey-design-deliverables",
+        "mod-survey-design-change",
+        "mod-survey-design-fee-liability"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "工程设计",
+        "设计合同"
+      ]
+    },
+    {
+      "type_id": "type-secondhand-housing-sale",
+      "code": "EC-08-012",
+      "domain_code": "EC-08",
+      "name": "二手房买卖",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-secondhand-housing-closing"
+      ],
+      "required_modules": [
+        "mod-secondhand-house-title",
+        "mod-secondhand-house-funds",
+        "mod-secondhand-house-delivery",
+        "mod-secondhand-house-registration",
+        "mod-secondhand-house-default"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "二手房"
+      ]
+    },
+    {
+      "type_id": "type-real-estate-joint-development",
+      "code": "EC-08-013",
+      "domain_code": "EC-08",
+      "name": "房地产合作开发/联建",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-joint-development-risk-return"
+      ],
+      "required_modules": [
+        "mod-joint-development-land-capital",
+        "mod-joint-development-governance",
+        "mod-joint-development-approval",
+        "mod-joint-development-return",
+        "mod-joint-development-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "联建",
+        "房地产.{0,4}合作开发"
+      ]
+    },
+    {
+      "type_id": "type-land-use-right-exchange",
+      "code": "EC-08-014",
+      "domain_code": "EC-08",
+      "name": "土地使用权置换",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-land-exchange-approval-closing"
+      ],
+      "required_modules": [
+        "mod-land-exchange-title",
+        "mod-land-exchange-valuation",
+        "mod-land-exchange-approval",
+        "mod-land-exchange-closing",
+        "mod-land-exchange-failure"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "土地.{0,4}置换"
+      ]
+    },
+    {
+      "type_id": "type-state-owned-land-use-right-grant",
+      "code": "EC-08-015",
+      "domain_code": "EC-08",
+      "name": "国有建设用地使用权出让",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-land-grant-public-law-interface"
+      ],
+      "required_modules": [
+        "mod-land-grant-supply-method",
+        "mod-land-grant-planning",
+        "mod-land-grant-price-tax",
+        "mod-land-grant-development",
+        "mod-land-grant-registration-default"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "国有建设用地.{0,4}出让",
+        "土地出让"
+      ]
+    },
+    {
+      "type_id": "type-land-preliminary-cooperation",
+      "code": "EC-08-016",
+      "domain_code": "EC-08",
+      "name": "土地前期合作/选择权安排",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-land-option-no-circumvention"
+      ],
+      "required_modules": [
+        "mod-land-option-object-status",
+        "mod-land-option-trigger",
+        "mod-land-option-public-process",
+        "mod-land-option-cost-exclusivity",
+        "mod-land-option-failure-exit"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "土地前期"
+      ]
+    },
+    {
+      "type_id": "type-land-use-right-transfer",
+      "code": "EC-08-017",
+      "domain_code": "EC-08",
+      "name": "国有建设用地使用权转让",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-land-transfer-conditions"
+      ],
+      "required_modules": [
+        "mod-land-transfer-title",
+        "mod-land-transfer-development",
+        "mod-land-transfer-planning",
+        "mod-land-transfer-price-tax",
+        "mod-land-transfer-registration"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "国有建设用地.{0,4}转让",
+        "土地转让"
+      ]
+    },
+    {
+      "type_id": "type-expropriation-relocation-compensation",
+      "code": "EC-08-018",
+      "domain_code": "EC-08",
+      "name": "征收搬迁补偿",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-relocation-compensation-before-move"
+      ],
+      "required_modules": [
+        "mod-relocation-authority-procedure",
+        "mod-relocation-object-rights",
+        "mod-relocation-compensation",
+        "mod-relocation-transition",
+        "mod-relocation-payment-remedy"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "征收",
+        "搬迁补偿"
+      ]
+    },
+    {
+      "type_id": "type-construction-internal-contracting",
+      "code": "EC-08-019",
+      "domain_code": "EC-08",
+      "name": "建设工程内部承包",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-internal-contract-no-transfer"
+      ],
+      "required_modules": [
+        "mod-internal-contract-personnel",
+        "mod-internal-contract-scope",
+        "mod-internal-contract-funds",
+        "mod-internal-contract-quality-safety",
+        "mod-internal-contract-settlement"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "内部承包"
+      ]
+    },
+    {
+      "type_id": "type-catalog-7ab06178906253e9aab3",
+      "code": "EC-08-023",
+      "domain_code": "EC-08",
+      "name": "EPC总承包协议",
+      "broad_types": [
+        "construction_engineering"
+      ],
+      "required_doctrines": [
+        "doctrine-epc-integrated-responsibility"
+      ],
+      "required_modules": [
+        "mod-epc-scope-interface",
+        "mod-epc-qualification",
+        "mod-epc-design-change",
+        "mod-epc-procurement-performance",
+        "mod-epc-price-time-acceptance"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "EPC"
+      ]
+    },
+    {
+      "type_id": "type-advertising-service",
+      "code": "EC-09-014",
+      "domain_code": "EC-09",
+      "name": "广告设计、制作与投放服务",
+      "broad_types": [
+        "cooperation_joint_venture",
+        "marketing_distribution"
+      ],
+      "required_doctrines": [
+        "doctrine-advertising-content-media-control"
+      ],
+      "required_modules": [
+        "mod-advertising-role-scope",
+        "mod-advertising-content-approval",
+        "mod-advertising-media-metrics",
+        "mod-advertising-ip-personality",
+        "mod-advertising-illegal-content"
+      ],
+      "runtime_status": "active",
+      "title_patterns": [
+        "广告设计",
+        "广告制作",
+        "广告投放",
+        "广告服务"
+      ]
+    }
+  ],
+  "runtime_routing_note": "pilot_types 仅保留为历史首批20类基线；正式运行统一使用 routable_types，不以试点命名决定激活状态。",
+  "schema_version": "2.2.0",
   "taxonomy_id": "enterprise-contract-taxonomy-v2"
 }

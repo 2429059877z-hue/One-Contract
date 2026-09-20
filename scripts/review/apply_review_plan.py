@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import re
 import sys
 import tempfile
 import zipfile
@@ -14,6 +16,44 @@ from pathlib import Path
 from typing import Any
 
 from defusedxml import minidom
+
+
+def _bootstrap_runtime_isolation() -> None:
+    """把运行态配置默认隔离到本轮归档目录，而不是写进 Skill 副本。
+
+    运行态配置（审查人自述、审查记忆）默认落在 Skill 的 `config/` 下；
+    实测中首跑没设 `CONTRACT_COPILOT_CONFIG_DIR`，审查人配置就被写进了**冻结的 Skill 副本**。
+    文档里写了隔离办法，但"文档写了"不等于"默认安全"——这里把默认改成隔离。
+
+    位置取自命令行（`--log` / `--archive-dir` / `--quality-dir` / `--output`）的目录；
+    **显式设置的环境变量一律尊重，不覆盖**。
+    """
+    if os.environ.get("CONTRACT_COPILOT_CONFIG_DIR"):
+        return
+    argv = sys.argv[1:]
+    candidate: Path | None = None
+    for flag in ("--log", "--archive-dir", "--quality-dir", "--output", "--report"):
+        if flag in argv:
+            index = argv.index(flag)
+            if index + 1 < len(argv):
+                value = argv[index + 1]
+                if value.startswith("-"):
+                    continue
+                candidate = Path(value).expanduser()
+                break
+    if candidate is None:
+        return
+    base = candidate if candidate.suffix == "" else candidate.parent
+    config_dir = base / "runtime-config"
+    os.environ["CONTRACT_COPILOT_CONFIG_DIR"] = str(config_dir)
+    print(
+        f"[one-contract] 运行态配置已隔离到：{config_dir}"
+        "（如需固定位置，请显式设置 CONTRACT_COPILOT_CONFIG_DIR）",
+        file=sys.stderr,
+    )
+
+
+_bootstrap_runtime_isolation()
 
 if __package__ in (None, ""):
     skill_root = Path(__file__).resolve().parents[2]
@@ -28,7 +68,11 @@ try:
         create_archive_run_dir,
     )
     from ..docx_engine.pack import pack_document
-    from ..docx_engine.quality_gate import inspect_docx, run_quality_gate
+    from ..docx_engine.quality_gate import (
+        inspect_docx,
+        render_docx_evidence,
+        run_quality_gate,
+    )
     from ..docx_engine.revision_views import resolve_unpacked_revisions
     from .plan_loader import (
         enrich_plan,
@@ -36,9 +80,10 @@ try:
         get_plan_meta,
         load_plan,
         normalize_edit_policy,
+        validate_plan,
     )
     from ..report.report_docx import write_review_report_docx
-    from ..report.reporting import render_review_report
+    from ..report.reporting import collect_legal_citations, render_review_report
     from .review_runtime import (
         ReviewTimeline,
         build_comment_author_display,
@@ -46,11 +91,22 @@ try:
         resolve_reviewer_profile,
     )
     from ..docx_engine.reviewer import ContractReviewer
+    from .comment_hygiene import resolve_orphan_comments
+    from .comment_targets import (
+        RESPONSE_STANCES,
+        SourceComment,
+        find_comment,
+        load_source_comments,
+    )
 except ImportError:
     from action_executor import apply_finding
     from archive_service import DEFAULT_ARCHIVE_DIR, archive_run, create_archive_run_dir
     from scripts.docx_engine.pack import pack_document
-    from scripts.docx_engine.quality_gate import inspect_docx, run_quality_gate
+    from scripts.docx_engine.quality_gate import (
+        inspect_docx,
+        render_docx_evidence,
+        run_quality_gate,
+    )
     from scripts.docx_engine.revision_views import resolve_unpacked_revisions
     from plan_loader import (
         enrich_plan,
@@ -58,9 +114,10 @@ except ImportError:
         get_plan_meta,
         load_plan,
         normalize_edit_policy,
+        validate_plan,
     )
     from scripts.report.report_docx import write_review_report_docx
-    from scripts.report.reporting import render_review_report
+    from scripts.report.reporting import collect_legal_citations, render_review_report
     from review_runtime import (
         ReviewTimeline,
         build_comment_author_display,
@@ -68,7 +125,22 @@ except ImportError:
         resolve_reviewer_profile,
     )
     from scripts.docx_engine.reviewer import ContractReviewer
+    from comment_hygiene import resolve_orphan_comments
+    from comment_targets import (
+        RESPONSE_STANCES,
+        SourceComment,
+        find_comment,
+        load_source_comments,
+    )
 
+
+
+#: GOV-008：本地操作者 / 审查人身份为自述留痕的统一表述。任何在 UI 或报告中
+#: 呈现该身份的位置都必须带上它，不得宣称身份认证、电子签名或不可抵赖。
+OPERATOR_IDENTITY_NOTE = (
+    "本机操作者 / 审查人身份为单用户自述留痕，"
+    "不构成身份认证、电子签名或不可抵赖证明。"
+)
 
 def unpack_docx(input_docx: Path, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -84,6 +156,237 @@ def unpack_docx(input_docx: Path, output_dir: Path) -> None:
     for xml_file in xml_files:
         dom = minidom.parseString(xml_file.read_bytes())
         xml_file.write_bytes(dom.toxml(encoding="utf-8"))
+
+
+#: 金额识别：用于「填数三条线」的软检查（**只提示，不阻断**）。
+#: 规则见 `references/redline-comment-policy.md` 1.6：天数与比例可填；
+#: **具体金额应留 `【待填：金额】`**，能写成比例的（日万分之五）就不写成金额（每日 200 元）。
+AMOUNT_RE = re.compile(r"(?:人民币\s*)?\d[\d,，]*(?:\.\d+)?\s*(?:万元|亿元|元)")
+AMOUNT_PLACEHOLDER_HINTS = ("【待填", "【需填", "待定", "另行确认", "以实际发生为准")
+
+
+def audit_replacement_amounts(findings: list[Any]) -> list[dict[str, Any]]:
+    """挑出「本轮新增文本里带了具体金额、又没有标待填」的 finding。
+
+    只报不改：这是**写作者自己的护栏**，不是发布门。引用原文里既有的金额（如附件一的报价）
+    不视为新引入；写了比例（万分之五）不会被误报。
+    """
+    flagged: list[dict[str, Any]] = []
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        action = str(item.get("action") or "")
+        if action not in {"replace", "insert", "auto"}:
+            continue
+        text = str(item.get("replacement_text") or item.get("insert_text") or "")
+        if not text:
+            continue
+        baseline = str(item.get("target_text") or item.get("search") or "")
+        for match in AMOUNT_RE.finditer(text):
+            snippet = match.group(0).strip()
+            if snippet in baseline:
+                continue
+            window = text[max(0, match.start() - 16) : match.end() + 16]
+            if any(hint in window for hint in AMOUNT_PLACEHOLDER_HINTS):
+                continue
+            flagged.append(
+                {
+                    "id": item.get("id"),
+                    "amount": snippet,
+                    "context": window.replace("\n", " "),
+                    "hint": "具体金额建议改为【待填：金额】，或改写为比例（如按日万分之五）",
+                }
+            )
+            break
+    return flagged
+
+
+#: 主体与资信核查的识别词（`redline-comment-policy` 四之二：**只进报告，不落批注**）。
+#: 审阅件是给对方看的文本工作件——在批注里替客户表达"我不信任你的资信"，
+#: 既无助于谈判，也不产生任何法律效果。
+SUBJECT_CHECK_HINTS = (
+    "主体资格",
+    "资信",
+    "履约能力",
+    "营业执照",
+    "失信被执行",
+    "经营异常",
+    "实际控制人",
+    "偿付能力",
+)
+
+#: 与上表**同时命中**才报警：说明这条 finding 是在要求"去核对"，
+#: 而不是把主体状态写成合同条款的触发条件（后者是正当的正文修订）。
+SUBJECT_CHECK_ACTION_HINTS = ("核查", "核验", "核实", "尽调", "资信调查", "留档")
+
+#: 保险义务方位：`common-clause-doctrine` 3.5.2 要求**只加对方义务**，
+#: 不为我方创设投保义务（写成"双方各自投保"等于给自己加一项持续花钱的义务）。
+INSURANCE_BURDEN_RE = re.compile(r"(甲方|我方|双方)[^。；\n]{0,24}投保")
+
+
+def audit_subject_check(findings: list[Any]) -> list[dict[str, Any]]:
+    """挑出「主体／资信核查却落在修订稿里」的 finding（软检查，只提示不阻断）。
+
+    **必须同时命中"主体词"与"核对动作词"才报**：合同条款本身完全可能以
+    「乙方被吊销营业执照」「列入严重违法失信名单」作为**解除或违约的触发条件**——
+    那是要写进正文的内容（如 OC-SL-018 的即时解除权），不是要客户去做尽调。
+    只按主体词报会把这类正确修订误判为违规（实测踩过：第一次运行时误报 1 条）。
+    """
+    flagged: list[dict[str, Any]] = []
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        action = str(item.get("action") or "")
+        if action not in {"comment", "replace", "insert", "auto"}:
+            continue
+        # 只扫「意见正文」字段：**不含 legal_basis**——那里有「经元典核验现行有效」这类固定表述，
+        # "核验"二字会把正确修订误判成核查要求（实测第二次误报的根因）。
+        blob = " ".join(
+            str(item.get(key) or "")
+            for key in ("title", "clause", "risk", "comment", "target_text")
+        )
+        hits = [word for word in SUBJECT_CHECK_HINTS if word in blob]
+        asks_to_verify = any(word in blob for word in SUBJECT_CHECK_ACTION_HINTS)
+        if hits and asks_to_verify:
+            flagged.append(
+                {
+                    "id": item.get("id"),
+                    "action": action,
+                    "hits": hits,
+                    "hint": (
+                        "主体与资信核查应只进审查报告、不落批注/修订"
+                        "（redline-comment-policy 四之二）："
+                        "把 action 改为 report-only；如确属合同文本问题，请在风险说明里写明理由"
+                    ),
+                }
+            )
+    return flagged
+
+
+def audit_insurance_burden(findings: list[Any]) -> list[dict[str, Any]]:
+    """挑出「把投保义务加到我方或双方」的改文（软检查，只提示不阻断）。"""
+    flagged: list[dict[str, Any]] = []
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("action") or "") not in {"replace", "insert", "auto"}:
+            continue
+        text = str(item.get("replacement_text") or item.get("insert_text") or "")
+        for match in INSURANCE_BURDEN_RE.finditer(text):
+            window = text[max(0, match.start() - 10) : match.end() + 12].replace("\n", " ")
+            if "投保" not in window:
+                continue
+            flagged.append(
+                {
+                    "id": item.get("id"),
+                    "context": window,
+                    "hint": (
+                        "保险义务宜只加对方（common-clause-doctrine 3.5.2）："
+                        "我方为采购/委托/服务方时，让实际控制标的与作业的一方投保；"
+                        "写成「双方各自投保」等于给我方加一项持续成本"
+                    ),
+                }
+            )
+            break
+    return flagged
+
+
+#: review plan 的 `responses[].stance` 取值与报告中显示的处理口径。
+#: 定义在 `comment_targets` 里，报告侧共用同一份，避免两处漂移。
+def apply_responses(
+    reviewer,
+    responses,
+    *,
+    source_comments: list[SourceComment],
+) -> list[dict[str, Any]]:
+    """按 `plan.responses` 对源文档批注形成**线程化回复**。
+
+    门禁（来自实测教训，见 `references/redline-comment-policy.md`「审查人回复口径」）：
+
+    1. `stance` 必须是四值之一；`text` 不得为空；
+    2. **`stance=already_present` 必须带 `evidence`（条文号或落点）**——
+       没有证据就不得声称"现稿已体现"，更不得把现稿本就有的内容写成"本轮采纳"；
+    3. 源批注**在正文中无锚点**时，Word 里无法形成回复 → 记 `skipped`（由报告另行列出），
+       **不得当作已回复**。
+
+    审查人是审查人，不是当事人：回复文本用"经核对／本轮已补充／仍需填写"口径，
+    不得出现"采纳、同意、接受、认可"这类**当事人表态**。
+    """
+    results: list[dict[str, Any]] = []
+    items = responses if isinstance(responses, list) else []
+    for index, item in enumerate(items, start=1):
+        rid = f"RESP-{index:03d}"
+        if not isinstance(item, dict):
+            results.append({"id": rid, "status": "failed", "message": "response 不是对象"})
+            continue
+        rid = str(item.get("id") or rid)
+        stance = str(item.get("stance") or "").strip()
+        text = str(item.get("text") or "").strip()
+        entry: dict[str, Any] = {"id": rid, "stance": stance, "status": "applied", "message": ""}
+
+        if stance not in RESPONSE_STANCES:
+            entry.update(
+                status="failed",
+                message=f"stance 非法：{stance!r}（允许：{'/'.join(sorted(RESPONSE_STANCES))}）",
+            )
+            results.append(entry)
+            continue
+        if not text:
+            entry.update(status="failed", message="缺少回复文本")
+            results.append(entry)
+            continue
+        evidence = str(item.get("evidence") or "").strip()
+        if stance == "already_present" and not evidence:
+            entry.update(
+                status="failed",
+                message=(
+                    "「现稿已体现」类回复必须提供 evidence（条文号或其他落点）："
+                    "没有证据不得声称现稿已覆盖"
+                ),
+            )
+            results.append(entry)
+            continue
+
+        target = item.get("target") if isinstance(item.get("target"), dict) else {}
+        try:
+            occurrence = int(target.get("occurrence") or 1)
+        except (TypeError, ValueError):
+            occurrence = 1
+        found = find_comment(
+            source_comments,
+            comment_id=target.get("comment_id"),
+            anchor_text=target.get("anchor_text"),
+            occurrence=occurrence,
+        )
+        if found is None:
+            entry.update(
+                status="failed",
+                message="未定位到源批注（comment_id 与 anchor_text 均未命中）",
+            )
+            results.append(entry)
+            continue
+
+        entry["source_comment_id"] = found.comment_id
+        entry["source_author"] = found.author
+        entry["evidence"] = evidence
+        if not found.anchored:
+            entry.update(
+                status="skipped",
+                message="源批注在正文中无锚点，Word 中无法回复；请在报告中作为未落地意见列出",
+            )
+            results.append(entry)
+            continue
+        try:
+            reply_id = reviewer.reply_to_comment(found.comment_id, text)
+        except Exception as exc:  # noqa: BLE001 - 逐条降级，不影响其他回复
+            entry.update(status="failed", message=f"回复失败：{exc}")
+            results.append(entry)
+            continue
+
+        entry["reply_comment_id"] = reply_id
+        entry["message"] = "已形成线程化回复"
+        results.append(entry)
+    return results
 
 
 def build_execution_summary(
@@ -106,6 +409,9 @@ def build_execution_summary(
     failed = sum(1 for item in applied_results if item["status"] == "failed")
     skipped = sum(1 for item in applied_results if item["status"] == "skipped")
     report_only = sum(1 for item in applied_results if item["status"] == "report_only")
+    directed_blocked = sum(
+        1 for item in applied_results if item["status"] == "directed_blocked"
+    )
 
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -127,6 +433,7 @@ def build_execution_summary(
         "failed": failed,
         "skipped": skipped,
         "report_only": report_only,
+        "directed_blocked": directed_blocked,
         "results": applied_results,
     }
 
@@ -195,8 +502,24 @@ def main() -> None:
         help="既有修订策略：默认拒绝在含历史修订的段落上改写；明确选择 accept-existing 时先接受历史修订再审查",
     )
     parser.add_argument(
+        "--orphan-comments",
+        choices=["reject", "quarantine", "strip"],
+        default="quarantine",
+        help=(
+            "悬空批注（comments.xml 里有、正文里无锚点）策略："
+            "quarantine（默认）导出到 orphan-comments.json 后从工作副本移除；"
+            "strip 仅移除并记入日志；reject 保留原样，交由质量门报错"
+        ),
+    )
+    parser.add_argument(
         "--quality-dir",
         help="严格质量门输出目录；默认与输出 DOCX 同目录并以 _quality 结尾",
+    )
+    parser.add_argument(
+        "--visual-policy",
+        choices=["require", "allow-structural", "structural-only"],
+        default="allow-structural",
+        help="渲染门：require 要求 PDF/PNG；allow-structural 在无渲染环境时允许结构验证版",
     )
     args = parser.parse_args()
 
@@ -246,6 +569,8 @@ def main() -> None:
     plan_meta["party_role"] = review_context["party_role"]
     plan_meta["review_intensity"] = review_context["review_intensity"]
     plan_meta["edit_policy"] = edit_policy
+    plan["meta"] = plan_meta
+    validate_plan(plan)
     reviewer_profile = resolve_reviewer_profile(
         args.author,
         args.initials,
@@ -262,6 +587,10 @@ def main() -> None:
     plan_meta["reviewer_department"] = str(
         reviewer_profile.get("department") or ""
     )
+    # GOV-008：审查人身份属**单用户自述留痕**，报告记录必须写明，
+    # 不得被当作身份认证、电子签名或不可抵赖证明。此前 plan meta 只写
+    # reviewer/organization/department，无任何此类声明。
+    plan_meta["reviewer_identity_note"] = OPERATOR_IDENTITY_NOTE
     plan["meta"] = plan_meta
     archive_path = None
     if not args.no_archive:
@@ -320,6 +649,15 @@ def main() -> None:
                 unpacked_path, "accept"
             )
 
+        # 悬空批注先处置、再构造 reviewer：`Document` 会把拆包目录复制进自己的临时目录，
+        # 保存时再整体写回——顺序反了，这里的清理会被 reviewer.save() 覆盖掉。
+        orphan_resolution = resolve_orphan_comments(
+            unpacked_path,
+            policy=args.orphan_comments,
+            export_path=log_path.with_name("orphan-comments.json"),
+        )
+        source_comments = load_source_comments(unpacked_path)
+
         reviewer = ContractReviewer(
             unpacked_dir=unpacked_path,
             author=comment_author,
@@ -356,6 +694,12 @@ def main() -> None:
                 review_timeline.complete_finding()
             applied_results.append(result)
 
+        response_results = apply_responses(
+            reviewer,
+            plan.get("responses"),
+            source_comments=source_comments,
+        )
+
         reviewer.save(validate=not args.no_validate)
         packed = pack_document(unpacked_path, output_docx, validate=not args.no_validate)
         if not packed:
@@ -375,6 +719,7 @@ def main() -> None:
                 "accept" if args.existing_revisions == "accept-existing" else "reject"
             ),
             require_revisions=direct_applied,
+            visual_policy=args.visual_policy,
         )
     except Exception as exc:
         quality_gate = {
@@ -406,6 +751,75 @@ def main() -> None:
         source_sha256=source_sha256,
         quality_gate=quality_gate,
     )
+    # 源批注的两类处置结果：对源意见的回复、悬空批注的处置（供报告与日志使用）
+    execution_summary["responses"] = response_results
+    execution_summary["orphan_comments"] = orphan_resolution
+
+    # 待复核法条清单：本库条文经建库时核验，但是**冻结时点**的结论；
+    # 具备法律数据库的使用方可据此逐条复核现行有效性。
+    legal_citations = collect_legal_citations(findings)
+    citation_path = log_path.with_name("legal-citations.json")
+    citation_path.parent.mkdir(parents=True, exist_ok=True)
+    citation_path.write_text(
+        json.dumps(
+            {
+                "description": (
+                    "本次审查意见书引用到的法条（取自各 finding 的 legal_basis）。"
+                    "本库条文于建库时经元典核验并随文标注日期；如具备法律数据库，"
+                    "建议在正式出具前逐条复核现行有效性。"
+                ),
+                "count": len(legal_citations),
+                "citations": legal_citations,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    execution_summary["legal_citations"] = {
+        "count": len(legal_citations),
+        "path": str(citation_path),
+    }
+
+    # 填数三条线的软检查（只提示，不阻断）：本轮新增文本里是否带了具体金额
+    amount_flags = audit_replacement_amounts(findings)
+    execution_summary["amount_guard"] = {"count": len(amount_flags), "flagged": amount_flags}
+    if amount_flags:
+        print(
+            f"提示：{len(amount_flags)} 处新增文本写入了具体金额（"
+            + "、".join(f"{item['id']} {item['amount']}" for item in amount_flags[:5])
+            + "）。按 redline-comment-policy 1.6，具体金额宜留【待填：金额】或改写为比例。",
+            file=sys.stderr,
+        )
+
+    # 另两条口径的软检查（同样只提示）：主体核查不得落在修订稿；保险义务只加对方
+    subject_flags = audit_subject_check(findings)
+    insurance_flags = audit_insurance_burden(findings)
+    execution_summary["subject_check_guard"] = {
+        "count": len(subject_flags),
+        "flagged": subject_flags,
+    }
+    execution_summary["insurance_burden_guard"] = {
+        "count": len(insurance_flags),
+        "flagged": insurance_flags,
+    }
+    if subject_flags:
+        print(
+            "提示："
+            + "、".join(f"{item['id']}" for item in subject_flags[:5])
+            + " 涉及主体／资信核查，却带了批注或修订动作。按 redline-comment-policy 四之二，"
+            "这类核对应只进审查报告（action=report-only）。",
+            file=sys.stderr,
+        )
+    if insurance_flags:
+        print(
+            "提示："
+            + "、".join(f"{item['id']}" for item in insurance_flags[:5])
+            + " 的改文里出现了「甲方／我方／双方…投保」。按 common-clause-doctrine 3.5.2，"
+            "保险义务宜只加对方。",
+            file=sys.stderr,
+        )
 
     report_content = render_review_report(plan=plan, execution=execution_summary)
     report_path.write_text(report_content, encoding="utf-8")
@@ -420,6 +834,43 @@ def main() -> None:
         author=author,
         generated_at=execution_summary["generated_at"][:16],
         validate=not args.no_validate,
+    )
+    try:
+        report_visual = render_docx_evidence(
+            report_docx_path,
+            output_dir=quality_dir / "render" / "report",
+            visual_policy=args.visual_policy,
+        )
+    except Exception as exc:
+        report_visual = {
+            "status": "FAIL",
+            "delivery_level": "blocked",
+            "visual_final_eligible": False,
+            "visual_inspection_status": "blocked",
+            "errors": [f"审查报告渲染门异常: {exc}"],
+        }
+    quality_gate["report_visual_validation"] = report_visual
+    if report_visual.get("status") == "FAIL":
+        quality_gate["status"] = "FAIL"
+        quality_gate.setdefault("errors", []).extend(
+            f"report visual: {error}" for error in report_visual.get("errors", [])
+        )
+        quality_gate["delivery_level"] = "blocked"
+    elif report_visual.get("status") == "STRUCTURAL_ONLY" and quality_gate.get("status") == "PASS":
+        quality_gate["delivery_level"] = "structural_validation"
+    quality_gate["visual_final_eligible"] = False
+    quality_gate["visual_inspection_status"] = (
+        "blocked"
+        if quality_gate.get("status") != "PASS"
+        else "not_performed"
+        if quality_gate.get("delivery_level") == "structural_validation"
+        else "required"
+    )
+    execution_summary["quality_gate"] = quality_gate
+    quality_report_path = quality_dir / "quality-gate.json"
+    quality_report_path.write_text(
+        json.dumps(quality_gate, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
     log_path.write_text(
         json.dumps(execution_summary, ensure_ascii=False, indent=2) + "\n",
@@ -461,7 +912,15 @@ def main() -> None:
         f"跳过={execution_summary['skipped']}，"
         f"仅意见书={execution_summary['report_only']}"
     )
-    print(f"OOXML 质量门: {quality_gate['status']}（证据目录: {quality_dir}）")
+    print(f"定向阻断项: {execution_summary['directed_blocked']}")
+    print(
+        f"DOCX 质量门: {quality_gate['status']} / "
+        f"{quality_gate.get('delivery_level', 'unknown')}（证据目录: {quality_dir}）"
+    )
+    if quality_gate.get("visual_inspection_status") == "required":
+        print("视觉状态: 已生成逐页证据，仍须逐页检查缺字、裁切、重叠和字体替代；不得直接称为视觉终版。")
+    elif quality_gate.get("visual_inspection_status") == "not_performed":
+        print("视觉状态: 未完成渲染复核，仅可标注为结构验证版。")
     if execution_summary["failed"] > 0 or quality_gate["status"] != "PASS":
         if archive_path:
             print("存在失败项或质量门失败，请检查归档、执行日志与质量证据。", file=sys.stderr)

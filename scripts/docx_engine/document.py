@@ -38,6 +38,9 @@ from .validation import DOCXSchemaValidator
 
 from .utilities import XMLEditor
 
+#: WordprocessingML 命名空间（构造节点片段时用）。
+_W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
 # --- Inline XML templates (replaces external templates/ directory) ---
 
 _NS = (
@@ -993,6 +996,107 @@ class Document:
 
         if not schema_validator.validate():
             raise ValueError("Document validation failed")
+
+    def _remove_comment_aux_entries(self, para_ids: list[str]) -> None:
+        """删除批注在 commentsExtended / commentsIds / commentsExtensible 里的附属条目。
+
+        只删批注本体而留下附属条目，Word 打开时会出现"孤儿"批注元数据；
+        反向漏删（删了附属却留着本体）会让质量门的锚点/条目一致性检查报错。
+        """
+        if not para_ids:
+            return
+        targets = set(para_ids)
+        for path, tag, attr in (
+            ("word/commentsExtended.xml", "w15:commentEx", "w15:paraId"),
+            ("word/commentsIds.xml", "w16cid:commentId", "w16cid:paraId"),
+        ):
+            if not (self.unpacked_path / path).exists():
+                continue
+            editor = self[path]
+            for entry in list(editor.dom.getElementsByTagName(tag)):
+                if entry.getAttribute(attr) in targets:
+                    entry.parentNode.removeChild(entry)
+            editor.save()
+        # commentsExtensible 以 durableId 关联，按 paraId 无法直接定位；若存在同名属性则一并清
+        ext_path = "word/commentsExtensible.xml"
+        if (self.unpacked_path / ext_path).exists():
+            editor = self[ext_path]
+            for entry in list(editor.dom.getElementsByTagName("w16cex:commentExtensible")):
+                for attr in ("w16cid:paraId", "w15:paraId"):
+                    if entry.getAttribute(attr) in targets:
+                        entry.parentNode.removeChild(entry)
+                        break
+            editor.save()
+
+    def update_comment(self, comment_id: int, text: str) -> None:
+        """改写一条既有批注的正文（保留其锚点与元数据）。
+
+        此前引擎只有 `add_comment` / `reply_to_comment`，措辞写错了只能做 XML 级手工清理——
+        实测中手工清理漏掉 `commentReference` run，被质量门当场拦下。
+        """
+        if not self.comments_path.exists():
+            raise ValueError("文档没有批注部件")
+        cid = str(int(comment_id))
+        editor = self["word/comments.xml"]
+        for comment in editor.dom.getElementsByTagName("w:comment"):
+            if comment.getAttribute("w:id") != cid:
+                continue
+            paragraphs = comment.getElementsByTagName("w:p")
+            if not paragraphs:
+                raise ValueError(f"批注 {cid} 没有段落，无法改写")
+            paragraph = paragraphs[0]
+            for run in list(paragraph.getElementsByTagName("w:r")):
+                run.parentNode.removeChild(run)
+            escaped = html.escape(text, quote=False)
+            wrapper = (
+                f'<root xmlns:w="{_W_NS}"><w:r><w:t xml:space="preserve">'
+                f"{escaped}</w:t></w:r></root>"
+            )
+            new_run = minidom.parseString(wrapper).documentElement.firstChild
+            paragraph.appendChild(editor.dom.importNode(new_run, True))
+            editor.save()
+            return
+        raise ValueError(f"父批注不存在：id={cid}")
+
+    def delete_comment(self, comment_id: int) -> None:
+        """删除一条批注：正文锚点（start/end/引用 run）、批注本体与附属条目一并清理。
+
+        对称于 `add_comment` / `reply_to_comment`，让"写错措辞"可以体面地改回来，
+        而不必手工搬 XML。
+        """
+        cid = str(int(comment_id))
+        para_ids: list[str] = []
+
+        if self.comments_path.exists():
+            editor = self["word/comments.xml"]
+            for comment in list(editor.dom.getElementsByTagName("w:comment")):
+                if comment.getAttribute("w:id") != cid:
+                    continue
+                for paragraph in comment.getElementsByTagName("w:p"):
+                    para_id = paragraph.getAttribute("w14:paraId")
+                    if para_id:
+                        para_ids.append(para_id)
+                        break
+                comment.parentNode.removeChild(comment)
+            editor.save()
+
+        dom = self._document.dom
+        for tag in ("w:commentRangeStart", "w:commentRangeEnd"):
+            for node in list(dom.getElementsByTagName(tag)):
+                if node.getAttribute("w:id") == cid:
+                    node.parentNode.removeChild(node)
+        for reference in list(dom.getElementsByTagName("w:commentReference")):
+            if reference.getAttribute("w:id") != cid:
+                continue
+            run = reference.parentNode
+            while run is not None and getattr(run, "tagName", None) != "w:r":
+                run = run.parentNode
+            target = run if run is not None else reference
+            target.parentNode.removeChild(target)
+        self._document.save()
+
+        self._remove_comment_aux_entries(para_ids)
+        self.existing_comments.pop(int(comment_id), None)
 
     def save(self, destination=None, validate=True) -> None:
         """

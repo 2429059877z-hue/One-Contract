@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Deterministic, candidate-only checks for equity-transfer structural risks.
+"""Deterministic checks for equity-transfer structural risks.
 
 The checker consumes structured facts. It does not infer tax evasion from keywords and
-does not draft an alternative external-facing contract. Missing facts fail closed to
-human confirmation, while a P0 match blocks automatic revision.
+does not draft an alternative external-facing contract. Missing facts require human
+confirmation, while a P0 match creates a directed block against prohibited outputs
+instead of stopping compliant or fact-independent revision work.
 """
 from __future__ import annotations
 
@@ -123,8 +124,8 @@ def detect(facts: Mapping[str, Any], catalog: Mapping[str, Mapping[str, Any]] | 
     prohibited_outputs = list(dict.fromkeys(output for item in trigger_assets for output in item.get("prohibited_outputs", [])))
     return {
         "type_id": "type-equity-transfer",
-        "status": "blocked_auto_revision" if p0 else ("human_confirmation_required" if confirmation_required else "no_structural_trigger_detected"),
-        "candidate_only": True,
+        "status": "directed_block_required" if p0 else ("human_confirmation_required" if confirmation_required else "no_structural_trigger_detected"),
+        "candidate_only": False,
         "triggered": [
             {
                 "trigger_id": item["trigger_id"],
@@ -140,13 +141,17 @@ def detect(facts: Mapping[str, Any], catalog: Mapping[str, Mapping[str, Any]] | 
         "required_outputs": required_outputs,
         "prohibited_outputs": prohibited_outputs,
         "human_confirmation_required": confirmation_required,
+        # Compatibility flag: unspecific automation remains closed when a P0 or
+        # material gap exists. Callers may still use the explicit scoped flags.
         "automatic_revision_allowed": not p0 and not missing,
-        "notice": "候选试点输出，须经律师校验；不得据此生成隐瞒真实对价或虚假申报文本。",
+        "compliance_revision_allowed": True,
+        "fact_independent_revision_allowed": True,
+        "notice": "触发器实行定向阻断：禁止生成隐瞒真实对价、虚假用途或其他 prohibited_outputs；合规方向及不依赖缺失事实的修订可继续，并保留律师终审。",
     }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Detect candidate equity-transfer structural-risk triggers.")
+    parser = argparse.ArgumentParser(description="Detect equity-transfer structural-risk triggers.")
     parser.add_argument("--facts", type=Path, required=True, help="Structured transaction facts JSON")
     parser.add_argument("--trigger-catalog", type=Path, default=TRIGGER_CATALOG)
     parser.add_argument("--output", type=Path, help="Optional JSON output path")
