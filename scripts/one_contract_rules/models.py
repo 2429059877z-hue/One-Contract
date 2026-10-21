@@ -102,6 +102,7 @@ CLIENT_NORMATIVE_LEVEL_TO_CLASS: Dict[str, str] = {
 RULE_NODE_KINDS: Tuple[str, ...] = (
     "global_document",
     "domain_principle",
+    "contract_type",
     "type_principle",
     "clause_module",
     "module_group",

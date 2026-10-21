@@ -20,6 +20,11 @@
       "title": "源文档批注意见处理",
       "rendered_when": "plan.responses 非空，或源文档存在悬空批注（execution.orphan_comments.count > 0）",
       "content": "逐条列出源文档批注意见的处理口径（现稿已体现／本轮已补充／未按该意见修改／仍需填写），含依据或落点与回复摘要；悬空批注另列原文、作者与日期"
+    },
+    {
+      "title": "权利归属变更提示",
+      "rendered_when": "summary.rights_allocation_changes 非空",
+      "content": "合同概况前列出原约定、改为、理由及替代方案；不输出内部 finding ID"
     }
   ],
   "required_subsections": [
@@ -36,7 +41,7 @@
   },
   "notes": [
     "「5. 审查依据与覆盖层级」的数据源是 plan.meta.classification_provenance（coverage_level / primary_type_id / primary_domain_code）。",
-    "生效集合中 content_status 以 stub_ 开头的模块，须按 clause_group 逐项列出为「暂无具体检查项的议题」（summary.stub_topics）；某类型生效模块全为空壳时，覆盖深度按 domain_only 写。",
+    "暂无具体检查项的议题须由实际选择器核查，包括 stub 标记或空 review_checks；未取得模块清单不得写无。",
     "措辞均为中性事实说明，不得写成免责声明或风险提示。"
   ]
 }

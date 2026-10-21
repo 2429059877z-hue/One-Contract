@@ -224,6 +224,28 @@ _DEFAULT_EFFECT_TARGETS: Tuple[Mapping[str, Any], ...] = (
     },
 )
 
+# These targets carry reviewed business instructions into the effective rule set.
+# They do not claim deterministic legal interpretation or override public guards.
+_DEFAULT_EFFECT_TARGETS += tuple(
+    {
+        "target_key": key,
+        "description": description,
+        "value_type": "string",
+        "allowed_actions": ["require", "prefer", "forbid", "escalate"],
+        "allowed_normative_classes": ["client_mandatory", "client_preferred", "client_advisory"],
+        "client_writable": True,
+    }
+    for key, description in (
+        ("output.payment_terms", "付款条件与结算要求：填写需落实到合同的完整客户要求。"),
+        ("output.liability_terms", "违约责任与赔偿要求：说明适用范围、例外及可接受方案。"),
+        ("output.termination_terms", "解除与终止安排：说明触发条件、程序及后续义务。"),
+        ("output.dispute_resolution", "争议解决要求：填写客户确认的程序和管辖偏好。"),
+        ("output.confidentiality_terms", "保密与资料使用要求：说明信息范围、义务和例外。"),
+        ("output.delivery_acceptance", "交付、验收与质量要求：说明标准、期限和处理方式。"),
+        ("output.clause_instruction", "其他条款要求：须注明条款主题、条件及具体处理要求。"),
+    )
+)
+
 
 def is_rule_executable(rule: Mapping[str, Any]) -> bool:
     """审批轴与执行轴必须**同时**为 active（RS-HC-002 / RES-025）。"""
@@ -370,6 +392,12 @@ def _evaluate_clause(clause: Mapping[str, Any], facts: Mapping[str, Any]) -> Any
         return actual not in expected
     if operator == "exists":
         return True
+    if operator in ("gt", "gte", "lt", "lte"):
+        if not all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                   for v in (actual, expected)):
+            return _CONDITION_UNKNOWN
+        return {"gt": actual > expected, "gte": actual >= expected,
+                "lt": actual < expected, "lte": actual <= expected}[operator]
     # 未登记 operator：不确定即转人工
     raise ValueError(f"未登记的 operator: {operator!r}")
 
@@ -410,6 +438,41 @@ def _condition_holds(
         return False
     # 词汇表 schema 已限定 enum；走到这里说明词汇被绕过，按未确定转人工
     raise ValueError(f"未登记的 condition_mode: {mode!r}")
+
+
+def evaluate_client_condition(catalog: GuardCatalog, rule: Mapping[str, Any],
+                              facts: Mapping[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    """Evaluate client conditions with the same three-valued fact semantics as guards.
+
+    Return matched / unmatched / unknown / semantic. ``semantic`` explicitly
+    requires assessment against the full contract; an empty clause array must
+    never make a natural-language condition look unconditionally satisfied.
+    """
+    condition = rule.get("condition") or {}
+    assessment_mode = condition.get("assessment_mode", "structured")
+    if assessment_mode not in ("structured", "semantic"):
+        return "unknown", [{"code": "INVALID_CONDITION_TYPE", "detail": "未知 condition.assessment_mode"}]
+    if assessment_mode == "semantic":
+        note = condition.get("natural_language_note")
+        if not isinstance(note, str) or not note.strip() or condition.get("clauses") != []:
+            return "unknown", [{"code": "INVALID_CONDITION_TYPE",
+                                "detail": "semantic 条件须有非空 natural_language_note 且 clauses=[]"}]
+        return "semantic", []
+    clauses = condition.get("clauses") or []
+    if not clauses:
+        return "matched", []
+    problem = _operator_declaration_problem(catalog, clauses)
+    if problem:
+        return "unknown", [{"code": "UNKNOWN_FACT_OR_TARGET", "detail": problem}]
+    relevant = {str(c.get("fact_key")) for c in clauses}
+    clean, issues = validate_facts(catalog, {k: v for k, v in facts.items() if k in relevant})
+    try:
+        result = _condition_holds(clauses, clean, mode=condition.get("mode", "all"))
+    except (TypeError, ValueError) as exc:
+        return "unknown", issues + [{"code": "INVALID_CONDITION_TYPE", "detail": str(exc)}]
+    if result is _CONDITION_UNKNOWN or issues:
+        return "unknown", issues
+    return ("matched" if result else "unmatched"), []
 
 
 def _guard_applies(

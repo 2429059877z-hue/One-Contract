@@ -74,9 +74,11 @@ def _unwrap(node) -> None:
     parent.removeChild(node)
 
 
-def _resolve_property_changes(dom, mode: str) -> None:
+def _resolve_property_changes(dom, mode: str, author: str | None = None) -> None:
     for tag in PROPERTY_CHANGE_TAGS:
         for change in list(dom.getElementsByTagName(tag)):
+            if author is not None and change.getAttribute("w:author") != author:
+                continue
             current_properties = change.parentNode
             if mode == "reject":
                 prior_candidates = _element_children(change)
@@ -88,24 +90,85 @@ def _resolve_property_changes(dom, mode: str) -> None:
                 change.parentNode.removeChild(change)
 
 
-def resolve_dom_revisions(dom, mode: str):
+def _resolve_paragraph_marks(dom, mode: str, author: str | None = None) -> None:
+    """Resolve removed paragraph boundaries, preserving surviving content.
+
+    ISO 29500's deleted paragraph mark combines content with the following
+    paragraph; retain the latter's properties instead of discarding text.
+    """
+    marker_tag = "w:del" if mode == "accept" else "w:ins"
+    remove_tags = REVISION_WRAPPERS[mode]["remove"]
+    transparent_ranges = {"w:commentRangeStart", "w:commentRangeEnd", "w:bookmarkStart", "w:bookmarkEnd", "w:proofErr"}
+
+    def disappears(node):
+        if node.nodeType != node.ELEMENT_NODE:
+            return not getattr(node, "data", "").strip()
+        if node.tagName in remove_tags and (author is None or node.getAttribute("w:author") == author):
+            return True
+        if node.tagName in {"w:rPr", "w:commentRangeStart", "w:commentRangeEnd", "w:commentReference", "w:bookmarkStart", "w:bookmarkEnd", "w:proofErr"}:
+            return True
+        if node.tagName == "w:r":
+            return all(disappears(child) for child in node.childNodes)
+        return False
+
+    for paragraph in list(dom.getElementsByTagName("w:p")):
+        props = next((n for n in _element_children(paragraph) if n.tagName == "w:pPr"), None)
+        mark_props = next((n for n in _element_children(props) if n.tagName == "w:rPr"), None) if props is not None else None
+        marker = next((n for n in _element_children(mark_props) if n.tagName == marker_tag and (author is None or n.getAttribute("w:author") == author)), None) if mark_props is not None else None
+        if marker is None or paragraph.parentNode is None:
+            continue
+        following = paragraph.nextSibling
+        boundary_markup = []
+        while following is not None:
+            if following.nodeType == following.ELEMENT_NODE:
+                if following.tagName not in transparent_ranges:
+                    break
+                boundary_markup.append(following)
+            following = following.nextSibling
+        if following is not None and following.tagName == "w:p":
+            anchor = next((n for n in following.childNodes if getattr(n, "tagName", "") != "w:pPr"), None)
+            for child in list(paragraph.childNodes):
+                if child is not props:
+                    following.insertBefore(child, anchor)
+            # Range endpoints between physical paragraphs stay between their
+            # contents after the boundary disappears, preserving anchor scope.
+            for boundary in boundary_markup:
+                following.insertBefore(boundary, anchor)
+            paragraph.parentNode.removeChild(paragraph)
+        else:
+            # A generated final inserted paragraph can disappear completely on
+            # rejection. Keep paragraphs with surviving content and mandatory
+            # final paragraphs in otherwise empty containers.
+            content = [n for n in _element_children(paragraph) if n is not props]
+            fully_removed = all(disappears(n) for n in content)
+            siblings = [n for n in _element_children(paragraph.parentNode) if n.tagName == "w:p" and n is not paragraph]
+            if fully_removed and siblings:
+                paragraph.parentNode.removeChild(paragraph)
+
+
+def resolve_dom_revisions(dom, mode: str, author: str | None = None):
     if mode not in REVISION_WRAPPERS:
         raise ValueError(f"unsupported revision mode: {mode}")
     policy = REVISION_WRAPPERS[mode]
     before = count_dom_revisions(dom)
 
-    _resolve_property_changes(dom, mode)
+    _resolve_property_changes(dom, mode, author)
+    _resolve_paragraph_marks(dom, mode, author)
     for tag in policy["remove"]:
         for node in list(dom.getElementsByTagName(tag)):
-            node.parentNode.removeChild(node)
+            if author is None or node.getAttribute("w:author") == author:
+                node.parentNode.removeChild(node)
     for tag in policy["unwrap"]:
         for node in list(dom.getElementsByTagName(tag)):
+            if author is not None and node.getAttribute("w:author") != author:
+                continue
             if mode == "reject" and tag in {"w:del", "w:moveFrom"}:
                 _replace_deleted_text_names(node)
             _unwrap(node)
-    for tag in REVISION_MARKERS:
-        for node in list(dom.getElementsByTagName(tag)):
-            node.parentNode.removeChild(node)
+    if author is None:
+        for tag in REVISION_MARKERS:
+            for node in list(dom.getElementsByTagName(tag)):
+                node.parentNode.removeChild(node)
 
     after = count_dom_revisions(dom)
     return {"before": before, "after": after}
@@ -253,7 +316,7 @@ def _safe_extract(archive: zipfile.ZipFile, destination: Path) -> None:
     archive.extractall(destination)
 
 
-def resolve_unpacked_revisions(unpacked_dir: Path, mode: str) -> dict[str, object]:
+def resolve_unpacked_revisions(unpacked_dir: Path, mode: str, *, prune_comments: bool = True) -> dict[str, object]:
     parts = []
     total_before = 0
     total_after = 0
@@ -264,7 +327,8 @@ def resolve_unpacked_revisions(unpacked_dir: Path, mode: str) -> dict[str, objec
             parts.append({"part": path.relative_to(unpacked_dir).as_posix(), **counts})
         total_before += counts["before"]
         total_after += counts["after"]
-    comment_resolution = prune_orphan_comments(unpacked_dir)
+    comment_resolution = (prune_orphan_comments(unpacked_dir) if prune_comments else
+                          {"status": "deferred_to_orphan_policy", "removed_comment_count": 0})
     return {
         "mode": mode,
         "revision_count_before": total_before,

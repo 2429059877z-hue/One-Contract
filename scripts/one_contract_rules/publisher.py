@@ -21,13 +21,17 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
+from functools import wraps
 import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
-from . import audit, models, private_fs, validator
+from . import audit, models, private_fs, validator, paths, platform_fs, evidence_records
+from .transaction_lock import profile_lock
+from .material_sources import MaterialSources
 
 __all__ = [
     "ACTIVE_MANIFEST_NAME",
@@ -53,11 +57,15 @@ def _now() -> str:
 
 
 def _fsync_dir(path: Path) -> None:
-    fd = os.open(str(path), os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+    platform_fs.sync_directory(path)
+
+
+def _serialized(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with profile_lock(self.profile_dir):
+            return method(self, *args, **kwargs)
+    return wrapped
 
 
 def snapshot_content_hash(rules: Sequence[Mapping[str, Any]]) -> str:
@@ -102,7 +110,10 @@ def empty_active_manifest(client_profile_id: str) -> Dict[str, Any]:
 
 
 def read_active_manifest(profile_dir: Path) -> Dict[str, Any]:
-    path = Path(profile_dir) / ACTIVE_MANIFEST_NAME
+    try:
+        path = paths.contained_path(profile_dir, ACTIVE_MANIFEST_NAME)
+    except paths.PathContractError as exc:
+        raise PublishError(str(exc)) from exc
     if not path.is_file():
         raise PublishError(f"active manifest 缺失: {path.name}")
     try:
@@ -114,6 +125,8 @@ def read_active_manifest(profile_dir: Path) -> Dict[str, Any]:
         validator.validate_active_manifest(payload)
     except validator.ValidationError as exc:
         raise PublishError(f"active manifest 不符合冻结契约，拒绝加载：{exc}") from exc
+    if payload.get("client_profile_id") != Path(profile_dir).name:
+        raise PublishError("active manifest 不属于当前客户。")
     return payload
 
 
@@ -133,9 +146,16 @@ class Publisher:
 
     def load_snapshot(self, snapshot_id: str) -> Dict[str, Any]:
         """加载并**复核完整性**。哈希不符即拒绝（LIFE-008）。"""
-        snapshot_dir = self.snapshots_dir / snapshot_id
-        manifest_path = snapshot_dir / "manifest.json"
-        rules_path = snapshot_dir / "rules.json"
+        if not isinstance(snapshot_id, str) or not re.fullmatch(r"cs_[a-z0-9][a-z0-9_-]{7,79}", snapshot_id):
+            raise PublishError("快照编号无效，不能使用文件路径。")
+        try:
+            snapshot_dir = paths.contained_path(self.profile_dir, SNAPSHOTS_DIR, snapshot_id)
+            if not snapshot_dir.is_dir():
+                raise PublishError(f"快照不完整: {snapshot_id}")
+            manifest_path = paths.contained_path(snapshot_dir, "manifest.json")
+            rules_path = paths.contained_path(snapshot_dir, "rules.json")
+        except paths.PathContractError as exc:
+            raise PublishError(str(exc)) from exc
         if not manifest_path.is_file() or not rules_path.is_file():
             raise PublishError(f"快照不完整: {snapshot_id}")
         try:
@@ -144,7 +164,18 @@ class Publisher:
         except json.JSONDecodeError as exc:
             raise PublishError(f"快照文件损坏: {snapshot_id}") from exc
 
-        actual = snapshot_content_hash(rules_doc.get("rules", []))
+        if not isinstance(manifest, dict) or not isinstance(rules_doc, dict):
+            raise PublishError("快照必须是 JSON 对象。")
+        if manifest.get("snapshot_id") != snapshot_id:
+            raise PublishError("快照标识不匹配。")
+        if manifest.get("client_profile_id") != self.profile_dir.name:
+            raise PublishError("快照不属于当前客户。")
+        rules = rules_doc.get("rules", [])
+        if "rules" not in rules_doc or not isinstance(rules, list) or any(not isinstance(r, dict) or r.get("client_profile_id") != self.profile_dir.name for r in rules):
+            raise PublishError("快照含有其他客户规则或无效规则。")
+        if any(r.get("content_sha256") != models.content_hash(r) for r in rules):
+            raise PublishError("快照内规则的内容哈希不匹配。")
+        actual = snapshot_content_hash(rules)
         if actual != manifest.get("content_sha256"):
             raise PublishError(
                 f"快照内容哈希不符（可能被篡改）: {snapshot_id}"
@@ -155,11 +186,15 @@ class Publisher:
                 {**manifest, "rules": rules_doc.get("rules", [])},
                 defer_evidence_refs=True,
             )
-        except validator.ValidationError as exc:
+            sources = MaterialSources(self.profile_dir.parent.parent, read_only=True)
+            for rule in rules:
+                sources.validate_refs(rule.get("source_refs"), client_profile_id=self.profile_dir.name)
+        except (validator.ValidationError, ValueError, OSError) as exc:
             raise PublishError(f"快照不符合冻结契约，拒绝加载：{exc}") from exc
         return {"manifest": manifest, "rules_doc": rules_doc}
 
     # ---- 发布 ---------------------------------------------------------- #
+    @_serialized
     def publish(
         self,
         *,
@@ -173,13 +208,37 @@ class Publisher:
         actor: str,
         publish_reason: Optional[str] = None,
     ) -> Dict[str, Any]:
+        self.recover_pending_commits()
         current = self.read_manifest()
         if current.get("active_snapshot_id") != expected_active_snapshot:
             raise PublishError(
                 "expected active snapshot 与当前不一致；发布被拒绝（ACTIVE_SNAPSHOT_CONFLICT）。"
             )
 
+        if client_profile_id != self.profile_dir.name or current.get("client_profile_id") != client_profile_id:
+            raise PublishError("发布客户与目标目录不匹配。")
+        if public_asset_fingerprint == "sha256:" + "0" * 64 or public_snapshot_id == "public_sha256_" + "0" * 64:
+            raise PublishError("发布必须绑定真实公共规则指纹。")
         rules = list(rules)
+        target_set_sha256 = evidence_records.rule_set_hash(rules)
+        active_id = current.get("active_snapshot_id")
+        previous_rules = self.load_snapshot(active_id)["rules_doc"]["rules"] if active_id else []
+        require_rule_set = len(rules) > 1 and target_set_sha256 != evidence_records.rule_set_hash(previous_rules)
+        verified_refs = []
+        for rule in rules:
+            try:
+                validator.validate_client_rule(rule)
+                validator.validate_rule_business(rule)
+                MaterialSources(self.profile_dir.parent.parent, read_only=True).validate_refs(
+                    rule.get("source_refs"), client_profile_id=client_profile_id)
+                if rule.get("content_sha256") != models.content_hash(rule):
+                    raise PublishError("待发布规则内容哈希不匹配。")
+                verified_refs.extend(evidence_records.publication_refs(self.profile_dir, rule,
+                    public_fingerprint=public_asset_fingerprint, active_snapshot_id=active_id,
+                    target_set_sha256=target_set_sha256, require_rule_set=require_rule_set))
+            except (validator.ValidationError, evidence_records.EvidenceError, ValueError, OSError) as exc:
+                raise PublishError(str(exc)) from exc
+        evidence_refs = verified_refs
         validator.ensure_chain_consistency(
             expected_profile_id=client_profile_id,
             payloads=rules,
@@ -204,7 +263,7 @@ class Publisher:
                 {"check_id": f"chk_{kind}_validation", "check_kind": kind, "result": "passed",
                  "evidence_refs": list(evidence_refs)}
                 for kind in (
-                    "schema", "lifecycle", "legal_check", "regression", "isolation",
+                    "schema", "lifecycle", "human_approval", "executed_regression", "isolation",
                 )
             ],
         }
@@ -237,6 +296,7 @@ class Publisher:
         private_fs.secure_dir(self.snapshots_dir)
         staging = self.snapshots_dir / f"{TEMP_PREFIX}{snapshot_id}"
         private_fs.secure_dir(staging)
+        pointer_committed = False
         try:
             private_fs.atomic_write_json(staging / "manifest.json", snapshot_manifest)
             private_fs.atomic_write_json(staging / "rules.json", {"rules": list(rules)})
@@ -276,7 +336,7 @@ class Publisher:
                 {**snapshot_manifest, "rules": rules}, defer_evidence_refs=True
             )
             private_fs.atomic_write_json(staging / "manifest.json", snapshot_manifest)
-            os.replace(staging, final_dir)
+            platform_fs.replace(staging, final_dir)
             private_fs.secure_dir(final_dir)
             _fsync_dir(self.snapshots_dir)
 
@@ -301,6 +361,7 @@ class Publisher:
                 "content_sha256": content_sha,
             }
             self._swap_active_manifest(new_manifest)
+            pointer_committed = True
 
             # 4) COMMITTED 事件
             audit.append_event(
@@ -315,12 +376,17 @@ class Publisher:
                 },
             )
         except Exception:
-            # 回滚暂存区；旧 active manifest 未被触碰
+            # Pointer replacement is the commit point. Never claim failure after
+            # commit or undo a committed snapshot; a later access repairs audit.
+            if pointer_committed or self.read_manifest().get("publish_transaction_id") == transaction_id:
+                return {**snapshot_manifest, "commit_status": "committed_recovery_pending",
+                        "recovery_required": True}
+            # Only uncommitted staging may be cleaned.
             if staging.exists():
                 shutil.rmtree(staging, ignore_errors=True)
             raise
 
-        return snapshot_manifest
+        return {**snapshot_manifest, "commit_status": "committed", "recovery_required": False}
 
     def _swap_active_manifest(self, manifest: Mapping[str, Any]) -> None:
         """原子替换 active manifest。测试可通过替换本方法注入切换前故障。
@@ -332,6 +398,7 @@ class Publisher:
         _atomic_write_json(self.profile_dir / ACTIVE_MANIFEST_NAME, manifest)
 
     # ---- 回滚 ---------------------------------------------------------- #
+    @_serialized
     def rollback(
         self,
         *,
@@ -339,6 +406,7 @@ class Publisher:
         expected_active_snapshot: Optional[str],
         actor: str,
     ) -> Dict[str, Any]:
+        self.recover_pending_commits()
         current = self.read_manifest()
         if current.get("active_snapshot_id") != expected_active_snapshot:
             raise PublishError(
@@ -353,33 +421,48 @@ class Publisher:
         if target.get("client_profile_id") != current.get("client_profile_id"):
             raise PublishError("回滚目标不属于当前客户，拒绝。")
 
+        transaction_id = "ptx_" + uuid.uuid4().hex
+        prepared = audit.append_event(self.profile_dir, event_kind="PREPARED", actor=actor,
+            detail={"publish_transaction_id": transaction_id, "snapshot_id": target_snapshot,
+                    "previous_snapshot_id": current.get("active_snapshot_id"), "operation": "rollback"})
         new_manifest = dict(current)
-        new_manifest.update(
-            {
-                "active_snapshot_id": target["snapshot_id"],
-                "active_snapshot_sha256": target["content_sha256"],
-                "previous_snapshot_id": current.get("active_snapshot_id"),
-                "previous_snapshot_sha256": current.get("active_snapshot_sha256"),
-                "generation": int(current.get("generation", 0)) + 1,
-                "updated_at": _now(),
-                "updated_by": actor,
-                "content_sha256": target["content_sha256"],
-            }
-        )
-        self._swap_active_manifest(new_manifest)
-        audit.append_event(
-            self.profile_dir,
-            event_kind="ROLLED_BACK",
-            actor=actor,
-            detail={
-                "snapshot_id": target["snapshot_id"],
-                "previous_snapshot_id": current.get("active_snapshot_id"),
-                "content_sha256": target["content_sha256"],
-            },
-        )
-        return target
+        new_manifest.update({
+            "active_snapshot_id": target["snapshot_id"], "active_snapshot_sha256": target["content_sha256"],
+            "previous_snapshot_id": current.get("active_snapshot_id"),
+            "previous_snapshot_sha256": current.get("active_snapshot_sha256"),
+            "public_snapshot_id": target["public_snapshot_id"],
+            "public_asset_fingerprint": target["public_asset_fingerprint"],
+            "resolver_semantics_version": target["resolver_semantics_version"],
+            "publish_transaction_id": transaction_id, "prepare_audit_event_id": prepared["event_id"],
+            "generation": int(current.get("generation", 0)) + 1,
+            "committed_at": _now(), "updated_at": _now(), "updated_by": actor,
+            "content_sha256": target["content_sha256"],
+        })
+        pointer_committed = False
+        try:
+            self._swap_active_manifest(new_manifest)
+            pointer_committed = True
+            self._finish_commit(new_manifest, actor=actor, operation="rollback")
+        except Exception:
+            if pointer_committed or self.read_manifest().get("publish_transaction_id") == transaction_id:
+                return {**target, "commit_status": "committed_recovery_pending", "recovery_required": True}
+            raise
+        return {**target, "commit_status": "committed", "recovery_required": False}
+
+    def _finish_commit(self, manifest, *, actor, operation="publish", recovered=False):
+        detail = {"publish_transaction_id": manifest["publish_transaction_id"],
+                  "snapshot_id": manifest["active_snapshot_id"],
+                  "previous_snapshot_id": manifest.get("previous_snapshot_id"),
+                  "content_sha256": manifest["active_snapshot_sha256"], "operation": operation}
+        if operation == "rollback" and not audit.has_event(self.profile_dir, "ROLLED_BACK", publish_transaction_id=detail["publish_transaction_id"]):
+            audit.append_event(self.profile_dir, event_kind="ROLLED_BACK", actor=actor, detail=detail)
+        if recovered and not audit.has_event(self.profile_dir, "RECOVERED_COMMIT", publish_transaction_id=detail["publish_transaction_id"]):
+            audit.append_event(self.profile_dir, event_kind="RECOVERED_COMMIT", actor=actor, detail=detail)
+        if not audit.has_event(self.profile_dir, "COMMITTED", publish_transaction_id=detail["publish_transaction_id"]):
+            audit.append_event(self.profile_dir, event_kind="COMMITTED", actor=actor, detail=detail)
 
     # ---- 恢复 ---------------------------------------------------------- #
+    @_serialized
     def recover_pending_commits(self, actor: str = "system") -> bool:
         """切换后崩溃：manifest 已是 commit 事实，据此补记 COMMITTED（ADR-023）。"""
         manifest = self.read_manifest()
@@ -390,29 +473,20 @@ class Publisher:
             return False
         if audit.has_event(self.profile_dir, "COMMITTED", publish_transaction_id=transaction_id):
             return False
-        audit.append_event(
-            self.profile_dir,
-            event_kind="RECOVERED_COMMIT",
-            actor=actor,
-            detail={
-                "publish_transaction_id": transaction_id,
-                "snapshot_id": manifest.get("active_snapshot_id"),
-                "content_sha256": manifest.get("active_snapshot_sha256"),
-            },
-        )
-        audit.append_event(
-            self.profile_dir,
-            event_kind="COMMITTED",
-            actor=actor,
-            detail={
-                "publish_transaction_id": transaction_id,
-                "snapshot_id": manifest.get("active_snapshot_id"),
-                "content_sha256": manifest.get("active_snapshot_sha256"),
-                "recovered": True,
-            },
-        )
+        snapshot = self.load_snapshot(manifest["active_snapshot_id"])["manifest"]
+        if snapshot["content_sha256"] != manifest["active_snapshot_sha256"]:
+            raise PublishError("恢复被拒绝：active 与快照哈希不一致。")
+        events = audit.list_events(self.profile_dir)
+        prepared = next((e for e in events if e.get("event_id") == manifest["prepare_audit_event_id"]
+                         and e.get("event_kind") == "PREPARED"
+                         and e.get("publish_transaction_id") == transaction_id
+                         and e.get("snapshot_id") == manifest["active_snapshot_id"]), None)
+        if prepared is None:
+            raise PublishError("恢复被拒绝：提交缺少匹配的 PREPARED 记录。")
+        self._finish_commit(manifest, actor=actor, operation=prepared.get("operation", "publish"), recovered=True)
         return True
 
+    @_serialized
     def cleanup_orphan_staging(self) -> List[str]:
         """识别过期临时目录。**不**把它当作 active（§10）。"""
         if not self.snapshots_dir.is_dir():

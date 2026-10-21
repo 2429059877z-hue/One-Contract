@@ -42,7 +42,121 @@
       "additionalProperties": true
     },
     "summary": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "amount": {},
+        "business_model": {},
+        "business_overview": {},
+        "conclusion": {},
+        "confirmed_domain_code": {},
+        "contract_amount": {},
+        "contract_name": {},
+        "contract_summary": {},
+        "contract_term": {},
+        "contract_type": {},
+        "core_conclusion": {},
+        "core_rights_obligations": {},
+        "coverage_assets": {},
+        "coverage_level": {},
+        "deal_overview": {},
+        "duration": {},
+        "key_milestones": {},
+        "key_recommendations": {},
+        "milestones": {},
+        "missing_fields": {},
+        "missing_information": {},
+        "obligations_overview": {},
+        "opinion": {},
+        "overall_opinion": {},
+        "overall_risk": {},
+        "overview": {},
+        "parties": {},
+        "party_a": {},
+        "party_a_name": {},
+        "party_b": {},
+        "party_b_name": {},
+        "party_role": {},
+        "payment_arrangement": {},
+        "payment_terms": {},
+        "pending_items": {},
+        "price_overview": {},
+        "price_terms": {},
+        "pricing_terms": {},
+        "primary_domain_code": {},
+        "primary_type_id": {},
+        "review_opinion": {},
+        "review_version": {},
+        "rights_allocation_changes": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "required": [
+                  "finding_id",
+                  "original",
+                  "revised",
+                  "reason",
+                  "alternative"
+                ],
+                "properties": {
+                  "finding_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "original": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "revised": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "alternative": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "rights_and_obligations": {},
+        "rights_obligations": {},
+        "rights_obligations_summary": {},
+        "risk_level": {},
+        "role": {},
+        "signing_date": {},
+        "stub_topics": {},
+        "tax_advice": {},
+        "tax_notes": {},
+        "tax_recommendation": {},
+        "tax_recommendations": {},
+        "tax_suggestion": {},
+        "tax_suggestions": {},
+        "term": {},
+        "timeline": {},
+        "title": {},
+        "to_fill_items": {},
+        "total_amount": {},
+        "transaction_content": {},
+        "transaction_profile": {},
+        "version": {},
+        "乙方": {},
+        "待填事项": {},
+        "涉税建议": {},
+        "甲方": {}
+      },
+      "additionalProperties": false
     },
     "transaction_facts": {
       "type": "object"
@@ -96,11 +210,13 @@
               "comment",
               "report-only",
               "delete",
+              "delete_paragraph",
               "insert",
               "replace",
               "none",
               "skip"
-            ]
+            ],
+            "description": "delete 只删除文字；delete_paragraph 删除完整段落文字及段落标记，要求完整段落定位，复杂结构会拒绝。"
           },
           "legal_basis": {
             "oneOf": [
@@ -194,7 +310,8 @@
                     "report-only",
                     "delete",
                     "insert",
-                    "replace"
+                    "replace",
+                    "delete_paragraph"
                   ]
                 },
                 "uniqueItems": true
@@ -222,6 +339,84 @@
               }
             },
             "additionalProperties": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "clause": {
+            "type": "string"
+          },
+          "clause_position": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          },
+          "target_text": {
+            "type": "string",
+            "description": "接受视图中的最小充分修改区间；delete_paragraph 必须覆盖完整段落。insert 使用该文字所在段作为插入位置。"
+          },
+          "search": {
+            "type": "string"
+          },
+          "replacement_text": {
+            "type": "string"
+          },
+          "recommended_text": {
+            "type": "string"
+          },
+          "insert_text": {
+            "type": "string",
+            "description": "action=insert 默认按换行生成多个真实段落并按文本顺序插入；显式 tag=w:r 的行内插入不拆段。"
+          },
+          "occurrence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "从1开始，按本条执行时接受视图中的剩余匹配计数，不是原始文档位置序号。"
+          },
+          "selector": {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              },
+              "attrs": {
+                "type": "object"
+              },
+              "line_number": {
+                "type": [
+                  "integer",
+                  "array"
+                ]
+              },
+              "occurrence": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "从1开始，按本条执行时接受视图中的剩余匹配计数，不是原始文档位置序号。"
+              }
+            }
+          },
+          "rights_allocation_change": {
+            "type": "boolean",
+            "description": "改变权利归属的改文必须为 true，且 summary.rights_allocation_changes 须披露"
           }
         },
         "additionalProperties": true
@@ -354,6 +549,72 @@
         }
       },
       "additionalProperties": true
+    },
+    "knowledge_selection": {
+      "type": "object",
+      "required": [
+        "primary_type_id",
+        "our_role",
+        "scene_tags"
+      ],
+      "properties": {
+        "primary_type_id": {
+          "type": "string"
+        },
+        "secondary_type_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "our_role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scene_tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "classification_status": {
+          "type": "string"
+        },
+        "confirmed_domain_code": {
+          "type": "string"
+        }
+      }
+    },
+    "module_checklist": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "status",
+          "reason",
+          "finding_ids"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "checked",
+              "not_applicable"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": true,

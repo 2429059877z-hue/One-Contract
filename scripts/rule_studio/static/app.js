@@ -24,6 +24,7 @@
         session.token = body.result.token;
         session.csrf = body.result.csrf_token;
         session.origin = body.result.origin;
+        session.readOnly = Boolean(body.result.read_only);
       });
   }
 
@@ -181,8 +182,8 @@
    * （推进到哪一步、是否已经生效、有没有动到历史数据）。
    * 缺字段时回落成通用中文，**不回落 JSON**——回落成 JSON 等于前功尽弃。
    */
-  function lifecycleMessage(action, result) {
-    var rule = (loadedDraft && loadedDraft.title) || "该规则";
+  function lifecycleMessage(action, result, requestedTitle) {
+    var rule = requestedTitle || (loadedDraft && loadedDraft.title) || "该规则";
     if (action === "submit") {
       return "已送交复核：" + rule + "。当前仍未启用。";
     }
@@ -193,7 +194,7 @@
       return "已记录测试通过：" + rule + "。确认无误后即可启用。";
     }
     if (action === "deprecate") {
-      return "已停用：" + rule + "（历史快照保留，规则未被删除）";
+      return "已记录停用安排：" + rule + "。须启用新的客户快照后生效；当前已启用快照仍保持原内容。";
     }
     if (action === "delete") {
       return "已删除草稿：" + rule;
@@ -218,7 +219,7 @@
 
   // ---------- 视图切换 ---------- //
   function showView(name) {
-    ["map", "preview", "clients", "proposals"].forEach(function (key) {
+    ["map", "preview", "clients", "proposals", "tasks", "workspace"].forEach(function (key) {
       var section = document.getElementById("view-" + key);
       if (section) { section.hidden = key !== name; }
     });
@@ -233,7 +234,7 @@
   }
 
   // ---------- 知识地图 ---------- //
-  var currentRuleId = null;
+  var selectedNodeId = null;
 
   function renderTree(result) {
     var nodes = result.nodes || [];
@@ -352,7 +353,7 @@
   }
 
   function selectNode(ruleId) {
-    currentRuleId = ruleId;
+    selectedNodeId = ruleId;
     // 先把三个面板清空再请求：请求失败时必须**空着**，不能把上一个节点的
     // 内容留在面板里——那会让提示行写着本节点 ID、详情却显示另一个节点，
     // 把 A 的数据标成 B 的详情。全局文档节点（node_id 含 `/`）曾因此 404。
@@ -364,6 +365,7 @@
     hint.textContent = "正在读取所选规则的关联信息……";
 
     call("GET", "/api/v1/rules/" + encodeURIComponent(ruleId)).then(function (res) {
+      if (selectedNodeId !== ruleId) { return; }
       if (res.body.success) {
         renderDetail(res.body.result);
       } else {
@@ -373,6 +375,7 @@
     });
     call("GET", "/api/v1/rules/" + encodeURIComponent(ruleId) + "/neighbors")
       .then(function (res) {
+        if (selectedNodeId !== ruleId) { return; }
         if (res.body.success) {
           renderEdges(res.body.result.edges);
         } else {
@@ -403,6 +406,7 @@
 
   // ---------- 运行预览 ---------- //
   var contractTypeChoices = {};
+  var previewVocabulary = null;
   var typeSceneDefaults = {
     "type-equity-transfer": "",
     "type-equipment-material-procurement": "equipment_purchase",
@@ -414,6 +418,52 @@
     "type-catalog-abe9bdc8c200506c93cd": "handover",
     "type-catalog-dfd7bd98afd650ff925c": "handover"
   };
+
+  function previewReady() {
+    return previewVocabulary !== null && Object.keys(contractTypeChoices).length > 0;
+  }
+
+  function refreshPreviewControls() {
+    var ready = previewReady();
+    ["p-role", "p-stage", "p-scene", "preview-run"].forEach(function (id) {
+      document.getElementById(id).disabled = !ready;
+    });
+    if (ready) { document.getElementById("preview-catalog-status").textContent = ""; }
+  }
+
+  function loadPreviewVocabulary() {
+    return call("GET", "/api/v1/authoring/schema?kind=client_rule").then(function (res) {
+      var vocabulary = res.body.success && res.body.result && res.body.result.vocabulary;
+      var valid = vocabulary && ["role_options", "stage_options", "scene_options"].every(function (key) {
+        return Array.isArray(vocabulary[key]) && vocabulary[key].length > 0 && vocabulary[key].every(function (item) {
+          return typeof item.value === "string" && item.value && typeof item.label === "string" && item.label;
+        });
+      });
+      if (!valid) {
+        previewVocabulary = null;
+        refreshPreviewControls();
+        document.getElementById("preview-catalog-status").textContent =
+          "合同选项读取失败，暂不能试运行。请刷新页面后重试。";
+        return;
+      }
+      [["p-role", "role_options", "buyer"], ["p-stage", "stage_options", "signing"],
+       ["p-scene", "scene_options", ""]].forEach(function (field) {
+        var select = document.getElementById(field[0]);
+        clear(select);
+        if (field[0] === "p-scene") {
+          var ordinary = el("option", "常规审查"); ordinary.value = ""; select.appendChild(ordinary);
+        }
+        vocabulary[field[1]].forEach(function (item) {
+          var option = el("option", item.label); option.value = item.value; select.appendChild(option);
+        });
+        select.value = field[2];
+      });
+      previewVocabulary = vocabulary;
+      // 合同类型与词表独立读取：无论谁先返回，默认场景都来自当前所选类型。
+      syncPreviewContext();
+      refreshPreviewControls();
+    });
+  }
 
   function syncPreviewContext() {
     var select = document.getElementById("p-type");
@@ -436,6 +486,7 @@
         select.appendChild(el("option", "读取合同类型失败"));
         ruleSelect.appendChild(el("option", "读取合同类型失败"));
         document.getElementById("preview-status").textContent = errorText(res.body, "读取合同类型失败：");
+        refreshPreviewControls();
         return;
       }
       res.body.result.contract_types.forEach(function (item) {
@@ -451,6 +502,7 @@
         ruleSelect.value = "type-equipment-material-procurement";
       }
       syncPreviewContext();
+      refreshPreviewControls();
       syncRuleFriendlyScope();
     });
   }
@@ -480,12 +532,16 @@
     var excluded = document.getElementById("preview-excluded");
     var trace = document.getElementById("preview-trace");
     clear(effective); clear(excluded); clear(trace);
+    var applicationNotices = (result.rule_conflicts || []).filter(function(item){
+      return item.code === "CLIENT_APPLICATION_REVIEW" && item.source_layer === "client" && item.blocking === false;
+    });
 
     (result.effective_rules || []).forEach(function (rule) {
-      appendRuleItem(effective, rule, rule.inclusion_reason);
+      var review = rule.source_layer === "client" && applicationNotices.some(function(item){return (item.rule_ids || []).indexOf(rule.rule_id) >= 0;});
+      appendRuleItem(effective, rule, (rule.inclusion_reason || "") + (review ? " 进入审查候选；须由 AI 结合合同全文判断，并在真实合同批注中说明。" : ""));
     });
     if (!(result.effective_rules || []).length) {
-      effective.appendChild(el("li", "没有生效规则。", "hint"));
+      effective.appendChild(el("li", "没有进入本次审查的规则。", "hint"));
     }
 
     (result.excluded_rules || []).forEach(function (rule) {
@@ -497,7 +553,7 @@
 
     (result.rule_conflicts || []).forEach(function (conflict) {
       var li = document.createElement("li");
-      li.appendChild(el("span", label("conflict", conflict.code || "CONFLICT"), "warning"));
+      li.appendChild(el("span", conflict.code === "CLIENT_APPLICATION_REVIEW" && conflict.source_layer === "client" && conflict.blocking === false ? "交由 AI 结合全文判断（不阻断其他修订）" : label("conflict", conflict.code || "CONFLICT"), "warning"));
       li.appendChild(el("div", conflict.detail || conflict.kind || "", "hint"));
       var details = document.createElement("details");
       details.className = "technical-details";
@@ -512,7 +568,7 @@
 
     var status = document.getElementById("preview-status");
     status.textContent = "规则覆盖情况：" + label("coverage", result.coverage_level)
-      + "。" + (result.coverage_notice || "");
+      + "。" + (result.coverage_notice || "") + (applicationNotices.length ? " 客户规则含需阅读全文判断的候选；试运行不是最终适用结论，也不代表已写入合同。" : "");
     document.getElementById("preview-confirm").hidden = !result.human_confirmation_required;
   }
 
@@ -612,7 +668,10 @@
   }
 
   function fillRuleForm(draft) {
+    if(draft.client_profile_id!==currentProfileId){return;}
+    if (!loadedDraft || loadedDraft.client_rule_id !== draft.client_rule_id || loadedDraft.revision !== draft.revision) { document.getElementById("lc-evidence").value = ""; }
     loadedDraft = draft;
+    if (window.AuthoringWorkbench) { window.AuthoringWorkbench.loadClient(draft); }
     currentRuleId = draft.client_rule_id || null;
     document.getElementById("r-id").value = draft.client_rule_id || "";
     document.getElementById("r-title").value = draft.title || "";
@@ -653,9 +712,15 @@
     updateLifecycleLabel();
   }
 
+  function adoptRuleVersion(draft) {
+    if(draft.client_profile_id!==currentProfileId||(currentRuleId&&draft.client_rule_id!==currentRuleId)){return false;}
+    loadedDraft=draft;currentRuleId=draft.client_rule_id;updateLifecycleLabel();return true;
+  }
+
   function clearRuleForm() {
     loadedDraft = null;
     currentRuleId = null;
+    if (window.AuthoringWorkbench) { window.AuthoringWorkbench.loadClient(null); }
     ["r-id", "r-title"].forEach(function (id) { document.getElementById(id).value = ""; });
     document.getElementById("r-version").value = "1.0.0";
     document.getElementById("r-kind").value = "requirement";
@@ -680,6 +745,7 @@
    * 否则编辑一条已批准的规则会把它的状态重置回 candidate。
    */
   function ruleFromForm() {
+    if (window.AuthoringWorkbench && window.AuthoringWorkbench.ready) { return window.AuthoringWorkbench.getClientRule(currentProfileId); }
     var ruleId = formValue("r-id");
     if (!ruleId) {
       ruleId = localId("cr_local_");
@@ -721,11 +787,8 @@
       contract_stages: splitList(formValue("r-stages")),
       clause_groups: splitList(formValue("r-groups")),
     };
-    base.condition = {
-      mode: formValue("r-cond-mode"), clauses: [],
-      human_confirmation_required: false,
-    };
-    base.effect = { action: formValue("r-action"), target_key: formValue("r-target"), value: value };
+    base.condition = Object.assign({clauses: [],human_confirmation_required:false},base.condition||{},{mode:formValue("r-cond-mode")});
+    base.effect = Object.assign({},base.effect||{},{ action: formValue("r-action"), target_key: formValue("r-target"), value: value });
     base.source_refs = splitList(formValue("r-sources"));
     return base;
   }
@@ -736,28 +799,97 @@
       document.getElementById("rule-status").textContent = "请先选择或创建一个客户档案。";
       return;
     }
-    var rule = ruleFromForm();
+    var rule;
+    try { rule = ruleFromForm(); } catch (error) { document.getElementById("rule-status").textContent = error.message; return; }
+    var workbench=window.AuthoringWorkbench&&window.AuthoringWorkbench.ready?window.AuthoringWorkbench:null;
+    var token=workbench?workbench.beginClientRequest("save"):null;
+    if(workbench&&!token){return;}
+    if(!workbench&&saveRuleDraft.pending){return;}
+    var requestedProfile=currentProfileId,requestedRule=currentRuleId;
     var isNew = !(loadedDraft && loadedDraft.client_rule_id === rule.client_rule_id);
-    var base = "/api/v1/clients/" + encodeURIComponent(currentProfileId);
+    var base = "/api/v1/clients/" + encodeURIComponent(requestedProfile);
+    if(!workbench){saveRuleDraft.pending=true;}
     var request = isNew
       ? call("POST", base + "/client-rules", { rule: rule })
       : call("POST", base + "/drafts",
              { draft: rule, expected_revision: loadedDraft.revision });
-    request.then(function (res) {
+    request.then(async function (res) {
+      if(requestedProfile!==currentProfileId||requestedRule!==currentRuleId||(workbench&&!workbench.clientRequestCurrent(token))){return;}
       var box = document.getElementById("rule-status");
       if (res.body.success) {
+        var saved = res.body.result.draft || res.body.result.rule || res.body.result;
+        if(!saved.scope){
+          var detail=await call("GET",base+"/drafts/"+encodeURIComponent(rule.client_rule_id));
+          if(requestedProfile!==currentProfileId||requestedRule!==currentRuleId||(workbench&&!workbench.clientRequestCurrent(token))){return;}
+          if(!detail.body.success||!detail.body.result.draft||detail.body.result.draft.revision!==saved.revision){
+            box.className="warning";box.textContent="提交已保存，但最新版本读取失败或又有修改。当前填写已保留，请重新载入并核对后继续。";return;
+          }
+          saved=detail.body.result.draft;
+        }
+        var applied=workbench?workbench.applyClientResult(token,saved):{applied:true,preserved:false};
+        if(!applied.applied){return;}
+        if(!workbench&&saved.client_rule_id&&saved.scope){fillRuleForm(saved);}
         box.className = "hint";
         box.textContent = (isNew ? "已新建规则草稿。" : "已保存修改。")
-          + "当前仍未启用。";
-        loadClientDetail(currentProfileId);
+          + "当前仍未启用。"+(applied.preserved?"等待期间的填写已保留，尚未保存；请继续核对后再次保存。":"");
+        loadClientDetail(requestedProfile);
       } else {
         box.className = "warning";
         box.textContent = errorText(res.body, isNew ? "新建失败：" : "保存失败：");
       }
-    });
+    }).finally(function(){if(workbench){workbench.endClientRequest(token);}else{saveRuleDraft.pending=false;}});
+  }
+
+  function lifecycleFormSnapshot() {
+    return JSON.stringify(Array.from(document.querySelectorAll("#rule-form input,#rule-form textarea,#rule-form select")).map(function(e){
+      return [e.id,e.name,e.type,e.value,e.checked,e.multiple?Array.from(e.selectedOptions).map(function(o){return o.value;}):null];
+    }));
+  }
+  function beginLifecycleOperation(kind) {
+    var workbench=window.AuthoringWorkbench&&window.AuthoringWorkbench.ready?window.AuthoringWorkbench:null;
+    var token=workbench?workbench.beginClientRequest(kind):null;
+    if(workbench&&!token){return null;}
+    if(!workbench&&beginLifecycleOperation.pending){lcLine("当前操作尚未完成，请等待后再提交。",true);return null;}
+    var operation={workbench:workbench,token:token,profileId:currentProfileId,ruleId:currentRuleId,
+      title:loadedDraft&&loadedDraft.title,form:lifecycleFormSnapshot()};
+    if(!workbench){beginLifecycleOperation.pending=operation;}return operation;
+  }
+  function lifecycleOperationCurrent(operation) {
+    return operation.profileId===currentProfileId&&operation.ruleId===currentRuleId
+      &&(!operation.workbench||operation.workbench.clientRequestCurrent(operation.token));
+  }
+  function endLifecycleOperation(operation) {
+    if(operation.workbench){operation.workbench.endClientRequest(operation.token);}
+    else if(beginLifecycleOperation.pending===operation){beginLifecycleOperation.pending=null;}
+  }
+  function lifecycleFormChanged(operation) {
+    if(operation.workbench){var token=operation.token;return JSON.stringify(token.editor.value)!==token.value
+      ||token.value!==token.editor.baseline||operation.form!==lifecycleFormSnapshot();}
+    return operation.form!==lifecycleFormSnapshot();
+  }
+  async function finishLifecycleOperation(operation,message,options) {
+    if(!lifecycleOperationCurrent(operation)){return;}options=options||{};
+    var base="/api/v1/clients/"+encodeURIComponent(operation.profileId),preserved=false;
+    if(options.deleted){
+      preserved=lifecycleFormChanged(operation);
+      if(preserved){loadedDraft=null;currentRuleId=null;updateLifecycleLabel();}
+      else{clearRuleForm();}
+    }else if(options.refreshRule&&operation.ruleId){
+      var response=await call("GET",base+"/drafts/"+encodeURIComponent(operation.ruleId));
+      if(!lifecycleOperationCurrent(operation)){return;}
+      if(!response.body.success){lcLine(message+" 最新草稿读取失败，当前填写已保留；请刷新后核对。",true);loadClientDetail(operation.profileId);return;}
+      var draft=response.body.result.draft;
+      if(operation.workbench){var applied=operation.workbench.applyClientResult(operation.token,draft);if(!applied.applied){return;}preserved=applied.preserved;}
+      else{preserved=lifecycleFormChanged(operation);if(preserved){loadedDraft=draft;updateLifecycleLabel();}else{fillRuleForm(draft);}}
+    }
+    // Refresh only the captured customer's lists. Never reload an editor by
+    // looking up mutable currentProfileId / loadedDraft after a delayed response.
+    loadClientDetail(operation.profileId);
+    lcLine(message+(preserved?(options.deleted?" 后续填写已保留，尚未保存；再次保存会新建草稿。":" 等待期间或操作前尚未保存的填写已保留，请核对后另行保存。" ):""),Boolean(options.warning));
   }
 
   function lifecycleRequest(action) {
+    if (action === "regression" && window.AuthoringWorkbench) { window.AuthoringWorkbench.runTests(); return; }
     if (!currentProfileId) { lcLine("请先选择客户档案。", true); return; }
     var base = "/api/v1/clients/" + encodeURIComponent(currentProfileId);
     var needsRule = action !== "baseline";
@@ -780,15 +912,18 @@
     }[action];
     if (!spec) { lcLine("未知操作：" + action, true); return; }
 
+    var operation=beginLifecycleOperation(action);if(!operation){return;}
+    if (needsRule && loadedDraft) { spec.body.expected_revision = loadedDraft.revision; }
     call("POST", spec.path, spec.body).then(function (res) {
+      if(!lifecycleOperationCurrent(operation)){return;}
       if (res.body.success) {
-        lcLine(lifecycleMessage(action, res.body.result || {}), false);
-        loadClientDetail(currentProfileId);
-        if (loadedDraft) { loadRuleIntoForm(loadedDraft.client_rule_id); }
+        return finishLifecycleOperation(operation,lifecycleMessage(action,res.body.result||{},operation.title),
+          {deleted:action==="delete",refreshRule:needsRule&&action!=="delete"});
       } else {
         lcLine(errorText(res.body, "操作失败（" + action + "）："), true);
       }
-    });
+    }).catch(function(error){if(lifecycleOperationCurrent(operation)){lcLine("操作结果未能读取，请刷新核对；当前填写已保留。"+error.message,true);}})
+      .finally(function(){endLifecycleOperation(operation);});
   }
 
   /** 发布：必须携带**当前**生效快照做比较交换，故先读再发。 */
@@ -799,17 +934,21 @@
       return;
     }
     var base = "/api/v1/clients/" + encodeURIComponent(currentProfileId);
+    var operation=beginLifecycleOperation("publish");if(!operation){return;}
     call("GET", base + "/snapshots").then(function (res) {
-      var active = res.body.success ? res.body.result.active_snapshot_id : null;
-      call("POST", base + "/publish",
+      if (!res.body.success) { if(lifecycleOperationCurrent(operation)){lcLine(errorText(res.body,"读取当前版本失败："),true);}return; }
+      var active = res.body.result.active_snapshot_id;
+      return call("POST", base + "/publish",
            { confirmation: true, expected_active_snapshot: active })
         .then(function (out) {
+          if(!lifecycleOperationCurrent(operation)){return;}
           if (!out.body.success) {
             lcLine(errorText(out.body, "发布失败："), true);
             return;
           }
           var result = out.body.result || {};
           var message = "已启用新版客户规则。今后的合同审查将使用本次确认内容。";
+          if (result.recovery_required) { message += " 恢复记录仍待完成，请刷新后核对，勿重复启用。"; }
           var skipped = result.skipped_drafts || [];
           if (skipped.length) {
             // 发布成功不等于「全都发布了」：未完成审批/回归的草稿没有被包含。
@@ -819,10 +958,10 @@
                   return d.title || "未命名规则";
                 }).join("、");
           }
-          lcLine(message, skipped.length > 0);
-          loadClientDetail(currentProfileId);
+          return finishLifecycleOperation(operation,message,{refreshRule:true,warning:skipped.length>0});
         });
-    });
+    }).catch(function(error){if(lifecycleOperationCurrent(operation)){lcLine("启用结果未能读取，请刷新核对；当前填写已保留。"+error.message,true);}})
+      .finally(function(){endLifecycleOperation(operation);});
   }
 
   /** 回滚到**上一快照**：目标取自接口返回的 previous_snapshot_id（权威链接），不靠位次。 */
@@ -833,33 +972,41 @@
       return;
     }
     var base = "/api/v1/clients/" + encodeURIComponent(currentProfileId);
+    var operation=beginLifecycleOperation("rollback");if(!operation){return;}
     call("GET", base + "/snapshots").then(function (res) {
       var result = res.body.success ? res.body.result : {};
       if (!result.previous_snapshot_id) {
-        lcLine("当前没有可恢复的上一版本。请先建立回退点。", true);
+        if(lifecycleOperationCurrent(operation)){lcLine(res.body.success?"当前没有可恢复的上一版本。请先建立回退点。":errorText(res.body,"读取当前版本失败："), true);}
         return;
       }
-      call("POST", base + "/rollback",
+      return call("POST", base + "/rollback",
            { target_snapshot: result.previous_snapshot_id,
              expected_active_snapshot: result.active_snapshot_id })
         .then(function (out) {
+          if(!lifecycleOperationCurrent(operation)){return;}
           if (out.body.success) {
-            lcLine("已恢复到上一版本；刚才启用的客户规则不再生效。", false);
-            loadClientDetail(currentProfileId);
+            return finishLifecycleOperation(operation,"已恢复到上一版本；刚才启用的客户规则不再生效。",{refreshRule:true});
           } else {
             lcLine(errorText(out.body, "回滚失败："), true);
           }
         });
-    });
+    }).catch(function(error){if(lifecycleOperationCurrent(operation)){lcLine("恢复结果未能读取，请刷新核对；当前填写已保留。"+error.message,true);}})
+      .finally(function(){endLifecycleOperation(operation);});
   }
 
   function loadRuleIntoForm(ruleId) {
-    call("GET", "/api/v1/clients/" + encodeURIComponent(currentProfileId)
+    var requestedProfile = currentProfileId;
+    currentRuleId = ruleId;
+    return call("GET", "/api/v1/clients/" + encodeURIComponent(currentProfileId)
          + "/drafts/" + encodeURIComponent(ruleId))
       .then(function (res) {
+        if (requestedProfile !== currentProfileId || ruleId !== currentRuleId) { return; }
         if (res.body.success) {
           fillRuleForm(res.body.result.draft);
         } else {
+          loadedDraft = null; currentRuleId = null;
+          if (window.AuthoringWorkbench) { window.AuthoringWorkbench.loadClient(null); }
+          updateLifecycleLabel();
           document.getElementById("rule-status").textContent =
             errorText(res.body, "载入草稿失败：");
         }
@@ -876,6 +1023,9 @@
       }
       var list = document.getElementById("client-list");
       var select = document.getElementById("p-client");
+      // 以回包时的选择为准，保留等待期间用户刚切换的客户。
+      var selectedClient = select.value;
+      var selectedClientLabel = select.selectedOptions.length ? select.selectedOptions[0].textContent : "所选客户";
       clear(list);
       clientNames = {};
       while (select.options.length > 1) { select.remove(1); }
@@ -902,6 +1052,18 @@
         option.textContent = client.display_name;
         select.appendChild(option);
       });
+      if (Object.prototype.hasOwnProperty.call(clientNames, selectedClient)) {
+        select.value = selectedClient;
+      } else if (selectedClient) {
+        // 迟到的列表可能早于新客户的创建，不能把本次选择静默改成仅用公共规则。
+        var retained = el("option", selectedClientLabel);
+        retained.value = selectedClient;
+        retained.dataset.unresolved = "true";
+        select.appendChild(retained);
+        select.value = selectedClient;
+        document.getElementById("preview-status").textContent =
+          "返回的客户列表未包含当前所选客户，已保留原选择，请重新读取客户列表后核对。未自动改为仅用公共规则。";
+      }
       if (!res.body.result.clients.length) {
         list.appendChild(el("li", "尚未创建顾问单位档案。", "hint"));
       }
@@ -913,10 +1075,12 @@
   }
 
   function loadClientDetail(profileId) {
+    if (currentProfileId !== profileId) { currentProfileId = profileId; clearRuleForm(); }
     currentProfileId = profileId;
     updateLifecycleLabel();
     call("GET", "/api/v1/clients/" + encodeURIComponent(profileId) + "/drafts")
       .then(function (res) {
+        if (currentProfileId !== profileId) { return; }
         var list = document.getElementById("draft-list");
         clear(list);
         document.getElementById("drafts-empty").hidden = false;
@@ -945,6 +1109,7 @@
       });
     call("GET", "/api/v1/clients/" + encodeURIComponent(profileId) + "/snapshots")
       .then(function (res) {
+        if (currentProfileId !== profileId) { return; }
         var list = document.getElementById("snapshot-list");
         clear(list);
         if (!res.body.success) { return; }
@@ -965,6 +1130,7 @@
       });
     call("GET", "/api/v1/clients/" + encodeURIComponent(profileId) + "/audit")
       .then(function (res) {
+        if (currentProfileId !== profileId) { return; }
         var list = document.getElementById("audit-list");
         clear(list);
         if (!res.body.success) { return; }
@@ -1013,6 +1179,7 @@
   }
 
   function loadProposalDetail(proposalId) {
+    if (window.AuthoringWorkbench && window.AuthoringWorkbench.ready) { window.AuthoringWorkbench.showProposal(proposalId); return; }
     document.getElementById("proposal-detail-hint").textContent = "正在读取所选建议……";
     call("GET", "/api/v1/public-proposals/" + encodeURIComponent(proposalId) + "/diff")
       .then(function (res) {
@@ -1069,6 +1236,11 @@
 
     document.getElementById("preview-form").addEventListener("submit", function (event) {
       event.preventDefault();
+      if (!previewReady()) {
+        document.getElementById("preview-catalog-status").textContent =
+          "合同选项尚未完整读取，暂不能试运行。请刷新页面后重试。";
+        return;
+      }
       var clientId = document.getElementById("p-client").value;
       var context = {
         primary_type_id: document.getElementById("p-type").value.trim(),
@@ -1080,9 +1252,8 @@
         }).filter(Boolean),
         classification_status: "high",
         confirmed_domain_code: document.getElementById("p-domain").value.trim(),
-        // 合同阶段是作用域的一个维度：规则若限定 contract_stages，此处不传就被判为
-        // 「未命中」而排除。此前界面从不发送该字段，于是任何限定阶段的客户规则
-        // 都不可能生效——用户会以为规则没保存成功。
+        // 阶段参与客户规则的结构化预筛；业务不匹配仍交由全文 AI 判断，
+        // 不能把候选列表或预筛结果表述为已经在合同中实际采用。
         contract_stage: document.getElementById("p-stage").value.trim() || null,
         facts: document.getElementById("presale-permit-field").hidden ? {} : {
           "presale.permit.validity": document.getElementById("p-presale-permit").value || "unverified"
@@ -1091,6 +1262,7 @@
         client_profile_id: clientId || null,
         client_policy_snapshot_id: null,
       };
+      if(window.AuthoringWorkbench&&window.AuthoringWorkbench.previewExtras){var extra=window.AuthoringWorkbench.previewExtras();context.facts=Object.assign(context.facts,extra.facts);context.review_scope=extra.review_scope;context.clause_groups=extra.clause_groups;}
       call("POST", "/api/v1/resolutions/preview", { context: context }).then(function (res) {
         if (res.body.success) {
           renderResolution(res.body.result);
@@ -1104,6 +1276,7 @@
     var proposalForm = document.getElementById("proposal-form");
     proposalForm.addEventListener("submit", function (event) {
       event.preventDefault();
+      if (window.AuthoringWorkbench) { window.AuthoringWorkbench.saveProposal(); return; }
       var target = document.getElementById("pp-target").value.trim();
       var payload = {
         operation: document.getElementById("pp-op").value,
@@ -1155,7 +1328,7 @@
 
     // 规则编辑器与生命周期按钮
     document.getElementById("rule-form").addEventListener("submit", saveRuleDraft);
-    document.getElementById("r-clear").addEventListener("click", clearRuleForm);
+    document.getElementById("r-clear").addEventListener("click", function(){clearRuleForm();document.getElementById("client-manual-editor").open=true;});
     ["submit", "approve", "regression", "baseline", "deprecate", "delete"].forEach(function (action) {
       var button = document.getElementById("lc-" + action);
       if (button) {
@@ -1166,14 +1339,36 @@
     document.getElementById("lc-rollback").addEventListener("click", rollbackPrevious);
   }
 
+  window.Studio = {call:call,el:el,clear:clear,errorText:errorText,selectNode:selectNode,showView:showView,
+    loadProposals:loadProposals,loadClientDetail:loadClientDetail,loadRuleIntoForm:loadRuleIntoForm,fillRuleForm:fillRuleForm,adoptRuleVersion:adoptRuleVersion,clearRuleForm:clearRuleForm,
+    editClientRule:async function(profileId,ruleId){
+      var result=await call("GET","/api/v1/clients/"+encodeURIComponent(profileId));
+      if(!result.body.success){throw Error(errorText(result.body,"客户读取失败："));}
+      clientNames[profileId]=result.body.result.display_name;loadClientDetail(profileId);showView("clients");
+      await loadRuleIntoForm(ruleId);return currentProfileId===profileId&&currentRuleId===ruleId&&loadedDraft!==null;
+    },
+    openRulePreview:async function(profileId,typeId){
+      await loadClients();if(!Object.keys(contractTypeChoices).length){await loadContractTypes();}
+      showView("preview");var previewClient=document.getElementById("p-client");
+      var clientAvailable=!profileId||Array.prototype.some.call(previewClient.options,function(option){return option.value===profileId&&option.dataset.unresolved!=="true";});
+      if(!clientAvailable&&!Array.prototype.some.call(previewClient.options,function(option){return option.value===profileId;})){var unresolvedClient=el("option","所选客户（客户列表尚未确认）");unresolvedClient.value=profileId;unresolvedClient.dataset.unresolved="true";previewClient.appendChild(unresolvedClient);}
+      previewClient.value=profileId||"";
+      ["preview-effective","preview-excluded","preview-trace"].forEach(function(id){clear(document.getElementById(id));});document.getElementById("preview-confirm").hidden=true;
+      if(!clientAvailable){document.getElementById("preview-status").textContent="未能从客户列表确认所选客户，已保留本次客户选择，请重新读取后核对。未自动改为仅用公共规则。";return false;}
+      if(typeId&&!contractTypeChoices[typeId]){document.getElementById("p-type").value="";document.getElementById("preview-status").textContent="该类型尚未具备可运行规则。请先完善公共知识；此处未改为其他类型试运行。";return false;}
+      if(typeId){document.getElementById("p-type").value=typeId;syncPreviewContext();}
+      document.getElementById("preview-status").textContent="已带入客户与合同类型；请核对角色、阶段、场景及真实事实后运行。";return true;
+    },
+    clientState:function(){return {profileId:currentProfileId,ruleId:currentRuleId,draft:loadedDraft};},
+    isReadOnly:function(){return Boolean(session.readOnly);}};
+
   document.addEventListener("DOMContentLoaded", function () {
     bind();
     bootstrap()
       .then(function () {
         loadTree();
-        loadClients();
-        loadContractTypes();
-        return loadProposals();
+        return Promise.all([loadClients(), loadContractTypes(), loadPreviewVocabulary(), loadProposals()])
+          .then(function(){ document.dispatchEvent(new CustomEvent("studio-ready")); });
       })
       .catch(function () {
         document.getElementById("session-state").textContent =

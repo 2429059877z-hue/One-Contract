@@ -96,8 +96,14 @@ def _collect_anchor_text(document_path: Path) -> dict[int, str]:
     dom = minidom.parse(str(document_path))
     buffers: dict[int, list[str]] = {}
     open_ids: set[int] = set()
+    counts: dict[int, dict[str, int]] = {}
     for elem in _iter_elements(dom.documentElement):
         tag = elem.tagName
+        if tag in {"w:commentRangeStart", "w:commentRangeEnd", "w:commentReference"}:
+            raw = elem.getAttribute("w:id")
+            if raw:
+                tally = counts.setdefault(int(raw), {})
+                tally[tag] = tally.get(tag, 0) + 1
         if tag == "w:commentRangeStart":
             raw = elem.getAttribute("w:id")
             if raw != "":
@@ -113,14 +119,20 @@ def _collect_anchor_text(document_path: Path) -> dict[int, str]:
             )
             for cid in open_ids:
                 buffers[cid].append(text)
-    return {cid: "".join(chunks) for cid, chunks in buffers.items()}
+    return {cid: "".join(chunks) for cid, chunks in buffers.items()
+            if all(counts.get(cid, {}).get(tag) == 1 for tag in
+                   ("w:commentRangeStart", "w:commentRangeEnd", "w:commentReference"))}
 
 
 def load_source_comments(unpacked_dir: str | Path) -> list[SourceComment]:
     """读取拆包目录里的全部源批注（含悬空批注），按 id 升序返回。"""
     root = Path(unpacked_dir)
     definitions = _load_comment_definitions(root / "word" / "comments.xml")
-    anchors = _collect_anchor_text(root / "word" / "document.xml")
+    from scripts.docx_engine.revision_views import STORY_PATTERN
+    anchors = {}
+    for path in (root / "word").glob("*.xml"):
+        if STORY_PATTERN.match(path.relative_to(root).as_posix()):
+            anchors.update(_collect_anchor_text(path))
     comments: list[SourceComment] = []
     for cid in sorted(definitions):
         info = definitions[cid]
@@ -139,7 +151,7 @@ def load_source_comments(unpacked_dir: str | Path) -> list[SourceComment]:
 
 
 def orphan_comments(comments: Iterable[SourceComment]) -> list[SourceComment]:
-    """没有任何锚点的批注（Word 修订窗格里不可见）。"""
+    """无锚点或锚点不闭合的批注。"""
     return [item for item in comments if not item.anchored]
 
 

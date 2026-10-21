@@ -1,0 +1,18 @@
+.aw-group{border:1px solid #dce3df;border-radius:10px;margin:12px 0;padding:14px;background:#fff}
+.aw-group>summary{font-size:1.05rem;font-weight:650;cursor:pointer;color:#244c40}
+.aw-progress,#batch-scenario-workbench{border:1px solid #c5d8cc;background:#f5f9f6;border-radius:10px;padding:14px;margin:12px 0}.aw-progress>button{margin:4px}.aw-progress>select{width:100%;padding:8px;margin:8px 0}.aw-progress pre,#batch-results pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;font-size:.85rem;line-height:1.65}
+.aw-field{margin:14px 0;padding-left:12px;border-left:2px solid #e2e9e5;min-width:0}
+.aw-field-label{font-weight:600;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.aw-tag{font-size:.72rem;border-radius:4px;padding:2px 6px;background:#edf3ef;color:#436254;font-weight:400}
+.aw-field select,.aw-field textarea,.aw-field input:not([type=checkbox]){width:100%;padding:9px;border:1px solid #c7d3cc;border-radius:6px;background:#fff;font:inherit;margin-top:5px;box-sizing:border-box}
+.aw-field textarea{resize:vertical;min-height:55px}
+.aw-field pre,.aw-test pre,#proposal-diff pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;font-family:inherit;font-size:.85rem;line-height:1.65;background:#f4f7f5;padding:10px;border-radius:5px}
+.aw-example,.aw-condition-note{color:#647368;font-size:.8rem;display:block;margin:5px 0}
+.aw-enable{display:flex;gap:6px;margin:8px 0;color:#66776c;font-size:.85rem;align-items:center}
+.aw-array-item{display:flex;gap:8px;align-items:flex-start}.aw-array-item>.aw-field{flex:1;margin-top:0}.aw-array-item>button{margin-top:8px;flex-shrink:0}
+.aw-test{padding:14px;margin-top:12px;border:1px solid #d6e0da;border-radius:8px}.aw-test>summary{font-weight:650;cursor:pointer}.aw-test>.field{margin:10px 0}
+#rule-form.aw-enhanced>.form-section-heading,#rule-form.aw-enhanced>.two-columns,#rule-form.aw-enhanced>#rule-advanced{display:none}
+#public-authoring{max-height:none}#public-authoring>.hint{margin:12px 0}
+.studio-readonly #lc-submit,.studio-readonly #lc-approve,.studio-readonly #lc-regression,.studio-readonly #lc-publish,.studio-readonly #lc-baseline,.studio-readonly #lc-rollback,.studio-readonly #lc-delete,.studio-readonly #lc-deprecate{opacity:.5;pointer-events:none}
+.proposal-layout{grid-template-columns:minmax(440px,1.7fr) minmax(220px,.65fr) minmax(300px,1fr)}
+@media(max-width:1100px){.proposal-layout{grid-template-columns:1fr}.aw-array-item{display:block}.aw-field{padding-left:8px}}

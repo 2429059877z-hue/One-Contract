@@ -8132,6 +8132,131 @@
       "source_family_ids": [
         "官方行政法规"
       ]
+    },
+    {
+      "action_guidance": [
+        "核对交易实质、我方角色和关键事实，再按关联模块逐项检查",
+        "缺失事实记录为待确认；不得把一般缺项自动升级为不可履行",
+        "修订范围以实际改动为限，商业参数与重大选择交客户确认"
+      ],
+      "activation_status": "inactive",
+      "approval_status": "candidate",
+      "content_status": "candidate_specialization_20261019",
+      "default_tendencies": [
+        "双向保密分别核对双方信息流与义务",
+        "使用可核验清单和确认机制，期限和责任参数留待商业决策"
+      ],
+      "doctrine_id": "doctrine-commercial-confidentiality",
+      "gold_family_count_local_summary": 0,
+      "hard_boundaries": [
+        "不得将员工保密、竞业或工资扣除规则套用到商业双方",
+        "不得把保密约定当作数据处理或知识产权许可的充分依据",
+        "不得虚构信息范围、披露事实、泄露事实或损失"
+      ],
+      "judgment_coordinates": [
+        "我方是披露方、接收方还是同时承担双方角色",
+        "信息如何识别、谁实际接触、用于什么目的",
+        "商业秘密、一般保密信息与独立权利授权是否区分"
+      ],
+      "legal_checked_at": null,
+      "linked_module_ids": [
+        "mod-commercial-confidential-information",
+        "mod-commercial-confidentiality-remedies",
+        "mod-commercial-return-destruction"
+      ],
+      "name": "商业保密范围、用途与退出",
+      "override_factors": [
+        "实际交易关系、信息流转或服务范围与现有假设不同",
+        "行业监管、跨境因素或第三方权利要求需单独核验"
+      ],
+      "representative_family_count_local_summary": 0,
+      "required_source_slots": [
+        "official_law",
+        "judicial_interpretation_or_case",
+        "verified_practice_article",
+        "historical_revision_or_failure_case"
+      ],
+      "review_objectives": [
+        "识别信息范围、用途、允许披露对象及持续期限",
+        "联动资料返还、销毁、留存与泄露补救"
+      ],
+      "reviewed_at": null,
+      "reviewer": null,
+      "sample_support_status": "review_input_gap_only_no_approved_contract_families",
+      "source_ids": [
+        "src-prc-civil-code-2020",
+        "src-spc-trade-secret-interpretation-2020",
+        "src-internal-confidentiality-sample-aggregate-202608",
+        "src-internal-confidentiality-user-templates-202608"
+      ],
+      "source_status": "检查维度来自既有 doctrine-employment-confidentiality；本候选未完成独立律师审批或现行法核验。",
+      "type_code": "EC-05-021",
+      "type_id": "type-commercial-confidentiality",
+      "version": "0.1.0",
+      "migration_summary": "2026-10-19 六案问题清单的补型候选；仅供本地审阅，未完成审批前不得进入正式审查。"
+    },
+    {
+      "action_guidance": [
+        "核对交易实质、我方角色和关键事实，再按关联模块逐项检查",
+        "缺失事实记录为待确认；不得把一般缺项自动升级为不可履行",
+        "修订范围以实际改动为限，商业参数与重大选择交客户确认"
+      ],
+      "activation_status": "inactive",
+      "approval_status": "candidate",
+      "content_status": "candidate_specialization_20261019",
+      "default_tendencies": [
+        "按事项与阶段组织交付和结算",
+        "具体行业规则另行核验，不把通用服务资产视为专利、会计、税务或检测的完整专项库"
+      ],
+      "doctrine_id": "doctrine-professional-service-mandate",
+      "gold_family_count_local_summary": 0,
+      "hard_boundaries": [
+        "不得虚构授权、资质、官方结果或费用发生事实",
+        "不得自动编造或计算法定期限",
+        "不得将一般资料缺失直接视为已证实的资质违法"
+      ],
+      "judgment_coordinates": [
+        "服务方承担何种工作义务，哪些结果由第三方决定",
+        "我方是委托方还是受托方，资料与通知由谁控制",
+        "是否涉及需单独核验的执业资质、专业期限或代理变更手续"
+      ],
+      "legal_checked_at": null,
+      "linked_module_ids": [
+        "mod-mandate-service-scope",
+        "mod-mandate-deliverables-acceptance",
+        "mod-mandate-fees-expenses",
+        "mod-mandate-change-control",
+        "mod-mandate-breach-termination"
+      ],
+      "migration_summary": "2026-10-19 六案问题清单的补型候选；仅供本地审阅，未完成审批前不得进入正式审查。",
+      "name": "专业委托事项、费用与交接",
+      "override_factors": [
+        "实际交易关系、信息流转或服务范围与现有假设不同",
+        "行业监管、跨境因素或第三方权利要求需单独核验"
+      ],
+      "representative_family_count_local_summary": 0,
+      "required_source_slots": [
+        "official_law",
+        "lawyer_approved_migration",
+        "verified_research_digest",
+        "future_regression_case"
+      ],
+      "review_objectives": [
+        "明确委托事项、代理权限及专业工作边界",
+        "联动成果、费用、变更和终止交接"
+      ],
+      "reviewed_at": null,
+      "reviewer": null,
+      "sample_support_status": "review_input_gap_only_no_approved_contract_families",
+      "source_ids": [
+        "src-prc-civil-code-2020",
+        "src-yuandian-law-verification-20260912",
+        "src-approved-migration-20260912"
+      ],
+      "source_status": "检查维度来自既有 doctrine-service-deliverable-control；本候选未完成独立律师审批或现行法核验。",
+      "type_code": "EC-04-046",
+      "type_id": "type-professional-service-mandate",
+      "version": "0.1.0"
     }
   ],
   "schema_version": "2.2.0"

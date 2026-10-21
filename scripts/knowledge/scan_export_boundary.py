@@ -21,7 +21,7 @@ import pathlib
 import re
 import sys
 
-TEXT_EXT = {".md", ".json", ".py", ".txt", ".yaml", ".yml", ".sh", ".csv", ".html", ".xml"}
+TEXT_EXT = {".md", ".json", ".py", ".txt", ".yaml", ".yml", ".sh", ".csv", ".html", ".xml", ".js", ".css", ".ps1", ".cmd"}
 
 # 注意：以下模式刻意用**字符串拼接**构造，避免脚本自身出现被测字面量
 # （既有代码 `validate_assets.py` 对用户路径采用同样做法）。

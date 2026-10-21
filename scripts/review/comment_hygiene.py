@@ -73,6 +73,22 @@ def _remove_comments(unpacked_dir: Path, comment_ids: list[int]) -> list[int]:
                 entry.parentNode.removeChild(entry)
         ids_path.write_bytes(dom.toxml(encoding="utf-8"))
 
+    # A partially deleted anchor can leave a start/end/reference in any story.
+    # Export happened before this function; remove only the quarantined IDs.
+    from scripts.docx_engine.revision_views import STORY_PATTERN
+    for path in (unpacked_dir / "word").glob("*.xml"):
+        if not STORY_PATTERN.match(path.relative_to(unpacked_dir).as_posix()):
+            continue
+        dom = minidom.parse(str(path))
+        changed = False
+        for tag in ("w:commentRangeStart", "w:commentRangeEnd", "w:commentReference"):
+            for node in list(dom.getElementsByTagName(tag)):
+                raw = node.getAttribute("w:id")
+                if raw and int(raw) in targets:
+                    node.parentNode.removeChild(node)
+                    changed = True
+        if changed:
+            path.write_bytes(dom.toxml(encoding="utf-8"))
     return removed
 
 

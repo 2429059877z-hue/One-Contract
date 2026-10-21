@@ -522,7 +522,7 @@
           "type-catalog-ed3838322a3e5157b17f",
           "type-general-consulting-service"
         ],
-        "total_type_count": 39,
+        "total_type_count": 40,
         "unsupported_type_ids": [
           "type-catalog-1e9608029cad5220a551",
           "type-catalog-2b4092aa91525340aba4",
@@ -548,7 +548,8 @@
           "type-catalog-c101ddcd747e5d998bd9",
           "type-catalog-c326e7cf2211539fb655",
           "type-catalog-c7d9933caf115b66ae85",
-          "type-catalog-d7385f943baf5eaaa9a8"
+          "type-catalog-d7385f943baf5eaaa9a8",
+          "type-professional-service-mandate"
         ]
       },
       "default_tendencies": [
@@ -592,7 +593,8 @@
         "服务是否要求资质、许可或独立专业判断"
       ],
       "knowledge_gaps": [
-        "金融、医疗等高度专业服务和跨境服务需要独立监管规则"
+        "金融、医疗等高度专业服务和跨境服务需要独立监管规则",
+        "2026-10-19 新增补型候选尚待独立审批与核验；不计入已支持类型覆盖。"
       ],
       "legal_checked_at": "2026-09-17",
       "module_index": [
@@ -694,7 +696,7 @@
           "type-trademark-license",
           "type-user-platform-terms"
         ],
-        "total_type_count": 20,
+        "total_type_count": 21,
         "unsupported_type_ids": [
           "type-catalog-419ab47a4b145c5d9cc1",
           "type-catalog-5a5d8448396f51bfbbc4",
@@ -702,6 +704,7 @@
           "type-catalog-ca65285a6f8a5d4da0b3",
           "type-catalog-e87416b301f85cacb84d",
           "type-catalog-f82ed7ac53bc5663a8bb",
+          "type-commercial-confidentiality",
           "type-system-operations-maintenance"
         ]
       },
@@ -747,7 +750,8 @@
         "是否处理个人信息、重要数据、跨境数据或高风险内容"
       ],
       "knowledge_gaps": [
-        "人工智能训练数据、算法责任、重要数据认定和跨境监管需另行核验"
+        "人工智能训练数据、算法责任、重要数据认定和跨境监管需另行核验",
+        "2026-10-19 新增补型候选尚待独立审批与核验；不计入已支持类型覆盖。"
       ],
       "legal_checked_at": "2026-09-17",
       "module_index": [

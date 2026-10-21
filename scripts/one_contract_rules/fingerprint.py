@@ -49,7 +49,7 @@ KNOWLEDGE_ASSET_DIR = "assets/knowledge_v2"
 #: 从而使绑定旧指纹的客户快照被显式暂停而非静默套用（ADR-022）。
 #: 公共资产本身未携带该版本号（asset_manifest 仅有 schema_version/taxonomy_version），
 #: 因此由本模块显式持有，并与三份文档、knowledge_v2 一并纳入聚合哈希。
-RESOLVER_SEMANTICS_VERSION = "0.1.0"
+RESOLVER_SEMANTICS_VERSION = "0.4.0"
 
 
 class FingerprintError(Exception):

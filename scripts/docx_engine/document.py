@@ -168,7 +168,8 @@ class DocxXMLEditor(XMLEditor):
     def _get_next_change_id(self):
         """Get the next available change ID by checking all tracked change elements."""
         max_id = -1
-        for tag in ("w:ins", "w:del"):
+        from .revision_views import REVISION_TAGS
+        for tag in REVISION_TAGS:
             elements = self.dom.getElementsByTagName(tag)
             for elem in elements:
                 change_id = elem.getAttribute("w:id")
@@ -262,6 +263,7 @@ class DocxXMLEditor(XMLEditor):
                     elem.setAttribute("w:rsidR", self.rsid)
 
         def add_tracked_change_attrs(elem):
+            inherited_date = elem.hasAttribute("w:date")
             # Auto-assign w:id if not present
             if not elem.hasAttribute("w:id"):
                 elem.setAttribute("w:id", str(self._get_next_change_id()))
@@ -271,7 +273,7 @@ class DocxXMLEditor(XMLEditor):
                 timestamp, _ = get_timestamps()
                 elem.setAttribute("w:date", timestamp)
             # Add the UTC companion timestamp for tracked changes.
-            if elem.tagName in ("w:ins", "w:del") and not elem.hasAttribute(
+            if not inherited_date and elem.tagName in ("w:ins", "w:del") and not elem.hasAttribute(
                 "w16du:dateUtc"
             ):
                 _, timestamp_utc = get_timestamps()
@@ -330,7 +332,8 @@ class DocxXMLEditor(XMLEditor):
                 add_rsid_to_r(elem)
             for elem in node.getElementsByTagName("w:t"):
                 add_xml_space_to_t(elem)
-            for tag in ("w:ins", "w:del"):
+            from .revision_views import PROPERTY_CHANGE_TAGS
+            for tag in ("w:ins", "w:del", *sorted(PROPERTY_CHANGE_TAGS)):
                 for elem in node.getElementsByTagName(tag):
                     add_tracked_change_attrs(elem)
             for elem in node.getElementsByTagName("w:comment"):
@@ -532,7 +535,7 @@ class DocxXMLEditor(XMLEditor):
             return [elem]
 
     @staticmethod
-    def suggest_paragraph(xml_content: str) -> str:
+    def suggest_paragraph(xml_content: str, namespace_root=None) -> str:
         """Transform paragraph XML to add tracked change wrapping for insertion.
 
         Wraps runs in <w:ins> and adds <w:ins/> to w:rPr in w:pPr for numbered lists.
@@ -543,7 +546,14 @@ class DocxXMLEditor(XMLEditor):
         Returns:
             str: Transformed XML with tracked change wrapping
         """
-        wrapper = f'<root xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">{xml_content}</root>'
+        namespaces = {"xmlns:w": _W_NS}
+        if namespace_root is not None:
+            for i in range(namespace_root.attributes.length):
+                attr = namespace_root.attributes.item(i)
+                if attr.name.startswith("xmlns:"):
+                    namespaces[attr.name] = attr.value
+        declarations = " ".join(f'{k}="{html.escape(v, quote=True)}"' for k, v in namespaces.items())
+        wrapper = f'<root {declarations}>{xml_content}</root>'
         doc = minidom.parseString(wrapper)
         para = doc.getElementsByTagName("w:p")[0]
 
@@ -564,6 +574,10 @@ class DocxXMLEditor(XMLEditor):
             pPr.appendChild(rPr)
         else:
             rPr = rPr_list[0]
+
+        for old in list(rPr.childNodes):
+            if getattr(old, "tagName", "") in {"w:ins", "w:del", "w:rPrChange"}:
+                rPr.removeChild(old)
 
         # Add <w:ins/> to w:rPr
         ins_marker = doc.createElement("w:ins")
@@ -1178,6 +1192,22 @@ class Document:
         Args:
             track_revisions: If True, enables track revisions in settings.xml
         """
+        rel_path = self.word_path / "_rels" / "document.xml.rels"
+        if not rel_path.exists():
+            rel_path.parent.mkdir(parents=True, exist_ok=True)
+            rel_path.write_text('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>', encoding="utf-8")
+        settings = self.word_path / "settings.xml"
+        if not settings.exists():
+            settings.write_text(f'<w:settings xmlns:w="{_W_NS}"/>', encoding="utf-8")
+        types = self["[Content_Types].xml"]
+        if not self._has_override(types, "/word/settings.xml"):
+            types.append_to(types.dom.documentElement, '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>')
+        rels = self["word/_rels/document.xml.rels"]
+        if not self._has_relationship(rels, "settings.xml"):
+            prefix = rels.dom.documentElement.prefix
+            tag = f"{prefix}:Relationship" if prefix else "Relationship"
+            rels.append_to(rels.dom.documentElement, f'<{tag} Id="{rels.get_next_rid()}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>')
+
         # Create or update word/people.xml
         people_file = self.word_path / "people.xml"
         self._update_people_xml(people_file)

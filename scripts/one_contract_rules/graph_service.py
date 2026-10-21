@@ -111,6 +111,64 @@ def derive_edges(
     return edges
 
 
+RELATION_LABELS = {
+    "belongs_to": "适用于", "classified_under": "归属业务大类",
+    "contains": "包含或引用", "depends_on": "前置依赖",
+    "conflicts_with": "冲突关系", "sourced_from": "依据来源",
+}
+
+
+def derive_relationships(asset: Mapping[str, Any], *, from_id: str,
+                         type_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Maintenance relationships keep classification separate from dependencies.
+
+    dependencies is a union in shared modules. When a per-type map exists it is
+    authoritative for that context, including an explicitly empty dependency list.
+    No priority or runtime eligibility is inferred from these relationships.
+    """
+    out: List[Dict[str, Any]] = []
+
+    def add(target: Any, kind: str, field: str, scope: Optional[Mapping[str, Any]] = None):
+        if target and str(target) != from_id:
+            out.append({"from_id": from_id, "to_id": str(target),
+                        "relation_kind": kind, "label": RELATION_LABELS[kind],
+                        "source_field": field, "scope": dict(scope or {}),
+                        "derived": True})
+
+    if asset.get("type_name") and asset.get("domain_code"):
+        add(asset["domain_code"], "classified_under", "taxonomy.domain_code")
+    else:
+        types = list(asset.get("type_ids") or ())
+        if asset.get("type_id") and asset["type_id"] not in types:
+            types.append(asset["type_id"])
+        for target in types:
+            add(target, "belongs_to", "type_ids" if asset.get("type_ids") else "type_id")
+
+    scoped = asset.get("dependencies_by_type")
+    if isinstance(scoped, Mapping):
+        for context_type, targets in sorted(scoped.items()):
+            if type_id is not None and context_type != type_id:
+                continue
+            for target in targets:
+                add(target, "depends_on", "dependencies_by_type",
+                    {"type_ids": [context_type], "scene_tags": list(asset.get("scene_tags") or ())})
+    else:
+        for target in asset.get("dependencies") or ():
+            add(target, "depends_on", "dependencies")
+    for field, kind in (
+        ("linked_module_ids", "contains"), ("member_module_ids", "contains"),
+        ("derived_module_ids", "contains"), ("derived_principle_ids", "contains"),
+        ("required_modules", "depends_on"), ("source_ids", "sourced_from"),
+        ("conflicts", "conflicts_with"),
+    ):
+        for target in asset.get(field) or ():
+            add(target, kind, field)
+    # source_id is the identity of a source record; only other objects can cite it.
+    if asset.get("source_id") and asset.get("source_id") != from_id:
+        add(asset["source_id"], "sourced_from", "source_id")
+    return out
+
+
 def _collect_nodes(repository: Any, focus_node_id: Optional[str], depth: int) -> List[models.RuleNode]:
     all_nodes = repository.list_rule_tree()
     if focus_node_id is None:

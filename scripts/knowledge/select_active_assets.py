@@ -149,6 +149,18 @@ def select_assets(
         "type_principles": principles,
         "principles": principles,
         "modules": modules,
+        "module_review_requirements": [
+            {"module_id": m["module_id"], "topic": m.get("clause_group", m["module_id"]),
+             "review_checks": m.get("review_checks", []),
+             "coverage_gap": not m.get("review_checks") or str(m.get("content_status", "")).startswith("stub_")}
+            for m in modules
+        ],
+        "selection_context": {
+            "primary_type_id": primary_type_id, "secondary_type_ids": secondary_type_ids,
+            "our_role": our_role, "scene_tags": scene_tags,
+            "classification_status": classification_status,
+            "confirmed_domain_code": confirmed_domain_code,
+        },
         "coverage_level": coverage_level,
         "coverage_notice": coverage_notice,
         "shadow_domain_metadata": shadow_metadata(domain_card),

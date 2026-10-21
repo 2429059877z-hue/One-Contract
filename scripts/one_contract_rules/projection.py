@@ -50,6 +50,7 @@ ASSET_KIND_TO_SCHEMA_KIND: Mapping[str, str] = {
     "template": "module",          # 同上
     "global_document": "global_document",
     "client_rule": "client_rule",
+    "contract_type": "contract_type",
 }
 
 _ID_KEYS: Sequence[str] = (
@@ -176,8 +177,6 @@ def project_domain_node(asset: Mapping[str, Any]) -> models.RuleNode:
     coverage = (asset.get("coverage") or {}).get("coverage_status")
     active = _is_runtime_active(asset)
     source_refs = list(asset.get("source_ids") or ())
-    if doctrine_id:
-        source_refs.insert(0, str(doctrine_id))
     return models.RuleNode(
         node_id=str(domain_code or doctrine_id or ""),
         node_kind="domain_principle",
@@ -188,7 +187,9 @@ def project_domain_node(asset: Mapping[str, Any]) -> models.RuleNode:
         activation_status=_activation_status_for_schema(asset.get("activation_status")),
         body_visibility="full_active" if active else "metadata_only_candidate",
         domain_codes=(domain_code,) if domain_code else (),
-        type_ids=tuple(asset.get("derived_principle_ids") or ()),
+        type_ids=tuple(dict.fromkeys(
+            list((asset.get("coverage") or {}).get("supported_type_ids") or ())
+            + list((asset.get("coverage") or {}).get("unsupported_type_ids") or ()))),
         source_refs=tuple(dict.fromkeys(source_refs)),
         summary=f"覆盖等级 {coverage}" if coverage else None,
     ).with_hash()
@@ -202,15 +203,11 @@ def project_type_node(asset: Mapping[str, Any], *, asset_kind: str) -> models.Ru
         domain_codes = (str(asset["type_code"]).split("-")[0] + "-" + str(asset["type_code"]).split("-")[1],)
 
     title = (
-        asset.get("name") or asset.get("title") or asset.get("module_id")
+        asset.get("name") or asset.get("title") or asset.get("clause_group") or asset.get("module_id")
         or asset.get("trigger_id") or asset.get("source_id") or _stable_id(asset)
     )
 
     source_refs = list(asset.get("source_ids") or ())
-    if asset_kind == "type_principle" and asset.get("doctrine_id"):
-        source_refs.insert(0, str(asset["doctrine_id"]))
-    if asset.get("source_id"):
-        source_refs.insert(0, asset["source_id"])
 
     return models.RuleNode(
         node_id=asset_node_id(asset, asset_kind=asset_kind),

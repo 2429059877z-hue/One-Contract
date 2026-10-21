@@ -21,6 +21,9 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
+from functools import wraps
+import inspect
 import os
 import re
 import shutil
@@ -31,7 +34,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
-from . import audit, models, paths, publisher, validator
+from . import audit, models, paths, publisher, validator, private_fs, platform_fs, evidence_records, guard_catalog
+from .transaction_lock import profile_lock
 
 __all__ = [
     "ACTIVE_PROFILE_STATUSES",
@@ -97,19 +101,40 @@ def _require_valid_evidence_id(evidence_id: str) -> str:
 
 
 def _secure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-    os.chmod(path, _DIR_MODE)
+    private_fs.secure_dir(path)
 
 
 def _secure_write(path: Path, payload: Mapping[str, Any]) -> None:
-    _secure_dir(path.parent)
-    tmp = path.parent / f".tmp-{path.name}.{uuid.uuid4().hex[:8]}"
-    with tmp.open("w", encoding="utf-8") as handle:
-        handle.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.chmod(tmp, _FILE_MODE)
-    os.replace(tmp, path)
+    private_fs.atomic_write_json(path, payload)
+
+
+def _transaction(method):
+    signature = inspect.signature(method)
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        if self.read_only:
+            raise ClientStoreError("仓库为只读模式，拒绝写入。")
+        bound = signature.bind(self, *args, **kwargs)
+        profile_id = bound.arguments.get("profile_id") or bound.arguments.get("client_profile_id")
+        with profile_lock(self._resolve_profile_dir(profile_id)):
+            self._recover_validation_commit(self._resolve_profile_dir(profile_id))
+            return method(self, *args, **kwargs)
+    return wrapped
+
+
+def _reset_review(rule):
+    rule["approval_status"] = "candidate"
+    rule["activation_status"] = "inactive"
+    review = dict(rule.get("review") or {})
+    review.update({"lawyer_approval_evidence_id": None, "lawyer_approved_by": None,
+        "lawyer_approved_at": None, "legal_check_status": "not_checked",
+        "legal_checked_at": None, "regression_evidence_ids": []})
+    rule["review"] = review
+
+
+def _check_revision(rule, expected_revision):
+    if expected_revision is not None and int(rule.get("revision", 0)) != expected_revision:
+        raise RevisionConflict("规则已修改，请刷新后重新确认（DRAFT_REVISION_CONFLICT）。")
 
 
 def _read_json(path: Path) -> Dict[str, Any]:
@@ -130,10 +155,24 @@ def _with_hash(rule: Mapping[str, Any]) -> Dict[str, Any]:
 class ClientRepository:
     """外置 data root 上的客户数据仓库。"""
 
-    def __init__(self, *, data_root: Path) -> None:
+    def __init__(self, *, data_root: Path, read_only: bool = False) -> None:
         self.data_root = Path(data_root).expanduser().resolve()
         self.clients_root = self.data_root / "clients"
-        _secure_dir(self.clients_root)
+        self.read_only = read_only
+        self.recovery_warnings = []
+        if not read_only:
+            _secure_dir(self.data_root)
+            _secure_dir(self.clients_root)
+            for directory in self.clients_root.iterdir():
+                if paths.is_safe_profile_id(directory.name) and (directory / "profile.json").is_file():
+                    try:
+                        with profile_lock(self._resolve_profile_dir(directory.name)):
+                            self._recover_validation_commit(self._resolve_profile_dir(directory.name))
+                            publisher.Publisher(self._resolve_profile_dir(directory.name)).recover_pending_commits()
+                    except (ClientStoreError, publisher.PublishError, audit.AuditError, OSError) as exc:
+                        # Other clients remain usable; operations on this client
+                        # still fail closed until its pending commit can recover.
+                        self.recovery_warnings.append({"client_profile_id": directory.name, "error": str(exc)})
 
     # ------------------------------------------------------------------ #
     # 路径
@@ -159,6 +198,14 @@ class ClientRepository:
         if not (profile_dir / "profile.json").is_file():
             # SEC-005：不存在即 fail closed，不退回最近客户
             raise ProfileNotFound(f"客户档案不存在: {profile_id}")
+        try:
+            profile_path = paths.contained_path(profile_dir, "profile.json")
+            profile = _read_json(profile_path)
+            validator.validate_client_profile(profile)
+            if profile.get("client_profile_id") != profile_id or profile.get("content_sha256") != models.content_hash(profile):
+                raise ClientStoreError("客户档案归属或内容哈希不匹配。")
+        except paths.PathContractError as exc:
+            raise ClientStoreError(str(exc)) from exc
         return profile_dir
 
     def _require_active_profile_dir(self, profile_id: str) -> Path:
@@ -173,6 +220,7 @@ class ClientRepository:
     # ------------------------------------------------------------------ #
     # Profile
     # ------------------------------------------------------------------ #
+    @_transaction
     def create_client_profile(
         self, *, client_profile_id: str, display_name: str, actor: str
     ) -> Dict[str, Any]:
@@ -199,21 +247,32 @@ class ClientRepository:
         except validator.ValidationError as exc:
             raise InvalidIdentifier(f"档案不符合契约: {exc}") from exc
 
-        _secure_dir(profile_dir)
-        _secure_write(profile_dir / "profile.json", _with_hash(profile))
-        publisher.empty_active_manifest(client_profile_id)  # 仅供自检
-        publisher._atomic_write_json(
-            profile_dir / publisher.ACTIVE_MANIFEST_NAME,
-            publisher.empty_active_manifest(client_profile_id),
-        )
-        audit.append_event(profile_dir, event_kind="profile_created", actor=actor,
-                           detail={"client_profile_id": client_profile_id})
+        if profile_dir.exists():
+            raise ClientStoreError("客户目录已存在但未完成建档，请先恢复或检查该目录。")
+        staging = self.clients_root / (".create-" + client_profile_id + "-" + uuid.uuid4().hex)
+        try:
+            _secure_dir(staging)
+            _secure_write(staging / "profile.json", _with_hash(profile))
+            publisher._atomic_write_json(staging / publisher.ACTIVE_MANIFEST_NAME,
+                                         publisher.empty_active_manifest(client_profile_id))
+            audit.append_event(staging, event_kind="profile_created", actor=actor,
+                               detail={"client_profile_id": client_profile_id})
+            platform_fs.replace(staging, profile_dir)
+        except Exception:
+            # If the rename committed before a directory-flush error, return the
+            # complete profile; no partial directory is exposed as a live client.
+            if not (profile_dir / "profile.json").is_file():
+                raise
+        finally:
+            if staging.exists():
+                shutil.rmtree(staging)
         return _read_json(profile_dir / "profile.json")
 
     def get_client_profile(self, profile_id: str) -> Dict[str, Any]:
         profile_dir = self._require_profile_dir(profile_id)
         return _read_json(profile_dir / "profile.json")
 
+    @_transaction
     def deactivate_client_profile(self, profile_id: str, *, actor: str) -> Dict[str, Any]:
         profile_dir = self._require_profile_dir(profile_id)
         profile = _read_json(profile_dir / "profile.json")
@@ -230,34 +289,120 @@ class ClientRepository:
     # 草稿
     # ------------------------------------------------------------------ #
     def _draft_path(self, profile_dir: Path, rule_id: str) -> Path:
+        if not isinstance(rule_id, str) or not re.fullmatch(r"cr_[a-z0-9][a-z0-9_-]{7,95}", rule_id):
+            raise InvalidIdentifier("规则编号无效，不能使用文件路径。")
         try:
             return paths.contained_path(profile_dir, "drafts", f"{rule_id}.json")
         except paths.PathContractError as exc:
             raise ClientStoreError(str(exc)) from exc
 
+    def _read_validation_commit(self, profile_dir: Path) -> Optional[Dict[str, Any]]:
+        """The durable journal is the logical commit fact for a complete set.
+
+        Drafts may be physically copied in several steps; while the journal
+        exists, reads expose its complete committed set, including after a crash.
+        """
+        if not profile_dir.is_dir():
+            return None
+        target = paths.contained_path(profile_dir, "validation-commit.json")
+        if not target.is_file():
+            return None
+        journal = _read_json(target)
+        drafts = journal.get("drafts")
+        before = journal.get("before_sha256")
+        if (journal.get("content_sha256") != models.content_hash(journal)
+                or journal.get("client_profile_id") != profile_dir.name
+                or not re.fullmatch(r"vtx_[a-f0-9]{32}", str(journal.get("transaction_id", "")))
+                or not isinstance(drafts, dict) or not drafts
+                or not isinstance(before, dict) or set(before) != set(drafts)
+                or type(journal.get("passed")) is not bool):
+            raise ClientStoreError("整组测试提交记录损坏；保留恢复现场，拒绝覆盖草稿。")
+        for rule_id, draft in drafts.items():
+            path = self._draft_path(profile_dir, rule_id)
+            if (not isinstance(draft, dict) or draft.get("client_profile_id") != profile_dir.name
+                    or draft.get("client_rule_id") != rule_id
+                    or draft.get("content_sha256") != models.content_hash(draft)):
+                raise ClientStoreError("整组测试恢复内容不匹配。")
+            current = _read_json(path)
+            if (current.get("content_sha256") != models.content_hash(current)
+                    or current["content_sha256"] not in (before[rule_id], draft["content_sha256"])):
+                raise ClientStoreError("整组测试提交后草稿被外部修改；拒绝自动覆盖，请先检查恢复记录。")
+        try:
+            target_hash = evidence_records.rule_set_hash(list(drafts.values()))
+            if journal.get("target_set_sha256") != target_hash:
+                raise evidence_records.EvidenceError("整组测试恢复集合不匹配。")
+            for draft in drafts.values():
+                evidence_records.load(profile_dir, draft["review"]["lawyer_approval_evidence_id"], draft, kind="human_approval")
+                regressions = draft["review"]["regression_evidence_ids"]
+                if len(regressions) != 1:
+                    raise evidence_records.EvidenceError("整组测试恢复证据不完整。")
+                record = evidence_records.load(profile_dir, regressions[0], draft, kind="executed_regression")
+                if (record["report"].get("target_set_sha256") != target_hash
+                        or record["report"].get("scope") != "rule_set_resolution"
+                        or record["result"] != ("passed" if journal["passed"] else "failed")
+                        or draft["approval_status"] != ("regression_passed" if journal["passed"] else "lawyer_approved")):
+                    raise evidence_records.EvidenceError("整组测试恢复结果与状态不匹配。")
+        except evidence_records.EvidenceError as exc:
+            raise ClientStoreError(str(exc)) from exc
+        return journal
+
+    def _recover_validation_commit(self, profile_dir: Path) -> None:
+        """Replay a committed complete-set result, idempotently under the lock."""
+        journal = self._read_validation_commit(profile_dir)
+        if not journal:
+            return
+        for rule_id, draft in journal["drafts"].items():
+            path = self._draft_path(profile_dir, rule_id)
+            if _read_json(path)["content_sha256"] != draft["content_sha256"]:
+                _secure_write(path, draft)
+            match = {"transaction_id": journal["transaction_id"], "client_rule_id": rule_id}
+            if not audit.has_event(profile_dir, "regression_recorded", **match):
+                audit.append_event(profile_dir, event_kind="regression_recorded", actor=journal["actor"],
+                    result="ok" if journal["passed"] else "failed",
+                    detail={**match, "target_set_sha256": journal["target_set_sha256"],
+                            "evidence_id": draft["review"]["regression_evidence_ids"][0],
+                            "rule_version": draft["version"]})
+        paths.contained_path(profile_dir, "validation-commit.json").unlink()
+        platform_fs.sync_directory(profile_dir)
+
     def _load_draft_or_none(self, profile_dir: Path, rule_id: str) -> Optional[Dict[str, Any]]:
         path = self._draft_path(profile_dir, rule_id)
-        return _read_json(path) if path.is_file() else None
+        pending = self._read_validation_commit(profile_dir)
+        if pending and rule_id in pending["drafts"]:
+            return pending["drafts"][rule_id]
+        if not path.is_file():
+            return None
+        rule = _read_json(path)
+        if rule.get("client_profile_id") != profile_dir.name or rule.get("client_rule_id") != rule_id or rule.get("content_sha256") != models.content_hash(rule):
+            raise ClientStoreError("草稿归属、编号或内容哈希不匹配。")
+        return rule
 
     def get_draft(self, profile_id: str, rule_id: str) -> Optional[Dict[str, Any]]:
         profile_dir = self._require_profile_dir(profile_id)
-        return self._load_draft_or_none(profile_dir, rule_id)
+        with nullcontext() if self.read_only else profile_lock(profile_dir):
+            return self._load_draft_or_none(profile_dir, rule_id)
 
     def list_drafts(self, profile_id: str) -> List[Dict[str, Any]]:
         profile_dir = self._require_profile_dir(profile_id)
-        drafts_dir = profile_dir / "drafts"
-        if not drafts_dir.is_dir():
-            return []
-        return [
-            _read_json(p) for p in sorted(drafts_dir.glob("*.json"))
-            if not p.name.startswith(".tmp-")
-        ]
+        with nullcontext() if self.read_only else profile_lock(profile_dir):
+            drafts_dir = profile_dir / "drafts"
+            if not drafts_dir.is_dir():
+                return []
+            return [
+                self._load_draft_or_none(profile_dir, p.stem) for p in sorted(drafts_dir.glob("*.json"))
+                if not p.name.startswith(".tmp-")
+            ]
 
     def _validate_rule_for_save(self, profile_id: str, rule: Mapping[str, Any]) -> Dict[str, Any]:
         if rule.get("client_profile_id") != profile_id:
             raise ClientStoreError(
                 f"规则归属 {rule.get('client_profile_id')!r} 与目标客户 {profile_id!r} 不一致（CR-008）。"
             )
+        from .material_sources import MaterialSources
+        try:
+            MaterialSources(self.data_root, read_only=True).validate_refs(rule.get("source_refs"), client_profile_id=profile_id)
+        except (ValueError, OSError) as exc:
+            raise ClientStoreError("私有材料来源校验失败：" + str(exc)) from exc
         try:
             validator.validate_client_rule(rule)
             validator.validate_rule_business(rule)
@@ -265,6 +410,7 @@ class ClientRepository:
             raise
         return dict(rule)
 
+    @_transaction
     def create_new_rule(
         self, profile_id: str, rule: Mapping[str, Any], *, actor: str
     ) -> Dict[str, Any]:
@@ -279,7 +425,9 @@ class ClientRepository:
         # 内容哈希由仓库计算，调用方无需提供：schema 把它列为必需字段，但值只可能由
         # 本层算出——强迫调用方先编一个占位哈希再被覆写，是没有意义的契约摩擦。
         # （`_with_hash` 会把传入值覆盖为真实哈希，故此处先补位再校验。）
-        prepared = self._validate_rule_for_save(profile_id, _with_hash(dict(rule)))
+        incoming = dict(rule)
+        _reset_review(incoming)
+        prepared = self._validate_rule_for_save(profile_id, _with_hash(incoming))
         prepared["revision"] = 1
         stored = _with_hash(prepared)
         _secure_write(self._draft_path(profile_dir, rule_id), stored)
@@ -288,6 +436,7 @@ class ClientRepository:
                                      "content_sha256": stored["content_sha256"]})
         return stored
 
+    @_transaction
     def save_draft(
         self,
         profile_id: str,
@@ -326,22 +475,15 @@ class ClientRepository:
                 "已发布的版本不得就地改写（旧 active 与其哈希必须保持不变）。"
             )
 
-        prepared = self._validate_rule_for_save(profile_id, _with_hash(dict(rule)))
+        incoming = dict(rule)
+        changed = existing is None or evidence_records.semantic_hash(incoming) != evidence_records.semantic_hash(existing)
+        if changed:
+            _reset_review(incoming)
+        elif existing:
+            for key in ("approval_status", "activation_status", "review"):
+                incoming[key] = existing.get(key)
+        prepared = self._validate_rule_for_save(profile_id, _with_hash(incoming))
         is_new_version = bool(published_versions) and existing is not None
-        if is_new_version:
-            # 该规则发布过：本次保存即**新版本草稿**。审批与回归必须**重新走**——
-            # LIFE-003/004 要求「缺审批或法律核验不得进入后续状态」；把上一版本的批准
-            # 继承到新版本，等于让未经审阅的内容直接可发布。
-            # （原实现只在那个不触发的分支里做这件事，等于没做。）
-            prepared["approval_status"] = "candidate"
-            prepared["activation_status"] = "inactive"
-            review = dict(prepared.get("review") or {})
-            review.update({
-                "lawyer_approval_evidence_id": None, "lawyer_approved_by": None,
-                "lawyer_approved_at": None, "legal_check_status": "not_checked",
-                "legal_checked_at": None, "regression_evidence_ids": [],
-            })
-            prepared["review"] = review
 
         prepared["revision"] = current_revision + 1 if existing else 1
         prepared["updated_at"] = _now()
@@ -355,6 +497,7 @@ class ClientRepository:
                                      "content_sha256": stored["content_sha256"]})
         return stored
 
+    @_transaction
     def delete_draft(
         self, profile_id: str, rule_id: str, *, confirmation: bool, actor: str
     ) -> None:
@@ -378,14 +521,12 @@ class ClientRepository:
         versions = set()
         pub = publisher.Publisher(profile_dir)
         manifest = pub.read_manifest()
-        for snapshot_id in {manifest.get("active_snapshot_id"),
-                            manifest.get("previous_snapshot_id")}:
-            if not snapshot_id:
+        snapshots = pub.snapshots_dir
+        for directory in sorted(snapshots.iterdir()) if snapshots.is_dir() else ():
+            if not directory.is_dir() or directory.name.startswith("."):
                 continue
-            try:
-                doc = pub.load_snapshot(snapshot_id)
-            except Exception:
-                continue
+            snapshot_id = directory.name
+            doc = pub.load_snapshot(snapshot_id)
             for rule in doc["rules_doc"].get("rules", []):
                 if rule.get("client_rule_id") == rule_id:
                     versions.add(rule.get("version"))
@@ -407,10 +548,13 @@ class ClientRepository:
         actor: str,
         event_kind: str,
         mutate: Optional[Any] = None,
+        expected_revision: Optional[int] = None,
+        event_result: str = "ok",
     ) -> Dict[str, Any]:
         draft = self._load_draft_or_none(profile_dir, rule_id)
         if draft is None:
             raise ClientStoreError(f"规则不存在: {rule_id}")
+        _check_revision(draft, expected_revision)
         current = draft.get("approval_status")
         if current not in allowed_from:
             raise ClientStoreError(
@@ -426,12 +570,13 @@ class ClientRepository:
             mutate(updated)
         stored = _with_hash(updated)
         _secure_write(self._draft_path(profile_dir, rule_id), stored)
-        audit.append_event(profile_dir, event_kind=event_kind, actor=actor,
+        audit.append_event(profile_dir, event_kind=event_kind, actor=actor, result=event_result,
                            detail={"client_rule_id": rule_id, "to_state": to_state,
                                      "rule_version": stored.get("version")})
         return stored
 
-    def deprecate_rule(self, profile_id: str, rule_id: str, *, actor: str) -> Dict[str, Any]:
+    @_transaction
+    def deprecate_rule(self, profile_id: str, rule_id: str, *, actor: str, expected_revision: Optional[int] = None) -> Dict[str, Any]:
         """停用一条已发布规则（CR-006 / ADR-018）。
 
         CR-006 写的是「禁止物理删除，**只能新快照停用或 deprecated**」——此前只实现了前半句：
@@ -447,25 +592,31 @@ class ClientRepository:
             profile_dir, rule_id,
             allowed_from=("regression_passed", "active"),
             to_state="deprecated",
-            actor=actor, event_kind="deprecation_drafted",
+            actor=actor, event_kind="deprecation_drafted", expected_revision=expected_revision,
         )
 
-    def submit_rule(self, profile_id: str, rule_id: str, *, actor: str) -> Dict[str, Any]:
+    @_transaction
+    def submit_rule(self, profile_id: str, rule_id: str, *, actor: str, expected_revision: Optional[int] = None) -> Dict[str, Any]:
         """提交规则进入审批流。提交本身不改变审批状态，只记录事件并递增 revision。"""
         profile_dir = self._require_active_profile_dir(profile_id)
         return self._transition(
             profile_dir, rule_id,
             allowed_from=("candidate", "draft"), to_state="candidate",
-            actor=actor, event_kind="submitted",
+            actor=actor, event_kind="submitted", expected_revision=expected_revision,
         )
 
+    @_transaction
     def record_lawyer_approval(
-        self, profile_id: str, rule_id: str, *, evidence_id: str, actor: str
+        self, profile_id: str, rule_id: str, *, evidence_id: str, actor: str, expected_revision: Optional[int] = None
     ) -> Dict[str, Any]:
         _require_valid_evidence_id(evidence_id)
         profile_dir = self._require_active_profile_dir(profile_id)
 
         def _mutate(rule: Dict[str, Any]) -> None:
+            try:
+                evidence_records.write(profile_dir, rule, kind="human_approval", actor=actor, evidence_id=evidence_id)
+            except evidence_records.EvidenceError as exc:
+                raise ClientStoreError(str(exc)) from exc
             review = dict(rule.get("review") or {})
             review.update({
                 "lawyer_approval_evidence_id": evidence_id,
@@ -479,23 +630,33 @@ class ClientRepository:
         return self._transition(
             profile_dir, rule_id,
             allowed_from=("candidate",), to_state="lawyer_approved",
-            actor=actor, event_kind="lawyer_approved", mutate=_mutate,
+            actor=actor, event_kind="lawyer_approved", mutate=_mutate, expected_revision=expected_revision,
         )
 
+    @_transaction
     def record_regression_result(
         self, profile_id: str, rule_id: str, *,
-        evidence_id: str, passed: bool, actor: str,
+        evidence_id: str, passed: bool, actor: str, expected_revision: Optional[int] = None,
     ) -> Dict[str, Any]:
         _require_valid_evidence_id(evidence_id)
         profile_dir = self._require_active_profile_dir(profile_id)
         draft = self._load_draft_or_none(profile_dir, rule_id)
         if draft is None:
             raise ClientStoreError(f"规则不存在: {rule_id}")
+        _check_revision(draft, expected_revision)
+        try:
+            record = evidence_records.load(profile_dir, evidence_id, draft, kind="executed_regression")
+        except evidence_records.EvidenceError as exc:
+            raise ClientStoreError(str(exc)) from exc
+        if type(passed) is not bool or passed != (record["result"] == "passed"):
+            raise ClientStoreError("调用方声明与实际执行证据不一致。")
+        if record.get("executed_revision") != draft["revision"]:
+            raise RevisionConflict("测试记录对应的草稿版本已改变；不能重用旧通过覆盖最新结果（DRAFT_REVISION_CONFLICT）。")
         review = draft.get("review") or {}
         if not review.get("lawyer_approval_evidence_id"):
             # LIFE-003：缺审批不得进入后续状态
             raise ClientStoreError("缺少律师批准证据，不得记录回归结果（LIFE-003）。")
-        if draft.get("approval_status") != "lawyer_approved":
+        if draft.get("approval_status") not in ("lawyer_approved", "regression_passed", "active"):
             raise ClientStoreError(
                 f"当前状态 {draft.get('approval_status')!r} 不允许记录回归结果。"
             )
@@ -508,18 +669,114 @@ class ClientRepository:
 
         def _mutate(rule: Dict[str, Any]) -> None:
             rev = dict(rule.get("review") or {})
-            rev["regression_evidence_ids"] = list(rev.get("regression_evidence_ids") or []) + [evidence_id]
+            rev["regression_evidence_ids"] = [evidence_id]
             rule["review"] = rev
 
         return self._transition(
             profile_dir, rule_id,
-            allowed_from=("lawyer_approved",), to_state="regression_passed",
-            actor=actor, event_kind="regression_recorded", mutate=_mutate,
+            allowed_from=("lawyer_approved", "regression_passed", "active"), to_state="regression_passed",
+            actor=actor, event_kind="regression_recorded", mutate=_mutate, expected_revision=expected_revision,
         )
+
+    @_transaction
+    def store_regression_evidence(self, profile_id: str, rule_id: str, *, report: Mapping[str, Any],
+                                  expected_revision: int, actor: str) -> Dict[str, Any]:
+        """Trusted executor API; never expose arbitrary report uploads over HTTP."""
+        profile_dir = self._require_active_profile_dir(profile_id)
+        draft = self._load_draft_or_none(profile_dir, rule_id)
+        if draft is None:
+            raise ClientStoreError("规则不存在。")
+        _check_revision(draft, expected_revision)
+        try:
+            passed = evidence_records.validate_report(report)
+            evidence_records.verify_execution_context(profile_dir, draft, report,
+                public_fingerprint=report["public_asset_fingerprint"],
+                active_snapshot_id=publisher.Publisher(profile_dir).read_manifest().get("active_snapshot_id"))
+            record = evidence_records.write(profile_dir, draft, kind="executed_regression", actor=actor, report=report)
+        except evidence_records.EvidenceError as exc:
+            raise ClientStoreError(str(exc)) from exc
+        if not passed and draft["approval_status"] in ("lawyer_approved", "regression_passed", "active"):
+            def invalidate(rule):
+                rule["review"] = {**rule["review"], "regression_evidence_ids": [record["evidence_id"]]}
+                rule["activation_status"] = "inactive"
+            self._transition(profile_dir, rule_id, allowed_from=("lawyer_approved", "regression_passed", "active"),
+                to_state="lawyer_approved", actor=actor, event_kind="regression_recorded", event_result="failed",
+                mutate=invalidate, expected_revision=expected_revision)
+        return record
+
+    @_transaction
+    def store_rule_set_evidence(self, profile_id: str, *, report: Mapping[str, Any],
+                               expected_revisions: Mapping[str, int],
+                               expected_active_snapshot: Optional[str], actor: str) -> Dict[str, Any]:
+        """Commit trusted executor evidence and the complete set's lifecycle.
+
+        No HTTP endpoint may upload a report to this method. The scenario runner
+        supplies actual resolver output and the revisions frozen before running.
+        Evidence files precede the journal; interrupted precommit work is inert.
+        """
+        profile_dir = self._require_active_profile_dir(profile_id)
+        current_id = publisher.Publisher(profile_dir).read_manifest().get("active_snapshot_id")
+        if current_id != expected_active_snapshot or report.get("base_client_snapshot_id") != current_id:
+            raise ClientStoreError("测试期间现行快照已变化，请重新测试（ACTIVE_SNAPSHOT_CONFLICT）。")
+        drafts = [d for d in self.list_drafts(profile_id)
+                  if d["approval_status"] in ("lawyer_approved", "regression_passed", "active")]
+        if (not drafts or not isinstance(expected_revisions, Mapping)
+                or any(type(v) is not int or v < 1 for v in expected_revisions.values())
+                or {d["client_rule_id"]: d["revision"] for d in drafts} != dict(expected_revisions)):
+            raise RevisionConflict("拟测试集合或规则内容已变化，请重新载入后测试（DRAFT_REVISION_CONFLICT）。")
+        records = {}
+        try:
+            passed = evidence_records.validate_report(report)
+            target_hash = evidence_records.rule_set_hash(drafts)
+            if (report.get("scope") != "rule_set_resolution"
+                    or report.get("target_set_sha256") != target_hash
+                    or report.get("executor", {}).get("name") != "one-contract-production-resolver-batch"):
+                raise evidence_records.EvidenceError("整组测试执行器或完整目标集合不匹配。")
+            # Validate every human attestation before writing any successful state.
+            for draft in drafts:
+                approval_id = draft.get("review", {}).get("lawyer_approval_evidence_id")
+                evidence_records.load(profile_dir, approval_id, draft, kind="human_approval")
+            for draft in drafts:
+                records[draft["client_rule_id"]] = evidence_records.write(profile_dir, draft,
+                    kind="executed_regression", actor=actor, report=report)
+        except evidence_records.EvidenceError as exc:
+            raise ClientStoreError(str(exc)) from exc
+        evidence_ids = {rule_id: record["evidence_id"] for rule_id, record in records.items()}
+        updated = {}
+        for draft in drafts:
+            rule_id = draft["client_rule_id"]
+            next_rule = {**draft, "approval_status": "regression_passed" if passed else "lawyer_approved", "revision": draft["revision"] + 1,
+                         "updated_at": _now(), "updated_by": actor,
+                         "review": {**draft["review"], "regression_evidence_ids": [evidence_ids[rule_id]]}}
+            if not passed:
+                next_rule["activation_status"] = "inactive"
+            updated[rule_id] = _with_hash(next_rule)
+        journal = _with_hash({"transaction_id": "vtx_" + uuid.uuid4().hex,
+            "client_profile_id": profile_id, "target_set_sha256": target_hash, "actor": actor, "passed": passed,
+            "before_sha256": {d["client_rule_id"]: d["content_sha256"] for d in drafts}, "drafts": updated})
+        journal_path = paths.contained_path(profile_dir, "validation-commit.json")
+        committed = False
+        recovery_required = False
+        try:
+            _secure_write(journal_path, journal)
+            committed = True
+            self._recover_validation_commit(profile_dir)
+        except Exception:
+            # Replacement can commit before directory sync reports an error.
+            if not committed and journal_path.is_file():
+                committed = _read_json(journal_path).get("transaction_id") == journal["transaction_id"]
+            if not committed:
+                raise
+            recovery_required = journal_path.is_file()
+        return {"passed": passed, "evidence_ids": evidence_ids, "drafts": list(updated.values()),
+                "release_check_recorded": passed, "transaction_id": journal["transaction_id"],
+                "commit_status": "committed_recovery_pending" if recovery_required else "committed",
+                "recovery_required": recovery_required}
 
     # ------------------------------------------------------------------ #
     # 发布 / 回滚 / 读取
     # ------------------------------------------------------------------ #
+    @_transaction
     def publish_snapshot(
         self, profile_id: str, *,
         expected_active_snapshot: Optional[str],
@@ -532,6 +789,12 @@ class ClientRepository:
     ) -> Dict[str, Any]:
         if not confirmation:
             raise ClientStoreError("发布需要显式二次确认（RS-HC-004）。")
+        if public_asset_fingerprint == "sha256:" + "0" * 64 or public_snapshot_id == "public_sha256_" + "0" * 64:
+            from .public_repository import PublicRepository
+            public = PublicRepository()
+            public_snapshot_id = public.public_snapshot_id
+            public_asset_fingerprint = public.public_asset_fingerprint
+            resolver_semantics_version = public.resolver_semantics_version
         profile_dir = self._require_active_profile_dir(profile_id)
         pub = publisher.Publisher(profile_dir)
 
@@ -583,12 +846,38 @@ class ClientRepository:
             except validator.ValidationError as exc:
                 raise ClientStoreError(str(exc)) from exc
 
-        evidence_refs = [
-            {"relative_path": f"clients/{profile_id}/drafts/{r['client_rule_id']}.json",
-             "sha256": r["content_sha256"].removeprefix("sha256:"),
-             "media_type": "application/json"}
-            for r in rules
-        ]
+        current_manifest = pub.read_manifest()
+        current_id = current_manifest.get("active_snapshot_id")
+        if current_id != expected_active_snapshot:
+            raise ClientStoreError("expected active snapshot 与当前不一致；发布被拒绝（ACTIVE_SNAPSHOT_CONFLICT）。")
+        current_rules = pub.load_snapshot(current_id)["rules_doc"]["rules"] if current_id else []
+        target_set_sha256 = evidence_records.rule_set_hash(rules)
+        require_rule_set = len(rules) > 1 and target_set_sha256 != evidence_records.rule_set_hash(current_rules)
+        conflicts = guard_catalog.detect_conflicts(rules)
+        if conflicts:
+            raise ClientStoreError("拟发布规则之间存在静态冲突，请先处理冲突并完成整组测试（RULE_SET_CONFLICT）。")
+        # Public dependencies are contextual, not a bag of every public ID. Only
+        # the real resolver's successful applicability case can establish them.
+        client_dependency_rules = [{**r, "depends_on": [d for d in r.get("depends_on", []) if str(d).startswith("cr_")]} for r in rules]
+        missing = guard_catalog.check_dependencies(client_dependency_rules, set())
+        if not missing.satisfied:
+            raise ClientStoreError("客户规则依赖未纳入发布集合：" + "、".join(missing.missing))
+        evidence_refs = []
+        try:
+            for rule in rules:
+                evidence_refs.extend(evidence_records.publication_refs(profile_dir, rule,
+                    target_set_sha256=target_set_sha256, require_rule_set=require_rule_set))
+                if any(not str(d).startswith("cr_") for d in rule.get("depends_on", [])):
+                    reports = [evidence_records.load(profile_dir, eid, rule, kind="executed_regression")["report"]
+                               for eid in rule["review"]["regression_evidence_ids"]]
+                    demonstrated = any(report["executor"]["name"] in ("one-contract-production-resolver", "one-contract-production-resolver-batch")
+                        and any(case["passed"] and isinstance(case["actual"], dict)
+                                and (case["actual"].get("applies") is True or rule["client_rule_id"] in case["actual"].get("rules", {})) for case in report["cases"])
+                        for report in reports)
+                    if not demonstrated:
+                        raise evidence_records.EvidenceError("公共依赖须由实际适用场景测试证明，不能把全部公共编号视为可用。")
+        except evidence_records.EvidenceError as exc:
+            raise ClientStoreError(str(exc)) from exc
 
         try:
             snapshot = pub.publish(
@@ -608,23 +897,41 @@ class ClientRepository:
         snapshot["skipped_drafts"] = skipped
         return snapshot
 
-    def publish_empty_snapshot(self, profile_id: str, *, actor: str) -> Dict[str, Any]:
-        """发布一个空快照（用于演示与基线）。"""
+    @_transaction
+    def create_restore_point(self, profile_id: str, *, actor: str,
+                             public_snapshot_id: Optional[str] = None,
+                             public_asset_fingerprint: Optional[str] = None,
+                             resolver_semantics_version: Optional[str] = None) -> Dict[str, Any]:
+        """Pin current immutable snapshot. Never clear an existing active set."""
         profile_dir = self._require_active_profile_dir(profile_id)
         pub = publisher.Publisher(profile_dir)
-        try:
-            return pub.publish(
-                client_profile_id=profile_id,
-                rules=[],
-                evidence_refs=[],
-                public_snapshot_id="public_sha256_" + "0" * 64,
-                public_asset_fingerprint="sha256:" + "0" * 64,
-                resolver_semantics_version="0.1.0",
-                expected_active_snapshot=pub.read_manifest().get("active_snapshot_id"),
-                actor=actor,
-            )
-        except publisher.PublishError as exc:
-            raise ClientStoreError(str(exc)) from exc
+        pub.recover_pending_commits()
+        current = pub.read_manifest()
+        active_id = current.get("active_snapshot_id")
+        if active_id:
+            snapshot = pub.load_snapshot(active_id)["manifest"]
+        else:
+            if not all((public_snapshot_id, public_asset_fingerprint, resolver_semantics_version)):
+                from .public_repository import PublicRepository
+                public = PublicRepository()
+                public_snapshot_id = public.public_snapshot_id
+                public_asset_fingerprint = public.public_asset_fingerprint
+                resolver_semantics_version = public.resolver_semantics_version
+            snapshot = pub.publish(client_profile_id=profile_id, rules=[], evidence_refs=[],
+                public_snapshot_id=public_snapshot_id, public_asset_fingerprint=public_asset_fingerprint,
+                resolver_semantics_version=resolver_semantics_version, expected_active_snapshot=None,
+                actor=actor, publish_reason="initial_empty_baseline")
+        restore_id = "rp_" + uuid.uuid4().hex
+        record = {"restore_point_id": restore_id, "snapshot_id": snapshot["snapshot_id"],
+                  "client_profile_id": profile_id, "snapshot_sha256": snapshot["content_sha256"],
+                  "created_by": actor, "created_at": _now()}
+        _secure_write(paths.contained_path(profile_dir, "restore-points", restore_id + ".json"), record)
+        audit.append_event(profile_dir, event_kind="restore_point_created", actor=actor, detail=record)
+        return {**snapshot, "restore_point_id": restore_id, "active_changed": active_id is None}
+
+    def publish_empty_snapshot(self, profile_id: str, *, actor: str) -> Dict[str, Any]:
+        """Compatibility alias for the old baseline button; non-destructive."""
+        return self.create_restore_point(profile_id, actor=actor)
 
     def load_active_snapshot(self, profile_id: str) -> Optional[Dict[str, Any]]:
         """返回当前生效快照的 manifest；未发布时返回 None。"""
@@ -635,7 +942,10 @@ class ClientRepository:
         if not snapshot_id:
             return None
         try:
-            return pub.load_snapshot(snapshot_id)["manifest"]
+            snapshot = pub.load_snapshot(snapshot_id)["manifest"]
+            if snapshot["content_sha256"] != manifest.get("active_snapshot_sha256"):
+                raise publisher.PublishError("active manifest 与快照内容哈希不一致。")
+            return snapshot
         except publisher.PublishError as exc:
             raise SnapshotIntegrityError(str(exc)) from exc
 
@@ -648,6 +958,7 @@ class ClientRepository:
             raise SnapshotIntegrityError(str(exc)) from exc
         return doc["manifest"]
 
+    @_transaction
     def rollback_snapshot(
         self, profile_id: str, *,
         target_snapshot: str, expected_active_snapshot: Optional[str], actor: str,
@@ -663,6 +974,7 @@ class ClientRepository:
         except publisher.PublishError as exc:
             raise ClientStoreError(str(exc)) from exc
 
+    @_transaction
     def recover_pending_commits(self, profile_id: str) -> bool:
         profile_dir = self._require_profile_dir(profile_id)
         return publisher.Publisher(profile_dir).recover_pending_commits()

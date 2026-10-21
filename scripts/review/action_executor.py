@@ -14,6 +14,7 @@ except ImportError:
 DEFAULT_TAG_BY_ACTION = {
     "comment": "w:p",
     "delete": "w:r",
+    "delete_paragraph": "w:p",
     "insert": "w:p",
     "replace": "w:r",
 }
@@ -28,6 +29,9 @@ ACTION_ALIASES = {
     "意见书": "report-only",
     "delete": "delete",
     "删除": "delete",
+    "delete_paragraph": "delete_paragraph",
+    "delete-paragraph": "delete_paragraph",
+    "删除段落": "delete_paragraph",
     "insert": "insert",
     "插入": "insert",
     "新增": "insert",
@@ -57,6 +61,7 @@ SUPPORTED_ACTIONS = {
     "comment",
     "report-only",
     "delete",
+    "delete_paragraph",
     "insert",
     "replace",
     "none",
@@ -64,7 +69,7 @@ SUPPORTED_ACTIONS = {
     "auto",
 }
 EDIT_POLICIES = {"comment-first", "balanced", "revise-first"}
-DIRECT_EDIT_ACTIONS = {"delete", "insert", "replace"}
+DIRECT_EDIT_ACTIONS = {"delete", "delete_paragraph", "insert", "replace"}
 
 
 def normalize_action(action: Any, default: str = "comment") -> str:
@@ -380,7 +385,19 @@ def apply_finding(
     comment = resolve_revision_comment(
         finding, action=action, requested_action=requested_action
     )
-    if action == "delete":
+    if action == "delete_paragraph":
+        if tag != "w:p":
+            raise ValueError("delete_paragraph 的 tag 必须为 w:p")
+        node = resolve_node(reviewer, finding, action)
+        target_text = finding.get("target_text") or finding.get("search")
+        if target_text is not None:
+            expected = reviewer._normalize_text_with_map(str(target_text))[0]
+            actual = reviewer._normalize_text_with_map(reviewer._get_accepted_text(node))[0]
+            if expected != actual:
+                raise ValueError("delete_paragraph 的 target_text 必须覆盖完整段落；局部文字删除请使用 delete")
+        changed = reviewer.delete_paragraph(node, comment_text=comment)
+        result.update(status="applied", message="已形成整段文字及段落标记删除修订")
+    elif action == "delete":
         target_text = finding.get("target_text") or finding.get("search")
         if target_text:
             changed = reviewer.delete_text(

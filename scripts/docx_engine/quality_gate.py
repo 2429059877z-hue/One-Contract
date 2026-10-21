@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import posixpath
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unicodedata
 import zipfile
@@ -16,6 +18,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from xml.sax.saxutils import escape
 
 import defusedxml.ElementTree as ET
 
@@ -23,6 +26,13 @@ try:
     from .revision_views import REVISION_TAGS, create_revision_view
 except ImportError:
     from revision_views import REVISION_TAGS, create_revision_view
+
+try:
+    from ..render_tools import diagnose_rendering_tools
+except ImportError:
+    # Support the standalone script and the launcher's top-level engine import.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from render_tools import diagnose_rendering_tools
 
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -279,6 +289,105 @@ def _png_dimensions(path: Path) -> tuple[int, int] | None:
     return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
 
 
+def _system_font_directories(environment: dict[str, str], platform: str) -> list[Path]:
+    """Locate existing font stores; never install, copy or modify user fonts."""
+    home = Path.home()
+    if platform == "darwin":
+        candidates = [Path("/System/Library/Fonts"), Path("/Library/Fonts"), home / "Library/Fonts"]
+    elif platform == "win32":
+        # Do not assume a drive letter or account directory. Native Windows LO
+        # can also use registered fonts; this list only configures Fontconfig.
+        candidates = []
+        windows = environment.get("WINDIR") or environment.get("SystemRoot")
+        if windows:
+            candidates.append(Path(windows) / "Fonts")
+        if environment.get("LOCALAPPDATA"):
+            candidates.append(Path(environment["LOCALAPPDATA"]) / "Microsoft/Windows/Fonts")
+    else:
+        candidates = [Path("/usr/share/fonts"), Path("/usr/local/share/fonts"), home / ".fonts"]
+        candidates.append(Path(environment.get("XDG_DATA_HOME", str(home / ".local/share"))) / "fonts")
+        candidates.extend(Path(p) / "fonts" for p in environment.get("XDG_DATA_DIRS", "").split(os.pathsep) if p)
+    return list(dict.fromkeys(p.resolve() for p in candidates if p.is_dir()))
+
+
+def _render_font_environment(workspace: Path) -> tuple[dict[str, str], dict[str, Any]]:
+    environment = os.environ.copy()
+    directories = _system_font_directories(environment, sys.platform)
+    diagnostic: dict[str, Any] = {
+        "platform": sys.platform,
+        "font_directories": [str(p) for p in directories],
+        "font_file_counts": {},
+        "warnings": [],
+        "visual_validation": "not_performed",
+    }
+    for directory in directories:
+        try:
+            diagnostic["font_file_counts"][str(directory)] = sum(
+                1 for path in directory.rglob("*")
+                if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".otc", ".dfont"}
+            )
+        except OSError as exc:
+            diagnostic["warnings"].append(f"无法完整列出字体目录 {directory}: {exc}")
+    if "FONTCONFIG_FILE" in environment or "FONTCONFIG_PATH" in environment:
+        diagnostic["mode"] = "explicit_configuration_preserved"
+        diagnostic["fontconfig_file"] = environment.get("FONTCONFIG_FILE")
+        diagnostic["fontconfig_path"] = environment.get("FONTCONFIG_PATH")
+    elif directories and sys.platform == "darwin":
+        # The reproduced defect is macOS bundled LibreOffice missing native
+        # font stores. Keep Windows/Linux native alias and discovery settings;
+        # inventory alone does not justify replacing those configurations.
+        cache = workspace / "font-cache"
+        cache.mkdir(mode=0o700)
+        config = workspace / "fonts.conf"
+        config.write_text(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">\n<fontconfig>\n'
+            + "".join(f"<dir>{escape(p.as_posix())}</dir>\n" for p in directories)
+            + f"<cachedir>{escape(cache.as_posix())}</cachedir>\n</fontconfig>\n",
+            encoding="utf-8",
+        )
+        environment["FONTCONFIG_FILE"] = str(config)
+        environment["FONTCONFIG_PATH"] = str(workspace)
+        diagnostic.update(mode="temporary_system_fonts", private_cache=True,
+                          config_xml=config.read_text(encoding="utf-8"))
+    else:
+        diagnostic["mode"] = "native_environment_unchanged"
+        if not directories:
+            diagnostic["warnings"].append("未找到平台常用字体目录；未改写渲染环境，需核对本机字体。")
+
+    # An inventory of files is not proof of glyph coverage. Query Fontconfig
+    # when available, and explicitly disclose when that diagnostic cannot run.
+    command = shutil.which("fc-list")
+    probe: dict[str, Any] = {"command": command, "status": "unavailable"}
+    if command:
+        try:
+            found = subprocess.run(
+                [command, "--format=%{file}\t%{family}\n", ":charset=4e2d"],
+                env=environment, text=True, capture_output=True, check=False, timeout=30,
+            )
+            rows = list(dict.fromkeys(line for line in found.stdout.splitlines() if line.strip()))
+            probe.update(status="discovered" if found.returncode == 0 and rows else "empty" if found.returncode == 0 else "failed",
+                         tested_codepoint="U+4E2D", matching_font_faces=len(rows),
+                         font_samples=rows[:20], stderr=found.stderr.strip()[:2000])
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            probe.update(status="failed", error=str(exc))
+    diagnostic["fontconfig_probe"] = probe
+    if probe["status"] != "discovered":
+        diagnostic["warnings"].append("中文字体覆盖尚未获 Fontconfig 查询证实；目录或字体文件数量不代表字形、排版已通过。")
+    return environment, diagnostic
+
+
+def _contains_cjk_text(docx_path: Path) -> bool:
+    with zipfile.ZipFile(docx_path) as archive:
+        for name in archive.namelist():
+            if STORY_PATTERN.match(name):
+                root = ET.fromstring(archive.read(name))
+                if any(re.search(r"[\u3400-\u9fff\uf900-\ufaff]", node.text or "")
+                       for node in root.iter() if node.tag in {f"{{{W}}}t", f"{{{W}}}delText"}):
+                    return True
+    return False
+
+
 def render_docx_evidence(
     docx_path: Path,
     *,
@@ -287,19 +396,16 @@ def render_docx_evidence(
 ) -> dict[str, Any]:
     """Render DOCX to PDF/PNG and return machine-checkable page evidence.
 
-    This gate proves that LibreOffice can render non-empty pages.  It deliberately
+    This gate records valid page files, not that all text is visibly rendered. It
     does not claim that a human/agent has checked overlap, clipping or typography.
     """
     if visual_policy not in VISUAL_POLICIES:
         raise ValueError(f"unsupported visual_policy: {visual_policy}")
     docx_path = Path(docx_path).resolve()
     output_dir = Path(output_dir).resolve()
-    commands = {
-        "soffice": shutil.which("soffice") or shutil.which("libreoffice"),
-        "pdfinfo": shutil.which("pdfinfo"),
-        "pdftoppm": shutil.which("pdftoppm"),
-    }
-    missing = [name for name, path in commands.items() if not path]
+    rendering = diagnose_rendering_tools()
+    commands = {name: tool["path"] for name, tool in rendering["tools"].items()}
+    missing = rendering["missing_tools"]
     if visual_policy == "structural-only":
         return {
             "status": "STRUCTURAL_ONLY",
@@ -308,6 +414,7 @@ def render_docx_evidence(
             "visual_inspection_status": "not_performed",
             "reason": "visual_policy=structural-only; 未执行渲染，不得冒充视觉终版",
             "commands": commands,
+            "rendering": rendering,
             "errors": [],
             "pages": [],
         }
@@ -323,6 +430,7 @@ def render_docx_evidence(
                 "渲染环境不完整；仅可标注为结构验证版，不得冒充视觉终版"
             ),
             "commands": commands,
+            "rendering": rendering,
             "missing_commands": missing,
             "errors": errors,
             "pages": [],
@@ -334,6 +442,10 @@ def render_docx_evidence(
         raise FileExistsError(f"refusing to overwrite render evidence in: {output_dir}")
     errors: list[str] = []
     with tempfile.TemporaryDirectory(prefix="one-contract-lo-") as profile_dir:
+        environment, font_environment = _render_font_environment(Path(profile_dir))
+        if (font_environment["fontconfig_probe"]["status"] == "empty"
+                and sys.platform != "win32" and _contains_cjk_text(docx_path)):
+            errors.append("文档含中文，但当前 Fontconfig 未发现覆盖中文探测字形的字体；请核对字体配置。")
         command = [
             str(commands["soffice"]),
             f"-env:UserInstallation={Path(profile_dir).resolve().as_uri()}",
@@ -344,14 +456,16 @@ def render_docx_evidence(
             str(output_dir),
             str(docx_path),
         ]
-        completed = subprocess.run(
-            command, text=True, capture_output=True, check=False, timeout=60
-        )
-    if completed.returncode != 0 or not pdf_path.is_file() or pdf_path.stat().st_size == 0:
-        errors.append(
-            "LibreOffice 渲染失败: "
-            + (completed.stderr.strip() or completed.stdout.strip() or f"exit={completed.returncode}")
-        )
+        if not errors:
+            try:
+                completed = subprocess.run(
+                    command, env=environment, text=True, capture_output=True, check=False, timeout=60
+                )
+                font_environment["renderer_stderr"] = completed.stderr.strip()[:4000]
+                if completed.returncode != 0 or not pdf_path.is_file() or pdf_path.stat().st_size == 0:
+                    errors.append("LibreOffice 渲染失败: " + (completed.stderr.strip() or completed.stdout.strip() or f"exit={completed.returncode}"))
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                errors.append(f"LibreOffice 渲染失败: {exc}")
     pages_expected = 0
     pdfinfo_output = ""
     if not errors:
@@ -414,6 +528,8 @@ def render_docx_evidence(
             else "渲染失败，不得对外交付"
         ),
         "commands": commands,
+        "rendering": rendering,
+        "font_environment": font_environment,
         "pdf": str(pdf_path) if pdf_path.exists() else None,
         "pdf_pages": pages_expected,
         "pdfinfo": pdfinfo_output,

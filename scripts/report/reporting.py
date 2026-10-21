@@ -74,7 +74,8 @@ def load_json(path: str | Path) -> dict[str, Any]:
 
 
 def collect_findings(plan: dict[str, Any]) -> list[dict[str, Any]]:
-    findings = plan.get("findings") or plan.get("risks") or []
+    from scripts.review.plan_contract import get_findings
+    findings = get_findings(plan)
     if not isinstance(findings, list):
         raise ValueError("findings 必须是数组")
     normalized = []
@@ -103,6 +104,10 @@ def _first_text(*values: Any) -> str:
             if text:
                 return text
             continue
+        if isinstance(value, (list, tuple)):
+            text = "；".join(filter(None, (_first_text(item) for item in value)))
+            if text:
+                return text
         if isinstance(value, (int, float)):
             return str(value)
     return ""
@@ -191,9 +196,6 @@ def _is_tax_finding(item: dict[str, Any]) -> bool:
         item.get("clause_group"),
         item.get("basis_type"),
         item.get("tags"),
-        item.get("title"),
-        item.get("risk"),
-        item.get("description"),
     ]
     signal_text = " ".join(_walk_text_values(signal_values))
     return bool(TAX_SIGNAL_RE.search(signal_text))
@@ -223,9 +225,6 @@ def _collect_tax_suggestions(
         for key in TAX_SUGGESTION_KEYS:
             for text in _walk_text_values(container.get(key)):
                 _append_unique(suggestions, _as_tax_suggestion(text))
-    for text in _walk_text_values(summary.get("key_recommendations")):
-        if _is_tax_text(text):
-            _append_unique(suggestions, _as_tax_suggestion(text))
 
     for finding in findings:
         explicit_bucket = finding.get("report_bucket")
@@ -468,6 +467,9 @@ def _resolve_transaction_content(
 
 
 def _resolve_price_overview(summary: dict[str, Any], meta: dict[str, Any]) -> str:
+    explicit = _resolve_structured_text(summary, meta, "price_overview")
+    if explicit:
+        return explicit
     amount = _resolve_meta_text(summary, meta, "contract_amount", "amount", "total_amount")
     payment = _resolve_structured_text(
         summary,
@@ -568,8 +570,8 @@ def _report_completeness_errors(
             "缺少条款联动必检清单（linkage_checklist）——五组：付款交付验收／变更解除违约／"
             "保密数据知识产权／责任限制赔偿保险／到期退出交接，每组须登记 checked 或 not_applicable+理由"
         )
-    for item in findings:
-        finding_id = _safe_line(item.get("id"), fallback="未编号")
+    for index, item in enumerate(findings, start=1):
+        finding_id = f"第 {index} 项意见"
         if not _resolve_review_direction(item):
             errors.append(f"{finding_id} 缺少审查意见或可执行修改方向")
         if _resolve_legal_basis(item) == "/":
@@ -589,7 +591,7 @@ def _resolve_key_recommendations(
     recommendations = [
         item
         for item in _to_text_list(summary.get("key_recommendations"))
-        if not _is_tax_text(item) and item not in blocked_directions
+        if item not in blocked_directions
     ]
     if recommendations:
         return recommendations
@@ -682,7 +684,7 @@ def _resolve_high_risk_alerts(findings: list[dict[str, Any]]) -> list[dict[str, 
         alerts.append(
             {
                 "title": _safe_line(item.get("title") or item.get("risk")),
-                "clause": _safe_line(item.get("clause") or item.get("clause_position")),
+                "clause": _safe_line(item.get("clause") or item.get("clause_position") or item.get("target_text")),
                 "risk": _safe_line(item.get("risk") or item.get("description")),
                 "suggestion": (
                     "该具体输出已定向阻断；仅保留合规核验、补正、保全和退出方向。"
@@ -730,22 +732,16 @@ def _execution_status_lines(
         lines.append("> 提示：本次审查存在未完成事项，不得作为正式交付版本；请人工复核后再作处理。")
     if directed_items:
         lines.append("> 定向阻断：下列具体输出/动作已停止，其他不受影响的审查项已继续执行。")
-        for item in directed_items:
-            lines.append(
-                f"> - {_safe_line(item.get('id'), fallback='未编号')}："
-                f"{_safe_line(item.get('message'), fallback='已定向阻断')}"
-            )
+        for index, item in enumerate(directed_items, 1):
+            lines.append(f"> - 第 {index} 项受限动作已停止，请核对相应审查意见。")
     if structural_only:
         lines.append("> 交付级别：当前仅为结构验证版，未取得完整渲染证据，不得冒充视觉终版。")
     if failed_items:
         lines.append("> 未完整落文项目：")
-        for item in failed_items:
-            lines.append(
-                f"> - {_safe_line(item.get('id'), fallback='未编号')}："
-                f"{_safe_line(item.get('message'), fallback='执行失败')}"
-            )
-    for error in quality_errors:
-        lines.append(f"> - {_safe_line(error)}")
+        for index, item in enumerate(failed_items, 1):
+            lines.append(f"> - 第 {index} 项修改未能完成，请人工复核修订稿。")
+    if quality_errors:
+        lines.append("> - 文档检查发现异常，须修复后重新出稿。")
     if report_errors:
         lines.append("> 报告未闭合事项：")
         for error in report_errors:
@@ -841,9 +837,7 @@ def _resolve_coverage_section(
     stub_topics = _to_text_list(summary.get("stub_topics"))
 
     hit = contract_type
-    suffix = f"（{type_id}）" if type_id else ""
-    if domain_code:
-        suffix += f"；主大类 {domain_code}"
+    suffix = ""  # 内部分类编码只保留在 plan 溯源中。
     lines = [
         "### 5. 审查依据与覆盖层级",
         "",
@@ -856,8 +850,12 @@ def _resolve_coverage_section(
             "- 本类型下暂无具体检查项的议题："
             + "、".join(_safe_line(topic) for topic in stub_topics)
         )
-    else:
+    elif summary.get("_coverage_inventory_checked"):
         lines.append("- 本类型下暂无具体检查项的议题：无")
+    else:
+        lines.append("- 本类型下暂无具体检查项的议题：未记录（未取得模块清单）")
+    if provenance.get("verdict") == "accepted_with_reduced_coverage":
+        lines.append("- 覆盖不足说明：部分必选专项模块尚未启用，本次仅使用已启用资产；相关议题需人工补审。")
     if level == "domain_only":
         lines.append(
             "- 说明：本次生效的是该大类在本域共通层面的审查目标与判断坐标；"
@@ -945,6 +943,15 @@ def render_review_report(
     execution: dict[str, Any] | None = None,
     generated_at: str | None = None,
 ) -> str:
+    from scripts.review.report_contract import prepare_report_plan, validate_report_contract, rights_change_lines
+    validate_report_contract(plan)
+    plan = prepare_report_plan(plan)
+    from scripts.review.module_checklist import coverage_gaps, selected_assets
+    if plan.get("knowledge_selection") is not None:
+        selection = selected_assets(plan)
+        plan.setdefault("meta", {}).setdefault("classification_provenance", {})["coverage_level"] = selection["coverage_level"]
+        plan.setdefault("summary", {})["stub_topics"] = coverage_gaps(plan)
+        plan["summary"]["_coverage_inventory_checked"] = True
     plan_meta = plan.get("meta") if isinstance(plan.get("meta"), dict) else {}
     meta = _merge_report_meta(plan_meta, execution)
     summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
@@ -958,7 +965,7 @@ def render_review_report(
     project_name = _safe_line(meta.get("project_name"))
     reviewer = _safe_line(meta.get("reviewer"))
     reviewer_organization = _safe_line(
-        meta.get("reviewer_organization"), fallback="未设置"
+        meta.get("reviewer_organization"), fallback=""
     )
     reviewer_department = _first_text(meta.get("reviewer_department"))
     client_name = _safe_line(meta.get("client_name"))
@@ -1028,9 +1035,11 @@ def render_review_report(
         f"- 审查立场：{party_role}",
         f"- 审查口径：{review_intensity}",
         f"- 审查人：{reviewer}",
-        f"- 所属机构/公司：{reviewer_organization}",
+        *([f"- 所属机构/公司：{reviewer_organization}"] if reviewer_organization else []),
         *([f"- 所属部门：{reviewer_department}"] if reviewer_department else []),
         "",
+        *(["### 权利归属变更提示", "", *rights_change_lines(summary), ""]
+          if summary.get("rights_allocation_changes") else []),
         "## 一、合同概况",
         "",
         "### 1. 合同主体",
@@ -1121,16 +1130,22 @@ def render_review_report(
             lines.append("")
             lines.append(f"- 风险等级：{item['risk_level']}")
             lines.append(
-                f"- 条款位置：{_safe_line(item.get('clause') or item.get('clause_position'))}"
+                f"- 条款位置：{_safe_line(item.get('clause') or item.get('clause_position') or item.get('target_text'))}"
             )
             lines.append(
                 f"- 风险概述：{_safe_line(item.get('risk') or item.get('description'))}"
             )
             lines.append(f"- 审查意见：{review_comment}")
+            from scripts.review.action_executor import normalize_action, infer_revision_action
+            requested_action = normalize_action(item.get("action"), default="auto")
+            proposal_action = infer_revision_action(item) if requested_action == "auto" else requested_action
             if target_text:
-                lines.append(f"- 原条款：{target_text}")
+                # target_text for insertion identifies its anchor, not deleted text.
+                label = "插入位置（其后）" if proposal_action == "insert" else "原条款"
+                lines.append(f"- {label}：{target_text}")
             if revision_text:
-                lines.append(f"- 建议修改：{revision_text}")
+                label = "建议新增" if proposal_action == "insert" else "建议修改"
+                lines.append(f"- {label}：{revision_text}")
             if is_directed_blocked:
                 lines.append(f"- 定向阻断理由：{_safe_line(block.get('reason'))}")
                 required_outputs = _to_text_list(block.get("required_outputs"))
@@ -1157,7 +1172,8 @@ def render_review_report(
             "",
             "## 六、出具信息",
             "",
-            f"- 审查人及机构：{reviewer} / {reviewer_organization}",
+            (f"- 审查人及机构：{reviewer} / {reviewer_organization}"
+             if reviewer_organization else f"- 审查人：{reviewer}"),
             *([f"- 所属部门：{reviewer_department}"] if reviewer_department else []),
             "",
         ]
@@ -1185,6 +1201,10 @@ def render_review_report(
             + "、".join(missing_sections)
             + "（契约见 scripts/report/report-sections.json）"
         )
+    from scripts.review.delivery_checks import scan_external_text
+    external_errors = scan_external_text(report_text, [f.get("id", "") for f in findings])
+    if external_errors:
+        raise ValueError("对外报告包含内部编码或无效展示标记：" + ", ".join(external_errors))
     return report_text
 
 

@@ -31,6 +31,14 @@ class UnknownErrorCode(Exception):
 
 
 ERROR_CATALOG: Dict[str, Dict[str, str]] = {
+    "STUDIO_READ_ONLY": {
+        "message": "当前工作台以只读模式运行，未保存任何修改。",
+        "remediation": "关闭当前工作台，移除 --read-only 后重新启动，才可编辑或发布。",
+    },
+    "STUDIO_STORAGE_BUSY": {
+        "message": "该客户的数据正在由另一项操作保存。",
+        "remediation": "稍后重新载入最新版本，确认状态后重试；不要覆盖旧版本。",
+    },
     "INVALID_SCHEMA": {
         "message": "提交的内容结构不符合契约。",
         "remediation": "按提示的字段路径修正后重新提交；不要手工绕过结构校验。",

@@ -438,6 +438,57 @@ def build_execution_summary(
     }
 
 
+def finalize_report(*, plan, execution, source, reviewed, report_path, report_docx_path,
+                    quality_dir, author, visual_policy, validate=True, baseline_view='reject'):
+    """Finalize only after the checks describe the exact current report bytes.
+
+    Caller has already refused pre-existing outputs. Later passes replace only
+    this run's draft; each rendered version gets its own evidence directory.
+    Failure is sticky, and report state must converge before returning.
+    """
+    from scripts.review.delivery_checks import check_delivery
+    quality = execution['quality_gate']
+    def block(errors):
+        quality['status'] = 'FAIL'
+        quality['delivery_level'] = 'blocked'
+        quality['errors'] = sorted(set(quality.get('errors', []) + list(errors)))
+
+    for attempt in range(3):
+        content = render_review_report(plan=plan, execution=execution, generated_at=execution['generated_at'][:16])
+        report_path.write_text(content, encoding='utf-8')
+        write_review_report_docx(markdown_content=content, output_path=report_docx_path,
+            title=(str(plan.get('meta', {}).get('contract_name') or '合同')+'审查意见书'),
+            author=author, generated_at=execution['generated_at'][:16], validate=validate)
+        delivery = check_delivery(source, reviewed, plan, execution=execution,
+                                  report=report_docx_path, baseline_view=baseline_view)
+        execution['delivery_checks'] = delivery
+        if delivery['status'] != 'PASS':
+            block(delivery['errors'])
+        try:
+            visual = render_docx_evidence(report_docx_path,
+                output_dir=quality_dir/'render'/('report' if attempt == 0 else f'report-final-{attempt}'),
+                visual_policy=visual_policy)
+        except Exception as exc:
+            visual = {'status':'FAIL', 'errors':[str(exc)], 'pages':[]}
+        quality['report_visual_validation'] = visual
+        if visual.get('status') == 'FAIL':
+            block(['report visual: '+str(e) for e in visual.get('errors', [])] or ['审查报告渲染失败'])
+        elif visual.get('status') == 'STRUCTURAL_ONLY' and quality.get('status') == 'PASS':
+            quality['delivery_level'] = 'structural_validation'
+        quality['visual_final_eligible'] = False
+        quality['visual_inspection_status'] = ('blocked' if quality.get('status') != 'PASS' else
+            'not_performed' if quality.get('delivery_level') == 'structural_validation' else 'required')
+        final_content = render_review_report(plan=plan, execution=execution, generated_at=execution['generated_at'][:16])
+        if content == final_content:
+            quality_dir.mkdir(parents=True, exist_ok=True)
+            (quality_dir/'delivery-checks.json').write_text(json.dumps(delivery, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+            return
+    # Do not leave a stale, apparently deliverable report on a nonconvergent run.
+    report_path.unlink(missing_ok=True)
+    report_docx_path.unlink(missing_ok=True)
+    raise ValueError('报告最终状态未收敛，已撤回本轮报告草稿')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="批量执行审查计划（批注/修订），并生成审查报告"
@@ -454,6 +505,8 @@ def main() -> None:
         help="输出 Word 审查报告路径；不传时默认生成 <原文件名>-审查报告.docx（与输入同目录）",
     )
     parser.add_argument("--log", help="输出执行日志 JSON 路径")
+    parser.add_argument("--preflight-report", help="预检诊断 JSON；默认写入质量目录的 preflight.json")
+    parser.add_argument("--preflight-only", action="store_true", help="只预检并输出诊断，不生成合同与审查报告")
     parser.add_argument(
         "--archive-dir",
         default=str(DEFAULT_ARCHIVE_DIR),
@@ -499,7 +552,7 @@ def main() -> None:
         "--existing-revisions",
         choices=["reject", "accept-existing"],
         default="reject",
-        help="既有修订策略：默认拒绝在含历史修订的段落上改写；明确选择 accept-existing 时先接受历史修订再审查",
+        help="既有修订策略：默认保留历史修订并在可安全重建的区间叠加；accept-existing 先接受历史修订再审查",
     )
     parser.add_argument(
         "--orphan-comments",
@@ -540,46 +593,109 @@ def main() -> None:
         raise FileNotFoundError(f"输入 DOCX 不存在: {input_docx}")
     if not plan_path.exists():
         raise FileNotFoundError(f"审查计划文件不存在: {plan_path}")
-    if output_docx.exists():
+    if output_docx.exists() and not args.preflight_only:
         raise FileExistsError(f"拒绝覆盖既有输出 DOCX: {output_docx}")
+    preflight_path = (Path(args.preflight_report).expanduser().resolve()
+                      if args.preflight_report else quality_dir / "preflight.json")
+    protected_paths = {input_docx, plan_path, output_docx}
+    protected_paths.update(output_docx.with_name(name) for name in (
+        f"{input_docx.stem}-审查报告.md", f"{input_docx.stem}-审查报告.docx",
+        f"{input_docx.stem}_执行日志.json",
+    ))
+    protected_paths.update(Path(value).expanduser().resolve()
+                           for value in (args.report, args.report_docx, args.log) if value)
+    if (preflight_path in protected_paths
+        or (preflight_path.exists() and any(path.exists() and preflight_path.samefile(path)
+                                           for path in protected_paths))):
+        raise ValueError("预检诊断路径不得与输入、计划或交付文件相同")
     source_sha256 = hashlib.sha256(input_docx.read_bytes()).hexdigest()
-    source_inspection = inspect_docx(input_docx)
+    def write_preflight_diagnostics(diagnostics, *, reviewer=None):
+        diagnostics.update(
+            status="FAIL" if diagnostics["errors"] else "PASS",
+            source_sha256=source_sha256,
+            plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+            existing_revisions=args.existing_revisions,
+            author=reviewer,
+        )
+        preflight_path.parent.mkdir(parents=True, exist_ok=True)
+        preflight_path.write_text(json.dumps(diagnostics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        for item in diagnostics["errors"] + diagnostics["warnings"]:
+            print(json.dumps(item, ensure_ascii=False), file=sys.stderr)
+        if diagnostics["errors"]:
+            print(f"预检未通过，未生成交付文件；完整诊断：{preflight_path}", file=sys.stderr)
 
-    plan = load_plan(plan_path)
-    plan_meta = get_plan_meta(plan)
-    summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
-    review_context = resolve_review_context(
-        input_docx=input_docx,
-        plan_meta=plan_meta,
-        summary=summary,
-        client_name=args.client_name,
-        party_role=args.party_role,
-        review_intensity=args.review_intensity,
-        edit_policy=args.edit_policy,
-    )
-    edit_policy = normalize_edit_policy(
-        args.edit_policy or plan_meta.get("edit_policy") or review_context.get("edit_policy"),
-        default=str(review_context.get("edit_policy") or "revise-first"),
-    )
-    if not args.no_enrich_plan:
-        plan = enrich_plan(plan, edit_policy=edit_policy)
-    findings = get_findings(plan)
-    plan_meta = get_plan_meta(plan)
-    plan_meta["client_name"] = review_context["client_name"]
-    plan_meta["party_role"] = review_context["party_role"]
-    plan_meta["review_intensity"] = review_context["review_intensity"]
-    plan_meta["edit_policy"] = edit_policy
-    plan["meta"] = plan_meta
-    validate_plan(plan)
-    reviewer_profile = resolve_reviewer_profile(
-        args.author,
-        args.initials,
-        args.organization,
-        args.department,
-    )
-    author = str(reviewer_profile["author"])
-    comment_author = build_comment_author_display(reviewer_profile)
-    initials = str(reviewer_profile["initials"])
+    try:
+        source_inspection = inspect_docx(input_docx)
+
+        from scripts.review.report_contract import prepare_report_plan
+        plan = prepare_report_plan(load_plan(plan_path))
+        plan_meta = get_plan_meta(plan)
+        summary = plan.get("summary") if isinstance(plan.get("summary"), dict) else {}
+        review_context = resolve_review_context(
+            input_docx=input_docx,
+            plan_meta=plan_meta,
+            summary=summary,
+            client_name=args.client_name,
+            party_role=args.party_role,
+            review_intensity=args.review_intensity,
+            edit_policy=args.edit_policy,
+        )
+        edit_policy = normalize_edit_policy(
+            args.edit_policy or plan_meta.get("edit_policy") or review_context.get("edit_policy"),
+            default=str(review_context.get("edit_policy") or "revise-first"),
+        )
+        if not args.no_enrich_plan:
+            plan = enrich_plan(plan, edit_policy=edit_policy)
+        findings = get_findings(plan)
+        plan_meta = get_plan_meta(plan)
+        plan_meta["client_name"] = review_context["client_name"]
+        plan_meta["party_role"] = review_context["party_role"]
+        plan_meta["review_intensity"] = review_context["review_intensity"]
+        plan_meta["edit_policy"] = edit_policy
+        plan["meta"] = plan_meta
+        reviewer_profile = resolve_reviewer_profile(
+            args.author,
+            args.initials,
+            args.organization,
+            args.department,
+        )
+        author = str(reviewer_profile["author"])
+        comment_author = build_comment_author_display(reviewer_profile)
+        initials = str(reviewer_profile["initials"])
+    except (ValueError, TypeError, AttributeError) as exc:
+        from scripts.review.preflight import diagnostic
+        diagnostics = getattr(exc, "diagnostics", None) or {
+            "errors": [diagnostic(exc, code="PLAN_PREPARATION_FAILED", path="plan",
+                suggestion="核对计划 JSON 格式、meta/summary 对象、findings 数组及 edit_policy 值域后重新预检。")],
+            "warnings": [],
+        }
+        write_preflight_diagnostics(diagnostics)
+        raise SystemExit(1) from exc
+    preflight_diagnostics = {"errors": [], "warnings": []}
+    try:
+        preflight_diagnostics = validate_plan(
+            plan, source_docx=input_docx, existing_revisions=args.existing_revisions,
+            author=comment_author,
+        ) or preflight_diagnostics
+    except ValueError as exc:
+        from scripts.review.preflight import diagnostic
+        preflight_diagnostics = getattr(exc, "diagnostics", None) or {
+            "errors": [diagnostic(exc, code="PLAN_INVALID", path="plan")], "warnings": []}
+    from scripts.review.report_contract import validate_report_contract
+    try:
+        validate_report_contract(plan)
+    except ValueError as exc:
+        from scripts.review.preflight import diagnostic
+        report_diagnostics = getattr(exc, "diagnostics", None) or {
+            "errors": [diagnostic(exc, code="REPORT_INPUT_INVALID", path="report")], "warnings": []}
+        preflight_diagnostics["errors"].extend(report_diagnostics["errors"])
+        preflight_diagnostics["warnings"].extend(report_diagnostics["warnings"])
+    write_preflight_diagnostics(preflight_diagnostics, reviewer=comment_author)
+    if preflight_diagnostics["errors"]:
+        raise SystemExit(1)
+    if args.preflight_only:
+        print(f"预检通过；完整诊断：{preflight_path}")
+        return
     plan_meta["reviewer"] = author
     plan_meta["reviewer_organization"] = str(
         reviewer_profile.get("organization") or ""
@@ -646,7 +762,7 @@ def main() -> None:
         unpack_docx(input_docx, unpacked_path)
         if args.existing_revisions == "accept-existing":
             existing_revision_resolution = resolve_unpacked_revisions(
-                unpacked_path, "accept"
+                unpacked_path, "accept", prune_comments=False
             )
 
         # 悬空批注先处置、再构造 reviewer：`Document` 会把拆包目录复制进自己的临时目录，
@@ -707,7 +823,7 @@ def main() -> None:
 
     direct_applied = any(
         item.get("status") == "applied"
-        and item.get("action") in {"replace", "insert", "delete"}
+        and item.get("action") in {"replace", "insert", "delete", "delete_paragraph"}
         for item in applied_results
     )
     try:
@@ -754,6 +870,8 @@ def main() -> None:
     # 源批注的两类处置结果：对源意见的回复、悬空批注的处置（供报告与日志使用）
     execution_summary["responses"] = response_results
     execution_summary["orphan_comments"] = orphan_resolution
+    execution_summary["preflight"] = preflight_diagnostics
+    execution_summary["preflight_report"] = str(preflight_path)
 
     # 待复核法条清单：本库条文经建库时核验，但是**冻结时点**的结论；
     # 具备法律数据库的使用方可据此逐条复核现行有效性。
@@ -821,52 +939,12 @@ def main() -> None:
             file=sys.stderr,
         )
 
-    report_content = render_review_report(plan=plan, execution=execution_summary)
-    report_path.write_text(report_content, encoding="utf-8")
-    write_review_report_docx(
-        markdown_content=report_content,
-        output_path=report_docx_path,
-        title=(
-            f"{plan_meta.get('contract_name')}审查意见书"
-            if plan_meta.get("contract_name")
-            else "合同审查意见书"
-        ),
-        author=author,
-        generated_at=execution_summary["generated_at"][:16],
-        validate=not args.no_validate,
+    finalize_report(
+        plan=plan, execution=execution_summary, source=input_docx, reviewed=output_docx,
+        report_path=report_path, report_docx_path=report_docx_path, quality_dir=quality_dir,
+        author=author, visual_policy=args.visual_policy, validate=not args.no_validate,
+        baseline_view="accept" if args.existing_revisions == "accept-existing" else "reject",
     )
-    try:
-        report_visual = render_docx_evidence(
-            report_docx_path,
-            output_dir=quality_dir / "render" / "report",
-            visual_policy=args.visual_policy,
-        )
-    except Exception as exc:
-        report_visual = {
-            "status": "FAIL",
-            "delivery_level": "blocked",
-            "visual_final_eligible": False,
-            "visual_inspection_status": "blocked",
-            "errors": [f"审查报告渲染门异常: {exc}"],
-        }
-    quality_gate["report_visual_validation"] = report_visual
-    if report_visual.get("status") == "FAIL":
-        quality_gate["status"] = "FAIL"
-        quality_gate.setdefault("errors", []).extend(
-            f"report visual: {error}" for error in report_visual.get("errors", [])
-        )
-        quality_gate["delivery_level"] = "blocked"
-    elif report_visual.get("status") == "STRUCTURAL_ONLY" and quality_gate.get("status") == "PASS":
-        quality_gate["delivery_level"] = "structural_validation"
-    quality_gate["visual_final_eligible"] = False
-    quality_gate["visual_inspection_status"] = (
-        "blocked"
-        if quality_gate.get("status") != "PASS"
-        else "not_performed"
-        if quality_gate.get("delivery_level") == "structural_validation"
-        else "required"
-    )
-    execution_summary["quality_gate"] = quality_gate
     quality_report_path = quality_dir / "quality-gate.json"
     quality_report_path.write_text(
         json.dumps(quality_gate, ensure_ascii=False, indent=2) + "\n",

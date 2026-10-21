@@ -64,15 +64,46 @@ class ApiError(Exception):
 #: **任何写路由都不得指向公共规则路径**（RS-HC-001）。
 ROUTES: Tuple[Dict[str, Any], ...] = (
     {"method": "GET", "path": "/api/v1/health", "handler": "health", "policy": "none"},
+    {'method': 'GET', 'path': '/api/v1/tasks', 'handler': 'task_list', 'policy': 'task_read'},
+    {'method': 'POST', 'path': '/api/v1/tasks', 'handler': 'task_create', 'policy': 'task_write'},
+    {'method': 'GET', 'path': '/api/v1/tasks/{task_id}', 'handler': 'task_detail', 'policy': 'task_read'},
+    {'method': 'GET', 'path': '/api/v1/tasks/{task_id}/handoff', 'handler': 'task_handoff', 'policy': 'task_read'},
+    {'method': 'GET', 'path': '/api/v1/tasks/{task_id}/artifact', 'handler': 'task_artifact', 'policy': 'task_read'},
+    {'method': 'POST', 'path': '/api/v1/tasks/{task_id}/plan', 'handler': 'task_plan', 'policy': 'task_write'},
+    {'method': 'POST', 'path': '/api/v1/tasks/{task_id}/execute', 'handler': 'task_execute', 'policy': 'task_write'},
+    {'method': 'POST', 'path': '/api/v1/tasks/{task_id}/accept', 'handler': 'task_accept', 'policy': 'task_write'},
+    {'method': 'POST', 'path': '/api/v1/tasks/{task_id}/rule-confirmations', 'handler': 'task_rule_confirmation', 'policy': 'task_write'},
+    {"method": "GET", "path": "/api/v1/workspace/status", "handler": "workspace_status", "policy": "client_read"},
+    {"method": "POST", "path": "/api/v1/workspace/backup", "handler": "workspace_backup", "policy": "client_write"},
+    {"method": "POST", "path": "/api/v1/workspace/restore", "handler": "workspace_restore", "policy": "client_write"},
+    {"method": "POST", "path": "/api/v1/clients/{client_id}/rule-set/test", "handler": "rule_set_test", "policy": "client_write"},
     # Bootstrap：同源页面首次加载时换取内存会话凭据。
     # token **不进入 query、localStorage、日志或导出包**（§13）；
     # 该端点只回传凭据本身，不涉及任何私有客户数据。
     {"method": "GET", "path": "/api/v1/session/bootstrap", "handler": "session_bootstrap",
      "policy": "bootstrap"},
     {"method": "GET", "path": "/api/v1/rules/tree", "handler": "rules_tree", "policy": "public_read"},
+    {"method": "GET", "path": "/api/v1/knowledge/framework", "handler": "knowledge_framework", "policy": "public_read"},
+    {'method': 'GET', 'path': '/api/v1/authoring/drafts', 'handler': 'authoring_draft_list', 'policy': 'authoring_read'},
+    {'method': 'GET', 'path': '/api/v1/authoring/requests', 'handler': 'authoring_request_list', 'policy': 'authoring_read'},
+    {'method': 'POST', 'path': '/api/v1/authoring/requests', 'handler': 'authoring_request_create', 'policy': 'authoring_write'},
+    {'method': 'GET', 'path': '/api/v1/authoring/requests/{request_id}', 'handler': 'authoring_request_get', 'policy': 'authoring_read'},
+    {'method': 'POST', 'path': '/api/v1/authoring/requests/{request_id}/feedback', 'handler': 'authoring_request_feedback', 'policy': 'authoring_write'},
+    {'method': 'POST', 'path': '/api/v1/authoring/requests/{request_id}/result', 'handler': 'authoring_request_result', 'policy': 'authoring_write'},
+    {'method': 'POST', 'path': '/api/v1/authoring/requests/{request_id}/adopt', 'handler': 'authoring_request_adopt', 'policy': 'authoring_write'},
+    {'method': 'POST', 'path': '/api/v1/authoring/requests/{request_id}/recover', 'handler': 'authoring_request_recover', 'policy': 'authoring_write'},
+    {"method": "GET", "path": "/api/v1/clients/{client_id}/knowledge", "handler": "client_knowledge", "policy": "client_read"},
+    {'method': 'POST', 'path': '/api/v1/authoring/drafts', 'handler': 'authoring_draft_save', 'policy': 'authoring_write'},
+    {'method': 'GET', 'path': '/api/v1/authoring/drafts/{draft_id}', 'handler': 'authoring_draft_get', 'policy': 'authoring_read'},
+    {"method": "GET", "path": "/api/v1/authoring/schema", "handler": "authoring_schema", "policy": "public_read"},
+    {"method": "POST", "path": "/api/v1/authoring/validate", "handler": "authoring_validate", "policy": "public_read"},
+    {"method": "GET", "path": "/api/v1/knowledge/authoring-schema", "handler": "authoring_schema", "policy": "public_read"},
+    {"method": "GET", "path": "/api/v1/knowledge/nodes/{rule_id}", "handler": "rule_detail", "policy": "public_read"},
+    {"method": "GET", "path": "/api/v1/knowledge/nodes/{rule_id}/relationships", "handler": "rule_relationships", "policy": "public_read"},
     {"method": "GET", "path": "/api/v1/rules/search", "handler": "rules_search", "policy": "public_read"},
     {"method": "GET", "path": "/api/v1/rules/{rule_id}", "handler": "rule_detail", "policy": "public_read"},
     {"method": "GET", "path": "/api/v1/rules/{rule_id}/neighbors", "handler": "rule_neighbors", "policy": "public_read"},
+    {"method": "GET", "path": "/api/v1/rules/{rule_id}/relationships", "handler": "rule_relationships", "policy": "public_read"},
     {"method": "GET", "path": "/api/v1/catalog/contract-types", "handler": "contract_types", "policy": "public_read"},
     {"method": "POST", "path": "/api/v1/resolutions/preview", "handler": "resolution_preview", "policy": "public_read"},
     {"method": "GET", "path": "/api/v1/clients", "handler": "clients_list", "policy": "client_read"},
@@ -93,15 +124,17 @@ ROUTES: Tuple[Dict[str, Any], ...] = (
     # 基线快照：不含任何客户规则。UAT 第 9 步「回滚并确认结果恢复」需要一个更早的快照
     # 作为回滚目标，否则只能回滚到自身（无变化，验不出恢复）。
     {"method": "POST", "path": "/api/v1/clients/{client_id}/publish-baseline", "handler": "client_publish_baseline", "policy": "client_write"},
+    {"method": "POST", "path": "/api/v1/clients/{client_id}/restore-points", "handler": "client_publish_baseline", "policy": "client_write"},
     {"method": "POST", "path": "/api/v1/clients/{client_id}/drafts/{rule_id}/delete", "handler": "draft_delete", "policy": "client_write"},
     {"method": "POST", "path": "/api/v1/clients/{client_id}/client-rules/{rule_id}/submit", "handler": "rule_submit", "policy": "client_write"},
     {"method": "POST", "path": "/api/v1/clients/{client_id}/client-rules/{rule_id}/approval", "handler": "rule_approve", "policy": "client_write"},
     {"method": "POST", "path": "/api/v1/clients/{client_id}/client-rules/{rule_id}/regression", "handler": "rule_regression", "policy": "client_write"},
+    {"method": "POST", "path": "/api/v1/clients/{client_id}/client-rules/{rule_id}/test", "handler": "rule_test", "policy": "client_write"},
     # CR-006：已发布规则不得物理删除，**只能以新快照停用**——此前只有「禁止」的一半，
     # 没有停用入口，用户想退掉一条已发布规则会走进死路。
     {"method": "POST", "path": "/api/v1/clients/{client_id}/client-rules/{rule_id}/deprecate", "handler": "rule_deprecate", "policy": "client_write"},
     {"method": "POST", "path": "/api/v1/clients/{client_id}/deactivate", "handler": "client_deactivate", "policy": "client_write"},
-    {"method": "POST", "path": "/api/v1/service/stop", "handler": "service_stop", "policy": "client_write"},
+    {"method": "POST", "path": "/api/v1/service/stop", "handler": "service_stop", "policy": "service_control"},
     # ---- W5：公共提案（独立工作区；不写公共资产，不进 runtime）----
     {"method": "GET", "path": "/api/v1/public-proposals", "handler": "proposals_list",
      "policy": "public_read"},
@@ -115,6 +148,10 @@ ROUTES: Tuple[Dict[str, Any], ...] = (
      "handler": "proposal_transition", "policy": "proposal_write"},
     {"method": "POST", "path": "/api/v1/public-proposals/{proposal_id}/export",
      "handler": "proposal_export", "policy": "proposal_write"},
+    {"method": "GET", "path": "/api/v1/public-proposals/{proposal_id}/governance", "handler": "proposal_governance", "policy": "public_read"},
+    {"method": "POST", "path": "/api/v1/public-proposals/{proposal_id}/content", "handler": "proposal_save", "policy": "proposal_write"},
+    {"method": "POST", "path": "/api/v1/public-proposals/{proposal_id}/validate", "handler": "proposal_validate", "policy": "proposal_write"},
+    {"method": "POST", "path": "/api/v1/public-proposals/{proposal_id}/approval", "handler": "proposal_approve", "policy": "proposal_write"},
 )
 
 _STATIC_PREFIXES = ("/", "/app.js", "/styles.css")
@@ -177,6 +214,10 @@ def dispatch(
                                   detail="请求的路径或方法不存在。"))
 
     try:
+        # Read-only is a server-side policy, including proposal/export mutations.
+        # Preview is a read operation despite using POST; stopping remains available.
+        if services.get("read_only") and route["policy"].endswith("_write"):
+            raise ApiError(403, "STUDIO_READ_ONLY", detail="当前工作台以只读模式运行，未保存任何修改。")
         handler = _HANDLERS[route["handler"]]
         result = handler(request, params, services)
         return _envelope(request_id, True, result, None)
@@ -213,6 +254,11 @@ def dispatch(
     except client_repository.ClientStoreError as exc:
         return _envelope(request_id, False, None,
                          ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]))
+    except OSError as exc:
+        if type(exc).__name__ == "TransactionBusyError":
+            return _envelope(request_id, False, None, ApiError(409, "STUDIO_STORAGE_BUSY"))
+        return _envelope(request_id, False, None,
+                         ApiError(503, "INVALID_SCHEMA", detail="数据写入未完成，请检查磁盘空间、文件权限和占用情况后重新载入确认。"))
     except Exception as exc:  # 兜底：不回显堆栈与绝对路径
         return _envelope(request_id, False, None,
                          ApiError(500, "INVALID_SCHEMA", detail=type(exc).__name__))
@@ -292,7 +338,8 @@ def _node_dict(node: Any) -> Dict[str, Any]:
 
 
 def handle_health(request, params, services):
-    return {"status": "ok", "api_version": API_VERSION}
+    return {"status": "ok", "api_version": API_VERSION,
+            "read_only": bool(services.get("read_only"))}
 
 
 def handle_session_bootstrap(request, params, services):
@@ -301,7 +348,8 @@ def handle_session_bootstrap(request, params, services):
     if context is None:
         raise ApiError(503, "UNAUTHORIZED_LOCAL_REQUEST", detail="会话上下文不可用。")
     return {"token": context.token, "csrf_token": context.csrf_token,
-            "origin": context.origin}
+            "origin": context.origin, "read_only": bool(services.get("read_only")),
+            "session_id": context.csrf_token[:12]}
 
 
 #: 列表接口最大页大小（§4：列表接口须定义分页、稳定排序与最大 page size）。
@@ -360,11 +408,43 @@ def handle_contract_types(request, params, services):
 
 
 def handle_rule_detail(request, params, services):
-    node = _public(services).get_rule(params["rule_id"])
-    if node is None:
+    detail = _public(services).get_rule_detail(
+        params["rule_id"], projection_mode=request.query.get("projection_mode") or "maintenance",
+        type_id=request.query.get("type_id") or None)
+    if detail is None:
         raise ApiError(404, "UNKNOWN_FACT_OR_TARGET", field_path="rule_id",
                        detail="未找到该规则。")
-    return _node_dict(node)
+    return detail
+
+
+def handle_knowledge_framework(request, params, services):
+    return _public(services).get_framework()
+
+
+def handle_authoring_schema(request, params, services):
+    from one_contract_rules.authoring_catalog import get_authoring_schema
+    kind = request.query.get("kind", "")
+    if kind not in ("domain_principle", "principle", "clause_module", "client_rule"):
+        raise ApiError(400, "INVALID_SCHEMA", field_path="kind",
+                       detail="请选择大类原则、类型原则、条款模块或客户规则。")
+    metadata = get_authoring_schema(kind)
+    owner = request.query.get("client_profile_id") or None
+    if kind == "client_rule" and owner is not None:
+        from one_contract_rules.material_sources import MaterialSources
+        try:
+            services["client_repository"].get_client_profile(owner)
+            metadata["vocabulary"]["source_options"].extend(MaterialSources(services["client_repository"].data_root, read_only=True).options(client_profile_id=owner))
+        except (ValueError, OSError, client_repository.ClientStoreError) as exc:
+            raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+    return metadata
+
+
+def handle_rule_relationships(request, params, services):
+    repo = _public(services)
+    if repo.get_rule(params["rule_id"]) is None:
+        raise ApiError(404, "UNKNOWN_FACT_OR_TARGET", field_path="rule_id",
+                       detail="未找到该规则或合同类型。")
+    return repo.get_rule_relationships(params["rule_id"], type_id=request.query.get("type_id") or None)
 
 
 def handle_rule_neighbors(request, params, services):
@@ -434,6 +514,24 @@ def handle_client_detail(request, params, services):
     profile = services["client_repository"].get_client_profile(params["client_id"])
     return {k: profile[k] for k in
             ("client_profile_id", "display_name", "status", "revision")}
+
+
+def handle_client_knowledge(request, params, services):
+    """Maintain current draft and immutable active content as distinct views."""
+    from one_contract_rules import publisher
+    repo = services['client_repository']
+    profile_id = params['client_id']
+    profile = repo.get_client_profile(profile_id)
+    active = repo.load_active_snapshot(profile_id)
+    active_rules = []
+    if active is not None:
+        try:
+            snapshot = publisher.Publisher(paths.contained_path(repo.clients_root, profile_id)).load_snapshot(active['snapshot_id'])
+            active_rules = snapshot['rules_doc']['rules']
+        except (publisher.PublishError, KeyError, OSError) as exc:
+            raise ApiError(409, 'INVALID_SCHEMA', detail='现行快照完整性校验失败；未使用草稿替代：' + str(exc)[:200]) from exc
+    return {'profile': {k: profile[k] for k in ('client_profile_id', 'display_name', 'status')},
+            'active_snapshot': active, 'active_rules': active_rules, 'drafts': repo.list_drafts(profile_id)}
 
 
 def handle_drafts_list(request, params, services):
@@ -532,6 +630,14 @@ def _rule_lifecycle_error(exc: Exception) -> ApiError:
     本轮不做，也不新增错误码。判定顺序有意为之——「已存在」不含「不存在」，不会互相吃掉。
     """
     text = str(exc)
+    if isinstance(exc, client_repository.RevisionConflict):
+        return ApiError(409, "DRAFT_REVISION_CONFLICT", field_path="expected_revision", detail=text[:300])
+    if isinstance(exc, client_repository.SnapshotIntegrityError):
+        return ApiError(409, "SNAPSHOT_INTEGRITY_FAILED", detail=text[:300])
+    if "PROFILE_SNAPSHOT_MISMATCH" in text:
+        return ApiError(409, "PROFILE_SNAPSHOT_MISMATCH", detail=text[:300])
+    if "PATH_OUTSIDE_DATA_ROOT" in text:
+        return ApiError(400, "PATH_OUTSIDE_DATA_ROOT", detail=text[:300])
     if "不存在" in text:
         return ApiError(404, "UNKNOWN_FACT_OR_TARGET", detail=text[:300])
     if "已存在" in text or "重复" in text or "提升版本号" in text:
@@ -619,7 +725,8 @@ def handle_rule_submit(request, params, services):
     body = request.body or {}
     try:
         out = services["client_repository"].submit_rule(
-            params["client_id"], params["rule_id"], actor=_actor(body))
+            params["client_id"], params["rule_id"], actor=_actor(body),
+            expected_revision=_expected_revision(body))
     except client_repository.ClientStoreError as exc:
         raise _rule_lifecycle_error(exc) from exc
     return {"client_rule_id": out["client_rule_id"], "revision": out.get("revision"),
@@ -632,7 +739,8 @@ def handle_rule_approve(request, params, services):
     evidence_id = _require_evidence_id(body.get("evidence_id"))
     try:
         out = services["client_repository"].record_lawyer_approval(
-            params["client_id"], params["rule_id"], evidence_id=evidence_id, actor=_actor(body))
+            params["client_id"], params["rule_id"], evidence_id=evidence_id, actor=_actor(body),
+            expected_revision=_expected_revision(body))
     except client_repository.ClientStoreError as exc:
         raise _rule_lifecycle_error(exc) from exc
     return {"client_rule_id": out["client_rule_id"], "revision": out.get("revision"),
@@ -650,13 +758,39 @@ def handle_rule_regression(request, params, services):
     try:
         out = services["client_repository"].record_regression_result(
             params["client_id"], params["rule_id"],
-            evidence_id=evidence_id, passed=bool(body["passed"]), actor=_actor(body))
+            evidence_id=evidence_id, passed=bool(body["passed"]), actor=_actor(body),
+            expected_revision=_expected_revision(body))
     except client_repository.ClientStoreError as exc:
         raise _rule_lifecycle_error(exc) from exc
     return {"client_rule_id": out.get("client_rule_id", params["rule_id"]),
             "revision": out.get("revision"),
             "approval_status": out.get("approval_status"),
             "passed": bool(body["passed"])}
+
+
+def _expected_revision(body):
+    value = body.get("expected_revision")
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise ApiError(400, "INVALID_SCHEMA", field_path="expected_revision",
+                       detail="请先载入当前规则，并提交该版本的 expected_revision。")
+    return value
+
+
+def handle_rule_test(request, params, services):
+    from .rule_validation import run_rule_tests
+    body = request.body or {}
+    revision = _expected_revision(body)
+    cases = body.get("cases")
+    if not isinstance(cases, list) or not cases:
+        raise ApiError(400, "INVALID_SCHEMA", field_path="cases",
+                       detail="请至少提供一个包含情形、预期结果的测试样例。")
+    try:
+        return run_rule_tests(
+            public_repository=_public(services), client_repository=services["client_repository"],
+            profile_id=params["client_id"], rule_id=params["rule_id"], cases=cases,
+            expected_revision=revision, actor=_actor(body))
+    except ValueError as exc:
+        raise ApiError(400, "INVALID_SCHEMA", field_path="cases", detail=str(exc)[:600]) from exc
 
 
 def handle_rule_deprecate(request, params, services):
@@ -668,7 +802,8 @@ def handle_rule_deprecate(request, params, services):
     body = request.body or {}
     try:
         out = services["client_repository"].deprecate_rule(
-            params["client_id"], params["rule_id"], actor=_actor(body))
+            params["client_id"], params["rule_id"], actor=_actor(body),
+            expected_revision=_expected_revision(body))
     except client_repository.ClientStoreError as exc:
         raise _rule_lifecycle_error(exc) from exc
     return {"client_rule_id": out["client_rule_id"], "revision": out.get("revision"),
@@ -678,23 +813,21 @@ def handle_rule_deprecate(request, params, services):
 
 
 def handle_client_publish_baseline(request, params, services):
-    """发布**基线快照**（不含任何客户规则）。
-
-    用途：给客户一个「无客户规则」的已发布状态作为回滚目标。契约「律师 UAT」第 9 步是
-    「回滚并确认结果恢复」——若档案从未发布过快照，就没有可回滚的目标，该步无法成立。
-    发布后客户覆盖为空、解析结果与纯公共一致（RES-024）。
-    """
+    """保存真实恢复点；旧 publish-baseline 路由保持兼容，不清空现有规则。"""
     body = request.body or {}
     if body.get("confirmation") is not True:
         raise ApiError(400, "INVALID_SCHEMA", field_path="confirmation",
-                       detail="发布基线快照需要二次确认。")
+                       detail="保存恢复点需要确认。")
+    public = _public(services)
     try:
-        snapshot = services["client_repository"].publish_empty_snapshot(
-            params["client_id"], actor=_actor(body))
+        snapshot = services["client_repository"].create_restore_point(
+            params["client_id"], actor=_actor(body),
+            public_snapshot_id=public.public_snapshot_id,
+            public_asset_fingerprint=public.public_asset_fingerprint,
+            resolver_semantics_version=public.resolver_semantics_version)
     except client_repository.ClientStoreError as exc:
         raise _rule_lifecycle_error(exc) from exc
-    return {"snapshot_id": snapshot["snapshot_id"],
-            "published_at": snapshot.get("published_at")}
+    return snapshot
 
 
 def handle_client_deactivate(request, params, services):
@@ -777,7 +910,9 @@ def handle_client_publish(request, params, services):
     # 却不知道少了一条（不在生效集合、不在 excluded_rules、无冲突、无人工确认）。
     return {"snapshot_id": snapshot["snapshot_id"],
             "published_at": snapshot["published_at"],
-            "skipped_drafts": snapshot.get("skipped_drafts") or []}
+            "skipped_drafts": snapshot.get("skipped_drafts") or [],
+            "commit_status": snapshot.get("commit_status", "committed"),
+            "recovery_required": bool(snapshot.get("recovery_required"))}
 
 
 def handle_client_rollback(request, params, services):
@@ -798,7 +933,9 @@ def handle_client_rollback(request, params, services):
         if "ACTIVE_SNAPSHOT_CONFLICT" in text:
             raise ApiError(409, "ACTIVE_SNAPSHOT_CONFLICT", detail=text[:300]) from exc
         raise _rule_lifecycle_error(exc) from exc
-    return {"snapshot_id": target["snapshot_id"]}
+    return {"snapshot_id": target["snapshot_id"],
+            "commit_status": target.get("commit_status", "committed"),
+            "recovery_required": bool(target.get("recovery_required"))}
 
 
 def handle_client_audit(request, params, services):
@@ -881,7 +1018,8 @@ def handle_proposal_transition(request, params, services):
         raise ApiError(400, "INVALID_SCHEMA", field_path="to_status", detail="缺少目标状态。")
     try:
         return _proposals(services).transition(
-            params["proposal_id"], to_status=to_status, actor="local_operator"
+            params["proposal_id"], to_status=to_status, actor=_actor(body),
+            expected_content_sha256=body.get("expected_content_sha256")
         )
     except proposal_repository.ProposalError as exc:
         # 非法状态迁移（含跳过审批的尝试）一律拒绝
@@ -895,6 +1033,286 @@ def handle_proposal_export(request, params, services):
         raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
 
 
+def _proposal_governance_action(action, request, params, services):
+    body = request.body or {}
+    repo = _proposals(services)
+    proposal_id = params['proposal_id']
+    try:
+        if action == 'get':
+            return repo.get_governance(proposal_id)
+        kwargs = {'expected_content_sha256': body.get('expected_content_sha256'), 'actor': _actor(body)}
+        if action == 'save':
+            return repo.save_proposal(proposal_id, proposed_rule=body.get('proposed_rule'),
+                title=body.get('title'), rationale=body.get('rationale'), source_refs=body.get('source_refs') or [], **kwargs)
+        if action == 'validate':
+            return repo.validate_proposal(proposal_id, **kwargs)
+        return repo.approve_proposal(proposal_id, confirmation=body.get('confirmation') is True, note=body.get('note'), **kwargs)
+    except proposal_repository.ProposalError as exc:
+        raise ApiError(409, 'INVALID_STATE_TRANSITION', detail=str(exc)[:300]) from exc
+    except (ValueError, TypeError) as exc:
+        raise ApiError(400, 'INVALID_SCHEMA', detail=str(exc)[:300]) from exc
+
+
+def handle_proposal_governance(request, params, services):
+    return _proposal_governance_action('get', request, params, services)
+
+
+def handle_proposal_save(request, params, services):
+    return _proposal_governance_action('save', request, params, services)
+
+
+def handle_proposal_validate(request, params, services):
+    return _proposal_governance_action('validate', request, params, services)
+
+
+def handle_proposal_approve(request, params, services):
+    return _proposal_governance_action('approve', request, params, services)
+
+
+def _tasks(services):
+    repo = services.get("task_repository")
+    if repo is None:
+        raise ApiError(503, "INVALID_SCHEMA", detail="任务工作区尚未初始化。")
+    return repo
+
+
+def handle_task_rule_confirmation(request, params, services):
+    body = request.body or {}
+    from .task_repository import TaskError
+    try:
+        return _tasks(services).record_rule_confirmation(params['task_id'], body.get('rule_id'),
+            purpose=body.get('purpose'), decision=body.get('decision'), confirmed_by=body.get('confirmed_by'),
+            confirmation=body.get('confirmation') is True, expected_revision=body.get('expected_revision'), actor=_actor(body))
+    except (TaskError, ValueError, TypeError, KeyError, OSError) as exc:
+        raise ApiError(400, 'INVALID_SCHEMA', detail=str(exc)[:300]) from exc
+
+
+def _task_operation(operation, request, params, services):
+    from .task_repository import TaskError
+    from pathlib import Path
+    import base64
+    body = request.body or {}
+    repo = _tasks(services)
+    task_id = params.get("task_id")
+    try:
+        if operation == "list":
+            return {"tasks": repo.list_tasks()}
+        if operation == "create":
+            encoded = body.get("input_base64")
+            if not isinstance(encoded, str) or len(encoded) > 40 * 1024 * 1024:
+                raise ValueError("请选择不超过 30 MB 的 DOCX 合同文件。")
+            return repo.create_task(input_name=body.get("input_name", ""), input_bytes=base64.b64decode(encoded, validate=True),
+                context=body.get("context"), title=body.get("title", ""), actor=_actor(body))
+        if operation == "detail":
+            return repo.get_task(task_id)
+        if operation == "handoff":
+            return repo.export_handoff(task_id)
+        if operation == "artifact":
+            artifact = repo.get_artifact(task_id, request.query.get("path", ""))
+            path = Path(artifact["path"])
+            if path.stat().st_size > 64 * 1024 * 1024:
+                raise ValueError("产物超过页面传输上限，请从本机任务目录读取。")
+            return {"filename": artifact["filename"], "mime_type": artifact["media_type"],
+                    "content_base64": base64.b64encode(path.read_bytes()).decode("ascii"), "sha256": artifact["sha256"]}
+        revision = _expected_revision(body)
+        if operation == "plan":
+            return repo.attach_plan(task_id, body.get("plan"), expected_revision=revision, actor=_actor(body))
+        if operation == "execute":
+            return repo.execute_plan(task_id, expected_revision=revision, reviewer=body.get("reviewer"))
+        if operation == "accept":
+            return repo.accept_delivery(task_id, visual_acceptance=body.get("visual_acceptance"), expected_revision=revision, actor=_actor(body))
+    except (TaskError, ValueError, TypeError, KeyError, OSError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def handle_task_list(request, params, services):
+    return _task_operation("list", request, params, services)
+
+def handle_task_create(request, params, services):
+    return _task_operation("create", request, params, services)
+
+def handle_task_detail(request, params, services):
+    return _task_operation("detail", request, params, services)
+
+def handle_task_handoff(request, params, services):
+    return _task_operation("handoff", request, params, services)
+
+def handle_task_artifact(request, params, services):
+    return _task_operation("artifact", request, params, services)
+
+def handle_task_plan(request, params, services):
+    return _task_operation("plan", request, params, services)
+
+def handle_task_execute(request, params, services):
+    return _task_operation("execute", request, params, services)
+
+def handle_task_accept(request, params, services):
+    return _task_operation("accept", request, params, services)
+
+
+def handle_rule_set_test(request, params, services):
+    from .rule_validation import run_rule_set_tests, RuleTestError
+    body = request.body or {}
+    try:
+        return run_rule_set_tests(public_repository=services["public_repository"],
+            client_repository=services["client_repository"], profile_id=params["client_id"],
+            cases=body.get("cases"), expected_revisions=body.get("expected_revisions"),
+            expected_active_snapshot=body.get("expected_active_snapshot"), actor=_actor(body))
+    except (RuleTestError, ValueError, TypeError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+    except client_repository.ClientStoreError as exc:
+        raise _rule_lifecycle_error(exc) from exc
+
+
+def handle_workspace_status(request, params, services):
+    from render_tools import diagnose_rendering_tools
+    repo = services["client_repository"]
+    return {"data_root": str(repo.data_root), "read_only": bool(services.get("read_only")),
+            "recovery_warnings": list(getattr(repo, "recovery_warnings", [])),
+            "resolver_semantics_version": services["public_repository"].resolver_semantics_version,
+            "public_asset_fingerprint": services["public_repository"].public_asset_fingerprint,
+            "rendering": diagnose_rendering_tools()}
+
+
+def _backup_root(services):
+    from one_contract_rules import private_fs
+    root = services["client_repository"].data_root
+    backup_root = root.parent / (root.name + ".backups")
+    if backup_root.is_symlink():
+        raise ValueError("备份目录不能是符号链接。")
+    private_fs.secure_dir(backup_root)
+    return backup_root
+
+
+def handle_workspace_backup(request, params, services):
+    from .data_backup import create_backup
+    try:
+        target = _backup_root(services) / ("studio-backup-" + uuid.uuid4().hex + ".zip")
+        result = create_backup(services["client_repository"].data_root, target)
+        return {"path": str(target), "inspection": result,
+                "notice": "已保存完整工作区备份，请将该文件复制到您的备份介质妥善保存。"}
+    except (ValueError, OSError, RuntimeError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def handle_workspace_restore(request, params, services):
+    import base64
+    import tempfile
+    from pathlib import Path
+    from .data_backup import restore_backup
+    from one_contract_rules import private_fs
+    body = request.body or {}
+    try:
+        encoded = body.get("archive_base64")
+        if not isinstance(encoded, str) or len(encoded) > 40 * 1024 * 1024:
+            raise ValueError("页面恢复支持不超过 30 MB 的备份；较大备份请使用随包 studio_data 恢复工具。")
+        raw = base64.b64decode(encoded, validate=True)
+        with tempfile.TemporaryDirectory(prefix="one-contract-restore-") as temp:
+            archive = Path(temp) / "workspace.zip"
+            archive.write_bytes(raw)
+            private_fs.secure_path(archive)
+            current = services["client_repository"].data_root
+            target = current.parent / (current.name + ".restored-" + uuid.uuid4().hex[:12])
+            result = restore_backup(archive, target)
+        return {"path": str(target), "inspection": result,
+                "notice": "已校验并恢复到新的工作区。当前工作区未覆盖；重新启动时选择这个目录即可切换。"}
+    except (ValueError, OSError, RuntimeError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def _authoring_draft(operation, request, params, services):
+    body = request.body or {}
+    owner = body.get("client_profile_id") if operation == "save" else request.query.get("client_profile_id") or None
+    repo = services["authoring_workspace"]
+    try:
+        if owner is not None:
+            services["client_repository"].get_client_profile(owner)
+        if operation == "list":
+            return {"drafts": repo.list(client_profile_id=owner)}
+        if operation == "get":
+            return repo.get(params["draft_id"], client_profile_id=owner)
+        return repo.save(kind=body.get("kind"), draft=body.get("draft"), client_profile_id=owner,
+                         draft_id=body.get("draft_id"), expected_revision=body.get("expected_revision", 0),
+                         base_revision=body.get("base_revision"), editor_state=body.get("editor_state"), actor=_actor(body))
+    except (ValueError, TypeError, OSError, client_repository.ClientStoreError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def handle_authoring_draft_list(request, params, services):
+    return _authoring_draft("list", request, params, services)
+
+def handle_authoring_draft_get(request, params, services):
+    return _authoring_draft("get", request, params, services)
+
+def handle_authoring_draft_save(request, params, services):
+    return _authoring_draft("save", request, params, services)
+
+
+def handle_authoring_validate(request, params, services):
+    from .authoring_validation import inspect_draft
+    body = request.body or {}
+    try:
+        rule = body.get("rule")
+        owner = rule.get("client_profile_id") if isinstance(rule, dict) and body.get("kind") == "client_rule" else None
+        if owner is not None:
+            services["client_repository"].get_client_profile(owner)
+        return inspect_draft(body.get("kind", ""), rule, public_repository=services["public_repository"],
+                             data_root=services["client_repository"].data_root, client_profile_id=owner)
+    except (ValueError, TypeError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def _authoring_request(operation, request, params, services):
+    from .authoring_requests import RequestConflict
+    body = request.body or {}
+    repo = services["authoring_requests"]
+    owner = request.query.get("client_profile_id") or None if operation in ("get", "list") else body.get("client_profile_id")
+    try:
+        if operation == "list":
+            return {"requests": repo.list(client_profile_id=owner)}
+        if operation == "get":
+            return repo.get(params["request_id"], client_profile_id=owner)
+        common = {"client_profile_id": owner, "actor": _actor(body)}
+        if operation == "create":
+            return repo.create(intent=body.get("intent"), materials=body.get("materials"), context=body.get("context"), **common)
+        common["expected_revision"] = body.get("expected_revision")
+        if operation == "recover":
+            return repo.recover(params["request_id"], **common)
+        if operation == "feedback":
+            return repo.feedback(params["request_id"], message=body.get("message"), **common)
+        if operation == "result":
+            return repo.submit_result(params["request_id"], input_sha256=body.get("input_sha256"), kind=body.get("kind"),
+                                      draft=body.get("draft"), editor_state=body.get("editor_state"), summary=body.get("summary", ""),
+                                      questions=body.get("questions"), source_map=body.get("source_map"), **common)
+        return repo.adopt(params["request_id"], candidate_sha256=body.get("candidate_sha256"), confirmation=body.get("confirmation"), **common)
+    except (RequestConflict, client_repository.RevisionConflict) as exc:
+        raise ApiError(409, "DRAFT_REVISION_CONFLICT", detail=str(exc)[:300]) from exc
+    except (ValueError, TypeError, OSError, client_repository.ClientStoreError, proposal_repository.ProposalError, rule_validator.ValidationError) as exc:
+        raise ApiError(400, "INVALID_SCHEMA", detail=str(exc)[:300]) from exc
+
+
+def handle_authoring_request_list(request, params, services):
+    return _authoring_request("list", request, params, services)
+
+def handle_authoring_request_get(request, params, services):
+    return _authoring_request("get", request, params, services)
+
+def handle_authoring_request_create(request, params, services):
+    return _authoring_request("create", request, params, services)
+
+def handle_authoring_request_feedback(request, params, services):
+    return _authoring_request("feedback", request, params, services)
+
+def handle_authoring_request_result(request, params, services):
+    return _authoring_request("result", request, params, services)
+
+def handle_authoring_request_adopt(request, params, services):
+    return _authoring_request("adopt", request, params, services)
+
+def handle_authoring_request_recover(request, params, services):
+    return _authoring_request("recover", request, params, services)
+
+
 def handle_service_stop(request, params, services):
     stop = services.get("stop_callback")
     if callable(stop):
@@ -903,17 +1321,47 @@ def handle_service_stop(request, params, services):
 
 
 _HANDLERS: Dict[str, Callable[..., Any]] = {
+    "authoring_request_list": handle_authoring_request_list,
+    "authoring_request_get": handle_authoring_request_get,
+    "authoring_request_create": handle_authoring_request_create,
+    "authoring_request_feedback": handle_authoring_request_feedback,
+    "authoring_request_result": handle_authoring_request_result,
+    "authoring_request_adopt": handle_authoring_request_adopt,
+    "authoring_request_recover": handle_authoring_request_recover,
     "health": handle_health,
+    "authoring_draft_list": handle_authoring_draft_list,
+    "authoring_draft_get": handle_authoring_draft_get,
+    "authoring_draft_save": handle_authoring_draft_save,
+
+    "task_list": handle_task_list,
+    "task_create": handle_task_create,
+    "task_detail": handle_task_detail,
+    "task_handoff": handle_task_handoff,
+    "task_artifact": handle_task_artifact,
+    "task_plan": handle_task_plan,
+    "task_execute": handle_task_execute,
+    "task_accept": handle_task_accept,
+    "task_rule_confirmation": handle_task_rule_confirmation,
+
+    "workspace_status": handle_workspace_status,
+    "workspace_backup": handle_workspace_backup,
+    "workspace_restore": handle_workspace_restore,
+    "rule_set_test": handle_rule_set_test,
     "session_bootstrap": handle_session_bootstrap,
     "rules_tree": handle_rules_tree,
     "rules_search": handle_rules_search,
     "contract_types": handle_contract_types,
     "rule_detail": handle_rule_detail,
+    "knowledge_framework": handle_knowledge_framework,
+    "authoring_schema": handle_authoring_schema,
+    "authoring_validate": handle_authoring_validate,
+    "rule_relationships": handle_rule_relationships,
     "rule_neighbors": handle_rule_neighbors,
     "resolution_preview": handle_resolution_preview,
     "clients_list": handle_clients_list,
     "clients_create": handle_clients_create,
     "client_detail": handle_client_detail,
+    "client_knowledge": handle_client_knowledge,
     "drafts_list": handle_drafts_list,
     "draft_detail": handle_draft_detail,
     "draft_save": handle_draft_save,
@@ -927,6 +1375,7 @@ _HANDLERS: Dict[str, Callable[..., Any]] = {
     "rule_submit": handle_rule_submit,
     "rule_approve": handle_rule_approve,
     "rule_regression": handle_rule_regression,
+    "rule_test": handle_rule_test,
     "rule_deprecate": handle_rule_deprecate,
     "client_deactivate": handle_client_deactivate,
     "service_stop": handle_service_stop,
@@ -936,4 +1385,8 @@ _HANDLERS: Dict[str, Callable[..., Any]] = {
     "proposal_diff": handle_proposal_diff,
     "proposal_transition": handle_proposal_transition,
     "proposal_export": handle_proposal_export,
+    "proposal_governance": handle_proposal_governance,
+    "proposal_save": handle_proposal_save,
+    "proposal_validate": handle_proposal_validate,
+    "proposal_approve": handle_proposal_approve,
 }

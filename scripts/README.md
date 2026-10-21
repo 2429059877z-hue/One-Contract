@@ -70,13 +70,15 @@ python scripts/review/apply_review_plan.py \
 - 环境具备 LibreOffice、`pdfinfo` 和 `pdftoppm` 时自动生成审阅件、接受版、拒绝版及意见书的 PDF/PNG 渲染证据；
 - 任一 finding 或质量门失败时仍尽量保留产物和日志，但以非零状态退出。
 
-默认 `--visual-policy allow-structural`：渲染命令可用时必须成功渲染；命令不存在时允许继续，但产物明确标为 `structural_validation`/“结构验证版”。需要硬性渲染门时使用 `--visual-policy require`。生成 PNG 仅表示渲染证据已就绪，仍需逐页检查裁切、重叠、缺字和字体替代。
+默认 `--visual-policy allow-structural`：渲染命令可用时必须成功渲染；命令不存在时允许继续保存中间成果，但产物明确标为 `structural_validation`/“结构验证版”，不代表默认合同交付完成。需要硬性渲染门时使用 `--visual-policy require`。生成 PNG 仅表示渲染证据已就绪，仍需逐页检查裁切、重叠、缺字和字体替代；工程提效不能降低最终合同的交付标准。
 
 `--no-validate` 只关闭编辑过程中的轻量检查，不关闭最终严格质量门，不应用于交付。
 
 ## 历史修订
 
-默认 `--existing-revisions reject`：目标段落含历史修订时不直接改写，该 finding 失败并记录原因；可将计划改为批注。
+默认 `--existing-revisions reject`：保留历史修订，在普通文字或可安全重建的他人插入区间叠加本轮修改。
+参数名称为兼容保留，不表示先拒绝原稿修订。历史删除、同作者插入、含批注锚点或容器尾部影子等
+不安全目标仍被拒绝；详见 `references/ooxml-quality-gates.md`。
 
 只有明确决定以“接受历史修订后的文本”为本轮基线时，才使用：
 
@@ -215,7 +217,7 @@ python scripts/review/apply_review_plan.py \
 | `major_choice` | 仅批注；用户选择后改为 `confirmed` |
 | `not_applicable` | 跳过并记录 |
 
-`action` 支持 `auto/comment/report-only/delete/insert/replace/none/skip`。`auto` 只读取显式证据状态和改文载荷。若 `assertions_unverified` 为真，必须同时明确 `uses_placeholders_or_conditions=true`，否则直接改文会降为批注。
+`action` 支持 `auto/comment/report-only/delete/delete_paragraph/insert/replace/none/skip`。`auto` 只读取显式证据状态和改文载荷。若 `assertions_unverified` 为真，必须同时明确 `uses_placeholders_or_conditions=true`，否则直接改文会降为批注。
 
 ### `rule_hit` / `direction_clear`：把「命中明确规则就落笔」接到机制上
 
@@ -243,10 +245,27 @@ P0 定向阻断只作用于具体 finding。将触发结果写入 `safety.trigge
 定位支持：
 
 - `target_text` / `search`；
-- `occurrence`（从 1 开始）；
+- `occurrence`（从 1 开始，按执行时接受视图的剩余匹配计数）；
 - `selector.tag / attrs / line_number / contains / occurrence`。
 
 跨 run 定位会对全角/不换行空格、连续空白和不可见字符作规范化，但同一规范化文本多次出现时拒绝猜测，必须提供 occurrence 或更窄 selector。
+
+### 批量预检与段落动作
+
+```bash
+python scripts/review/apply_review_plan.py \
+  --input /path/original.docx --plan /path/review-plan.json \
+  --preflight-only --preflight-report /path/round-01/preflight.json
+```
+
+正式出稿也自动预检。错误统一列出，含 finding ID、原因与提示；失败动作不进入后续模拟状态。
+前序失败可能影响后序定位，修完后须完整重跑。诊断含源文件与计划哈希，默认写入质量目录的
+`preflight.json`；有错误即非零退出，不生成最终合同与报告。成功时的范围告警不阻断出稿。
+
+- 两条意见依次改掉原文两处“十日”：若第一条已消除该匹配，两条都应取 `occurrence=1`。
+- 默认 `insert`（`tag=w:p`）的 `insert_text="新增约定甲\n新增约定乙"` 按顺序生成两个真实段落；显式 `tag=w:r` 不拆段。同锚点的多条 insert 仍后插在前；合并载荷或依次锚定新段落可保持正序。
+- `delete` 保留段落标记；删除完整编号项用 `delete_paragraph`，目标须为完整段落且后面紧邻普通段落。末段、节分隔和复杂结构会拒绝，勿降为“删空文字”后假称格式已解决。
+- `replace` 取最小充分区间；追加内容宜用短尾锚。诊断会提示公共前后缀过长的目标，不会自动改动原计划。
 
 ## 独立质量门
 
@@ -275,13 +294,13 @@ scripts/
   tests/                        回归测试
 ```
 
-## 本地合同规则工作台（3.1 Preview）
+## 本地合同规则工作台（Studio 升级开发版）
 
 ```bash
 ./start.sh --data-dir "/独立的客户规则目录" --idle-timeout-seconds 3600
 ```
 
-该命令启动本机服务并打开浏览器。日常操作使用“规则总览、试运行、客户规则、公共规则建议”四个中文页面；内部编号收纳在折叠的技术信息中。请勿将客户数据目录放入 Skill 或公开仓库。
+该命令启动本机服务并打开浏览器。日常操作使用“规则总览、试运行、客户规则、公共规则建议、合同任务、工作区”六个中文页面。未完成填写进度、合同原件及交付文件和客户档案都保存在外部数据目录；请勿将该目录放入 Skill 或公开仓库。字段、审核测试与合同交付流程见 `references/studio-user-guide.md`。Windows 入口为根目录 `start.cmd`/`start.ps1`，固定运行环境组装和未完成验收项见 `references/studio-windows.md`。
 
 开发、无浏览器或自检入口：
 

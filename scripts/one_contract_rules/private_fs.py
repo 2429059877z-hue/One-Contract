@@ -23,6 +23,7 @@ import os
 import uuid
 from pathlib import Path
 from typing import Any, Mapping
+from . import platform_fs
 
 __all__ = [
     "DIR_MODE",
@@ -39,55 +40,52 @@ FILE_MODE = 0o600
 
 
 def secure_dir(path: Path) -> None:
-    """创建目录（如需）并把权限收为 0700。"""
-    Path(path).mkdir(parents=True, exist_ok=True)
-    os.chmod(path, DIR_MODE)
+    path = Path(path)
+    if path.exists() and not path.is_dir():
+        raise NotADirectoryError(str(path))
+    missing = []
+    cursor = path
+    while not cursor.exists():
+        missing.append(cursor)
+        cursor = cursor.parent
+    for directory in reversed(missing):
+        directory.mkdir(mode=DIR_MODE, exist_ok=True)
+        platform_fs.secure_path(directory, directory=True)
+    platform_fs.secure_path(path, directory=True)
 
 
 def secure_path(path: Path) -> None:
-    """把**已存在**的路径权限收口：目录 0700、文件 0600。
-
-    用于收口由其它工具或早期版本以宽松权限创建的既有数据，
-    不改动内容。不存在则静默跳过（收口不是创建）。
-    """
     path = Path(path)
-    if path.is_dir():
-        os.chmod(path, DIR_MODE)
-    elif path.is_file():
-        os.chmod(path, FILE_MODE)
+    if path.exists() or path.is_symlink():
+        platform_fs.secure_path(path, directory=path.is_dir())
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    path = Path(path)
+    secure_dir(path.parent)
+    if path.is_symlink():
+        raise OSError("私有文件不能是符号链接。")
+    tmp = path.parent / f".tmp-{path.name}.{uuid.uuid4().hex}"
+    try:
+        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, FILE_MODE)
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            secure_path(tmp)
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        platform_fs.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 def atomic_write_json(path: Path, payload: Mapping[str, Any]) -> None:
-    """原子写 JSON：同目录临时文件 → flush+fsync → 收权限 → rename。
-
-    先收临时文件权限再 rename，避免出现"已就位但权限过宽"的窗口。
-    JSON 格式（``ensure_ascii=False, indent=2, sort_keys=True`` + 尾换行）
-    与仓库其余写入点一致，不改变内容与哈希。
-    """
-    path = Path(path)
-    secure_dir(path.parent)
-    tmp = path.parent / f".tmp-{path.name}.{uuid.uuid4().hex[:8]}"
-    with tmp.open("w", encoding="utf-8") as handle:
-        handle.write(
-            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-        )
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.chmod(tmp, FILE_MODE)
-    os.replace(tmp, path)
+    atomic_write_text(path, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
 
 def secure_append_line(path: Path, line: str) -> None:
-    """向文本文件追加一行（JSONL 用），目录与文件权限均收口。
-
-    追加是"就地"写，无法像原子写那样先收临时文件权限；
-    因此在写入后立即收口，且每次追加都重设一次——
-    这同时会修正早期版本留下的宽松权限文件。
-    """
+    # Caller serializes the read/append/replace transaction. Atomic replacement
+    # leaves either a complete old log or a complete new log after interruption.
     path = Path(path)
-    secure_dir(path.parent)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(line)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.chmod(path, FILE_MODE)
+    previous = path.read_text(encoding="utf-8") if path.is_file() else ""
+    atomic_write_text(path, previous + line)

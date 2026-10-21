@@ -34,7 +34,7 @@ python3 -m pip install -r scripts/requirements.txt
 
 - 当前脚本代码使用了内置泛型写法（如 `list[dict[str, Any]]`），低版本 Python 可能无法直接运行。
 
-## 三、可选但推荐的系统依赖
+## 三、最终交付所需的渲染验证环境
 
 ### 1. `soffice`、`pdfinfo` 与 `pdftoppm`
 
@@ -44,7 +44,7 @@ python3 -m pip install -r scripts/requirements.txt
 
 说明：
 
-- `quality_gate.py` 的 ZIP/XML/关系/语义检查不依赖上述三项工具；默认仅在三项工具齐备时自动形成完整渲染证据。缺少任一项时只能标注为“结构验证版”。
+- `quality_gate.py` 的 ZIP/XML/关系/语义检查不依赖上述三项工具；默认在三项工具齐备时自动形成完整渲染证据。缺少任一项时可先保存“结构验证版”中间成果，再补齐或使用等效验证环境。具体工具可以替换，最终渲染和逐页检查不能因工程提效而省略。
 
 适合安装的场景：
 
@@ -112,7 +112,7 @@ python3 scripts/review/apply_review_plan.py \
 说明：
 
 - 结构质量门仍可运行，但无法形成完整的 PDF/逐页 PNG 渲染证据。
-- 在交付说明中标注渲染未验证，并在可用环境补做；不要把 executor 或 `python-docx` 成功等同于视觉兼容通过。
+- 将当前文件标为尚未完成的中间成果，补齐或寻找等效渲染验证环境后继续检查；不能只标注“渲染未验证”就把默认交付任务视为完成。executor 或 `python-docx` 成功不等于视觉兼容通过。
 
 ## 七、维护规则
 

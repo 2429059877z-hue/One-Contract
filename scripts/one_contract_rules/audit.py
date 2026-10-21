@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from . import private_fs
+from .transaction_lock import profile_lock
 
 __all__ = [
     "EVENT_KINDS",
@@ -45,6 +46,7 @@ EVENT_KINDS = (
     "RECOVERED_COMMIT",
     "ABORTED",
     "ROLLED_BACK",
+    "restore_point_created",
 )
 
 
@@ -91,9 +93,10 @@ def append_event(
     # 此前目录 0755、文件 0644（W7-SEC013）。每次追加都重设权限，
     # 顺带修正早期版本留下的宽松权限文件。
     path = audit_log_path(profile_dir)
-    private_fs.secure_append_line(
-        path, json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n"
-    )
+    with profile_lock(profile_dir):
+        private_fs.secure_append_line(
+            path, json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n"
+        )
     return event
 
 

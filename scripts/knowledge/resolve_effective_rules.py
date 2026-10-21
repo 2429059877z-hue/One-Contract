@@ -76,8 +76,8 @@ def resolve(
 ) -> Dict[str, Any]:
     """解析一轮审查的生效规则。
 
-    返回 `status` 为 `ok` 或 `blocked`。`blocked` 表示**客户模式未成立**，
-    调用方不得据此产出"按客户口径审查"的结论。
+    返回 `status` 为 `ok` 或 `blocked`。客户身份、快照或法律等硬门未通过时
+    为 blocked；受控的客户业务审查提示仍为 ok，须落实到 AI 判断与 Word 批注。
     """
     root = Path(data_root).expanduser().resolve()
     public = public_repository.PublicRepository()
@@ -148,8 +148,13 @@ def resolve(
     result = engine.resolve_effective_rules(ctx)
     payload = result.to_dict()
     payload["client_overlay_active"] = getattr(result, "client_overlay_active", False)
+    application_reviews = [dict(item) for item in payload.get("rule_conflicts", ())
+                           if resolver.is_application_review_notice(item)]
+    if application_reviews:
+        notices.append("client_application_review: 客户业务适用性由 AI 依据合同全文判断；"
+                       "相关判断、事实不足和商业选择须写入真实 Word 批注，不以人工确认作为审查前置。")
     return {
-        "status": "ok",
+        "status": "blocked" if resolver.resolution_has_blockers(payload) else "ok",
         "api_version": _API_VERSION,
         "notices": notices,
         "effective_rule_set": payload,
@@ -221,7 +226,7 @@ def _provenance(
     client_snapshot: Optional[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     """本轮审查的可复现溯源信息（INT-004 / INT-009 / RES-026）。"""
-    return {
+    provenance = {
         "public_snapshot_id": public.public_snapshot_id,
         "public_asset_fingerprint": public.public_asset_fingerprint,
         "resolver_semantics_version": public.resolver_semantics_version,
@@ -239,6 +244,11 @@ def _provenance(
         "context_hash": payload.get("context_hash"),
         "pinned_at": "review_start",
     }
+    application_reviews = [dict(item) for item in payload.get("rule_conflicts", ())
+                           if resolver.is_application_review_notice(item)]
+    if application_reviews:
+        provenance["client_application_review"] = application_reviews
+    return provenance
 
 
 # --------------------------------------------------------------------------- #

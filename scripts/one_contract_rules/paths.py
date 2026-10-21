@@ -93,17 +93,17 @@ def is_safe_profile_id(value: object) -> bool:
         return False
     if "\x00" in value:
         return False
-    return bool(PROFILE_ID_PATTERN.match(value))
+    return bool(PROFILE_ID_PATTERN.fullmatch(value))
 
 
 def _reject_unsafe_segment(segment: str) -> None:
     if "\x00" in segment:
         raise PathContractError("路径片段含 NUL 字节；请求已拒绝。")
-    if segment in ("..",):
+    if segment in ("", ".", ".."):
         raise PathContractError("路径片段含上级目录引用；请求已拒绝。")
     if os.path.isabs(segment) or segment.startswith("~"):
         raise PathContractError("路径片段为绝对路径；请求已拒绝。")
-    if os.sep in segment or (os.altsep and os.altsep in segment):
+    if "/" in segment or "\\" in segment or ":" in segment:
         raise PathContractError("路径片段含路径分隔符；请求已拒绝。")
 
 

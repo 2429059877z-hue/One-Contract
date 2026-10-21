@@ -5,13 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>合同规则工作台</title>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/knowledge-workbench.css">
+<link rel="stylesheet" href="/knowledge-map.css">
+<link rel="stylesheet" href="/authoring-workbench.css">
+<link rel="stylesheet" href="/ai-authoring.css">
+<link rel="stylesheet" href="/task-workbench.css">
 </head>
 <body>
 <a class="skip-link" href="#main">跳到主要内容</a>
 
 <header class="topbar">
   <div class="brand">
-    <p class="eyebrow">One-Contract 3.1 Preview · 本地离线工具</p>
+    <p class="eyebrow">One-Contract 3.2 · Studio 开发版 · 本地离线工具</p>
     <h1>合同规则工作台</h1>
   </div>
   <nav aria-label="主导航">
@@ -19,6 +24,8 @@
     <button type="button" class="tab" data-view="preview">试运行</button>
     <button type="button" class="tab" data-view="clients">客户规则</button>
     <button type="button" class="tab" data-view="proposals">公共规则建议</button>
+    <button type="button" class="tab" data-view="tasks">合同任务</button>
+    <button type="button" class="tab" data-view="workspace">工作区与备份</button>
   </nav>
   <p class="session" id="session-state" role="status">本地服务已连接</p>
 </header>
@@ -36,6 +43,7 @@
       <span class="read-only-badge">只读</span>
     </div>
 
+    <div id="knowledge-workbench"></div>
     <div class="map-layout">
       <aside class="panel filter-panel">
         <div class="panel-heading">
@@ -103,7 +111,7 @@
       <div>
         <p class="section-kicker">应用前核对</p>
         <h2 id="preview-heading">试运行</h2>
-        <p>选择合同情形，查看本次审查会采用哪些公共规则和客户规则。</p>
+        <p>选择合同情形，查看进入审查的公共规则和客户规则；客户要求的实际适用性由 AI 结合合同全文判断。</p>
       </div>
     </div>
 
@@ -119,37 +127,15 @@
         </label>
         <label class="field">
           <span>我方身份</span>
-          <select id="p-role">
-            <option value="buyer">买方／采购方</option>
-            <option value="supplier">卖方／供应方</option>
-            <option value="transferor">转让方</option>
-            <option value="transferee">受让方</option>
-            <option value="employer">用人单位</option>
-            <option value="employee">劳动者</option>
-          </select>
+          <select id="p-role" disabled><option value="">正在读取角色……</option></select>
         </label>
         <label class="field">
           <span>合同所处阶段</span>
-          <select id="p-stage">
-            <option value="signing">签署前审查</option>
-            <option value="closing">履行或交割阶段</option>
-            <option value="termination">解除或终止阶段</option>
-          </select>
+          <select id="p-stage" disabled><option value="">正在读取阶段……</option></select>
         </label>
         <label class="field">
           <span>重点业务情形</span>
-          <select id="p-scene">
-            <option value="">常规审查</option>
-            <option value="equipment_purchase" selected>设备采购</option>
-            <option value="material_purchase">原材料采购</option>
-            <option value="delivery_logistics">交付与物流</option>
-            <option value="acceptance">验收</option>
-            <option value="breach_remedy">违约救济</option>
-            <option value="confidentiality">保密</option>
-            <option value="noncompete">竞业限制</option>
-            <option value="mutual_termination">协商解除劳动关系</option>
-            <option value="handover">房屋或项目交接</option>
-          </select>
+          <select id="p-scene" disabled><option value="">正在读取业务情形……</option></select>
         </label>
         <label class="field">
           <span>是否使用客户专属规则</span>
@@ -166,8 +152,10 @@
         </label>
       </div>
       <input id="p-domain" type="hidden" value="EC-02">
+      <div id="preview-context-extra"></div>
       <p class="context-note">所属业务大类：<strong id="p-domain-name">买卖、采购与供应</strong></p>
-      <button type="submit" class="primary">查看本次适用规则</button>
+      <p id="preview-catalog-status" role="status" class="hint">正在读取合同选项……</p>
+      <button id="preview-run" type="submit" class="primary" disabled>查看进入审查的规则</button>
     </form>
 
     <p id="preview-status" role="status" class="result-summary"></p>
@@ -175,9 +163,9 @@
       本次存在需要律师判断的事项。请先查看“需要关注”中的说明，不要直接据此定稿。
     </p>
     <div class="result-grid">
-      <section class="panel result-card positive"><h3>本次采用</h3><p>会进入本次合同审查的规则。</p><ul id="preview-effective" class="list"></ul></section>
-      <section class="panel result-card muted-card"><h3>本次不采用</h3><p>因状态或适用范围不符而未进入本次审查。</p><ul id="preview-excluded" class="list"></ul></section>
-      <section class="panel result-card attention"><h3>需要关注</h3><p>冲突、缺少材料和需要人工确认的事项。</p><ul id="preview-trace" class="list"></ul></section>
+      <section class="panel result-card positive"><h3>进入本次审查</h3><p>公共规则与交给 AI 结合全文判断的客户规则。</p><ul id="preview-effective" class="list"></ul></section>
+      <section class="panel result-card muted-card"><h3>未进入本次审查</h3><p>因启用状态、有效期或本次明确限定的范围而排除。</p><ul id="preview-excluded" class="list"></ul></section>
+      <section class="panel result-card attention"><h3>需要关注</h3><p>需要结合全文判断并批注说明的事项，以及版本或硬边界检查问题。</p><ul id="preview-trace" class="list"></ul></section>
     </div>
   </section>
 
@@ -206,10 +194,13 @@
 
       <div class="client-workspace">
         <section class="panel">
-          <div class="panel-heading"><span class="step-number">2</span><div><h3>编写客户规则</h3><p id="drafts-empty">请先从左侧选择一个客户。</p></div></div>
-          <div class="draft-toolbar"><strong>该客户的规则</strong><button type="button" id="r-clear" class="quiet">新建一条规则</button></div>
+          <div class="panel-heading"><span class="step-number">2</span><div><h3>整理客户要求</h3><p id="drafts-empty">请先从左侧选择一个客户。</p></div></div>
+          <div class="draft-toolbar"><strong>该客户的规则</strong><button type="button" id="r-clear" class="quiet">手工新建规则</button></div>
           <ul id="draft-list" class="list draft-list"></ul>
+          <div id="ai-client-authoring"></div>
+          <details id="client-manual-editor" class="ai-manual"><summary>手工填写或查看完整字段</summary>
           <form id="rule-form" class="form-grid rule-editor">
+            <div id="client-authoring"></div>
             <div class="form-section-heading" id="rule-editor-heading"><h3>规则内容</h3><p>用业务语言写清要求；保存后仍只是草稿。</p></div>
             <div class="form-grid two-columns">
               <label class="field field-span-2"><span>这条规则叫什么</span><input id="r-title" placeholder="例如：设备采购应保留 10% 尾款" required></label>
@@ -241,6 +232,7 @@
             <div class="form-actions"><button type="submit" class="primary">保存为草稿</button><span class="safe-note">保存不会让规则立即生效</span></div>
           </form>
           <p id="rule-status" role="status" class="inline-message"></p>
+          </details>
         </section>
 
         <section class="panel release-panel">
@@ -248,7 +240,9 @@
           <ol class="progress-steps" aria-label="规则启用步骤"><li id="step-draft">保存草稿</li><li id="step-submit">送交复核</li><li id="step-approve">律师确认</li><li id="step-regression">测试通过</li><li id="step-publish">正式启用</li></ol>
           <label class="field evidence-field"><span>确认记录编号（留空自动生成）</span><input id="lc-evidence" placeholder="系统将自动生成"></label>
           <label class="field field-check confirmation-check"><input type="checkbox" id="lc-confirm"><span>执行启用、恢复或删除前，我已核对本次操作</span></label>
-          <div class="button-row primary-flow"><button type="button" id="lc-submit" class="secondary">送交复核</button><button type="button" id="lc-approve" class="secondary">确认律师审核</button><button type="button" id="lc-regression" class="secondary">确认测试通过</button><button type="button" id="lc-publish" class="primary">启用规则</button></div>
+          <div class="button-row primary-flow"><button type="button" id="lc-submit" class="secondary">送交复核</button><button type="button" id="lc-approve" class="secondary">确认律师审核</button><button type="button" id="lc-regression" class="secondary">运行场景测试</button><button type="button" id="lc-publish" class="primary">启用规则</button></div>
+          <div id="scenario-workbench"></div>
+          <div id="batch-scenario-workbench"></div>
           <details class="advanced-settings">
             <summary>恢复、停用与删除</summary>
             <div class="button-row"><button type="button" id="lc-baseline" class="quiet">保存当前版本作为恢复点</button><button type="button" id="lc-rollback" class="quiet">恢复到上一版本</button><button type="button" id="lc-deprecate" class="quiet">停用这条规则</button><button type="button" id="lc-delete" class="danger-button">删除未启用草稿</button></div>
@@ -265,12 +259,19 @@
   <section id="view-proposals" class="view" aria-labelledby="proposals-heading" hidden>
     <div class="page-heading"><div><p class="section-kicker">公共知识治理</p><h2 id="proposals-heading">公共规则建议</h2><p>在这里提出公共规则的修改建议。建议与正式规则隔离，不会直接参与合同审查。</p></div><span class="read-only-badge warm">建议不自动生效</span></div>
     <div class="proposal-layout">
-      <section class="panel"><div class="panel-heading"><span class="step-number">1</span><div><h3>填写修改建议</h3><p>请用普通业务语言说明要改什么、为什么改。</p></div></div><form id="proposal-form" class="form-grid"><label class="field"><span>建议类型</span><select id="pp-op"><option value="supersede">修改现有规则</option><option value="create">新增规则</option><option value="deprecate">建议停用现有规则</option></select></label><label class="field"><span>建议标题</span><input id="pp-title" placeholder="一句话概括修改内容" required></label><label class="field"><span>修改理由</span><textarea id="pp-rationale" rows="4" placeholder="说明遇到的问题、建议口径和适用情形" required></textarea></label><details class="advanced-settings"><summary>关联规则与依据</summary><label class="field"><span>现有规则编号（新增规则时留空）</span><input id="pp-target" value="mod-goods-specification"></label><label class="field"><span>依据编号</span><input id="pp-sources" value="src-prc-civil-code-2020"></label></details><button type="submit" class="primary">保存修改建议</button></form><p id="proposal-status" role="status" class="inline-message"></p></section>
+      <section class="panel"><div class="panel-heading"><span class="step-number">1</span><div><h3>整理公共规则建议</h3><p>说明审查中遇到的问题，AI 整理规则内容与所属位置。</p></div></div><div id="ai-public-authoring"></div><details id="public-manual-editor" class="ai-manual"><summary>手工填写或查看完整字段</summary><form id="proposal-form" class="form-grid"><div id="public-authoring"></div><label class="field"><span>建议类型</span><select id="pp-op"><option value="supersede">修改现有规则</option><option value="create">新增规则</option><option value="deprecate">建议停用现有规则</option></select></label><label class="field"><span>建议标题</span><input id="pp-title" placeholder="一句话概括修改内容" required></label><label class="field"><span>修改理由</span><textarea id="pp-rationale" rows="4" placeholder="说明遇到的问题、建议口径和适用情形" required></textarea></label><details class="advanced-settings"><summary>关联规则与依据</summary><label class="field"><span>现有规则编号（新增规则时留空）</span><input id="pp-target" value="mod-goods-specification"></label><label class="field"><span>依据编号</span><input id="pp-sources" value="src-prc-civil-code-2020"></label></details><button type="submit" class="primary">保存修改建议</button></form><p id="proposal-status" role="status" class="inline-message"></p></details></section>
       <section class="panel"><div class="panel-heading"><span class="step-number">2</span><div><h3>建议列表</h3><p>选择一项查看影响范围。</p></div></div><ul id="proposal-list" class="list"></ul></section>
       <section class="panel"><div class="panel-heading"><span class="step-number">3</span><div><h3>影响说明</h3><p id="proposal-detail-hint">请先选择一项建议。</p></div></div><ul id="proposal-diff" class="list"></ul><ul id="proposal-audit" class="list"></ul></section>
     </div>
   </section>
+  <section id="view-tasks" class="view" hidden><div id="task-workbench"></div></section>
+  <section id="view-workspace" class="view" hidden><div id="workspace-workbench"></div></section>
 </main>
 <script src="/app.js"></script>
+<script src="/knowledge-map.js"></script>
+<script src="/knowledge-workbench.js"></script>
+<script src="/authoring-workbench.js"></script>
+<script src="/ai-authoring.js"></script>
+<script src="/task-workbench.js"></script>
 </body>
 </html>

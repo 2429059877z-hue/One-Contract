@@ -499,8 +499,8 @@
     "domain_principles": 10,
     "experience_cards": 27,
     "module_groups": 43,
-    "modules": 363,
-    "principles": 107,
+    "modules": 371,
+    "principles": 109,
     "sources": 57,
     "triggers": 19
   },
@@ -701,5 +701,23 @@
     "active",
     "deprecated"
   ],
-  "taxonomy_version": "2.2.0"
+  "taxonomy_version": "2.2.0",
+  "pending_type_extensions_20261019": {
+    "type_ids": [
+      "type-commercial-confidentiality",
+      "type-professional-service-mandate"
+    ],
+    "module_ids": [
+      "mod-commercial-confidential-information",
+      "mod-commercial-confidentiality-remedies",
+      "mod-commercial-return-destruction",
+      "mod-mandate-service-scope",
+      "mod-mandate-deliverables-acceptance",
+      "mod-mandate-fees-expenses",
+      "mod-mandate-change-control",
+      "mod-mandate-breach-termination"
+    ],
+    "status": "candidate_inactive",
+    "note": "已完成检查维度和路由候选；未伪造律师审批、法律核验或合同族支持证据，正式运行继续诚实域级兜底。"
+  }
 }

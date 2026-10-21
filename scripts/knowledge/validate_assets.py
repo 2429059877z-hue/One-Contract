@@ -229,7 +229,9 @@ def main() -> int:
         _stub_marked = str(module.get("content_status", "")).startswith("stub_")
         _placeholder = "应明确对象、条件、程序、期限和后果"
         _is_placeholder_only = list(module.get("review_checks") or []) == [_placeholder]
-        if _stub_marked and len(module.get("review_checks") or []) != 1:
+        if module.get("activation_status") == "active" and not module.get("review_checks") and not _stub_marked:
+            errors.append(f"active module {module.get('module_id')} has empty review_checks; fill checks or mark stub")
+        if _stub_marked and len(module.get("review_checks") or []) > 1:
             errors.append(
                 f"module {module.get('module_id')} is marked stub but carries "
                 f"{len(module.get('review_checks') or [])} review_checks — "

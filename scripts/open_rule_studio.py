@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import socket
 import sys
 import webbrowser
@@ -57,7 +58,8 @@ def dependency_hint(missing: Mapping[str, Any]) -> str:
     names = ", ".join(sorted(missing)) or "（未知）"
     return (
         f"Rule Studio 需要以下 Python 依赖但当前环境未安装：{names}。\n"
-        "请在项目环境中执行：pip install -r scripts/requirements-rule-studio-dev.txt\n"
+        f'请用当前解释器安装："{sys.executable}" -m pip install -r '
+        f'"{_SCRIPT_ROOT / "requirements-rule-studio-dev.txt"}"\n'
         "（产品运行时不需要 Node；浏览器端为原生静态资源。）"
     )
 
@@ -85,6 +87,32 @@ def preflight() -> Dict[str, Any]:
         except ImportError as exc:
             missing[name] = exc
     return missing
+
+
+def diagnostics(*, data_root: Optional[Path] = None, read_only: bool = False) -> Dict[str, Any]:
+    """环境诊断不启动服务、不创建客户目录，也不安装依赖。"""
+    missing = preflight()
+    from render_tools import diagnose_rendering_tools
+    supported = sys.version_info[:2] >= (3, 10)
+    result: Dict[str, Any] = {
+        "python": sys.executable, "python_version": platform.python_version(),
+        "platform": platform.system(), "supported_python": supported,
+        "missing_dependencies": sorted(missing), "read_only": read_only,
+        "ready": supported and not missing, "network_scope": "loopback_only",
+        "ready_scope": "studio_startup",
+        "ready_explanation": "ready 仅表示工作台启动条件；rendering.ready 仅表示找到渲染工具，字体、实际转换和逐页排版仍须验证。",
+        "rendering": diagnose_rendering_tools(),
+    }
+    if missing:
+        result["remediation"] = dependency_hint(missing)
+    if not missing:
+        from one_contract_rules import paths
+        try:
+            result["data_directory"] = str(paths.resolve_data_root(data_root))
+        except (OSError, ValueError, paths.PathContractError) as exc:
+            result["ready"] = False
+            result["remediation"] = str(exc)
+    return result
 
 
 class LauncherInstance:
@@ -131,6 +159,7 @@ class LauncherInstance:
             "exit_mode": "idle_timeout_or_explicit_stop",
             "idle_timeout_seconds": self._instance.idle_timeout_seconds,
             "opened_in_browser": self._opened,
+            "read_only": self._instance.read_only,
         }
 
     @property
@@ -158,6 +187,7 @@ def start(
     data_root: Optional[Path] = None,
     open_browser: bool = True,
     idle_timeout_seconds: Optional[int] = None,
+    read_only: bool = False,
 ) -> LauncherInstance:
     """启动本地服务。依赖缺失时抛出人类可读错误，不产生半初始化数据。"""
     missing = preflight()
@@ -177,6 +207,7 @@ def start(
         # 透传空闲超时：此前该参数在启动器里被收下却从未使用，
         # 服务永不因空闲退出，而 machine_result() 仍声明会退出（W7-PLAT-008）。
         idle_timeout_seconds=idle_timeout_seconds,
+        read_only=read_only,
     )
     instance.start()
 
@@ -184,11 +215,15 @@ def start(
     launcher = LauncherInstance(instance, opened_in_browser=opened)
 
     if open_browser and not opened:
-        print(f"无法自动打开浏览器。请复制以下地址访问：\n{launcher.url}")
+        print(f"无法自动打开浏览器。请复制以下地址访问：\n{launcher.url}", file=sys.stderr)
     return launcher
 
 
 def main(argv: Optional[list] = None) -> int:
+    # Windows redirected console output must remain parseable UTF-8, including Chinese paths.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(
         description="打开 One-Contract 规则面板（本地、离线）。"
     )
@@ -197,12 +232,20 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--no-browser", action="store_true",
                         help="不自动打开浏览器，返回可复制 URL")
     parser.add_argument("--read-only", action="store_true",
-                        help="只读模式（本版仍允许客户草稿写入，仅用于提示）")
+                        help="只读浏览与试运行；服务端禁止创建、修改、发布和导出")
+    parser.add_argument("--diagnose", action="store_true",
+                        help="打印运行环境与数据目录诊断，不启动或修改数据")
     parser.add_argument("--idle-timeout-seconds", type=int, default=None,
                         help="空闲超时秒数；关闭页面后自动退出")
     parser.add_argument("--dry-run", action="store_true",
                         help="启动后立即停止并打印机器结果（跨平台代理用）")
     args = parser.parse_args(argv)
+
+    if args.diagnose:
+        result = diagnostics(data_root=Path(args.data_dir) if args.data_dir else None,
+                             read_only=args.read_only)
+        print(json.dumps(result, ensure_ascii=False))
+        return 0 if result["ready"] else 2
 
     missing = preflight()
     if missing:
@@ -214,6 +257,7 @@ def main(argv: Optional[list] = None) -> int:
             data_root=Path(args.data_dir) if args.data_dir else None,
             open_browser=not args.no_browser,
             idle_timeout_seconds=args.idle_timeout_seconds,
+            read_only=args.read_only,
         )
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
@@ -222,6 +266,9 @@ def main(argv: Optional[list] = None) -> int:
         # 兜底：任何未被 preflight 覆盖的导入缺失，也给人类可读提示而非 traceback
         print(dependency_hint({getattr(exc, "name", None) or str(exc): exc}),
               file=sys.stderr)
+        return 2
+    except OSError as exc:
+        print(f"工作台启动失败（{type(exc).__name__}）。请检查数据目录权限、磁盘空间和本机端口权限；可运行 --diagnose 查看环境。", file=sys.stderr)
         return 2
 
     print(json.dumps(launcher.machine_result(), ensure_ascii=False))

@@ -146,6 +146,8 @@ class SecurityContext:
         self.check_host(host)
         self.check_origin(origin)
         if method.upper() in ("POST", "PUT", "PATCH", "DELETE"):
+            if not origin:
+                raise SecurityError("写请求缺少 Origin；请从当前工作台操作。")
             require_token = True
         if require_token:
             self.check_token(authorization)

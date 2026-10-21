@@ -239,6 +239,11 @@
         "human_confirmation_required"
       ],
       "properties": {
+        "assessment_mode": {
+          "type": "string",
+          "enum": ["structured", "semantic"],
+          "description": "省略时保持结构化条件；semantic 由审查 AI 结合合同全文判断自然语言条件。"
+        },
         "mode": {
           "type": "string",
           "enum": [
@@ -260,7 +265,22 @@
           "type": "string",
           "maxLength": 1000
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["assessment_mode"],
+            "properties": {"assessment_mode": {"const": "semantic"}}
+          },
+          "then": {
+            "required": ["natural_language_note"],
+            "properties": {
+              "natural_language_note": {"minLength": 1, "pattern": "\\S"},
+              "clauses": {"maxItems": 0}
+            }
+          }
+        }
+      ]
     },
     "effect": {
       "type": "object",

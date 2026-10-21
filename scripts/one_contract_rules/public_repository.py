@@ -13,11 +13,13 @@ safety-and-acceptance.md RES-001~RES-010、VIS-001~VIS-003、VIS-007。
 from __future__ import annotations
 
 import importlib.util
-from dataclasses import dataclass
+import copy
+import json
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
-from . import catalog_index, errors, fingerprint, graph_service, models, paths, projection
+from . import authoring_catalog, catalog_index, errors, fingerprint, graph_service, models, paths, projection
 
 __all__ = [
     "GLOBAL_DOCUMENT_TITLES",
@@ -171,7 +173,147 @@ class PublicRepository:
         for node in self._all_nodes():
             if node.node_id == rule_id:
                 return node
+        for item in self._index.taxonomy.get("catalog_types", ()):
+            if item.get("type_id") == rule_id:
+                enabled = rule_id in self._index.manifest.get("active_type_ids", ())
+                return models.RuleNode(
+                    node_id=rule_id, node_kind="contract_type", layer="type",
+                    title=str(item.get("type_name") or rule_id), version=str(self._index.taxonomy.get("schema_version", "n/a")),
+                    approval_status=str(item.get("approval_status") or "candidate"),
+                    activation_status="active" if enabled else "inactive",
+                    body_visibility="full_active" if enabled else "metadata_only_candidate",
+                    domain_codes=(item["domain_code"],), type_ids=(rule_id,),
+                ).with_hash()
         return None
+
+    def get_framework(self) -> Dict[str, Any]:
+        """Full taxonomy navigation; empty types remain visible and shared IDs stay shared."""
+        all_nodes = self._all_nodes()
+        active_ids = set(self._index.manifest.get("active_type_ids", ()))
+        domains = []
+        for domain in self._index.taxonomy.get("domains", ()):
+            code = domain["code"]
+            types = []
+            for item in self._index.taxonomy.get("catalog_types", ()):
+                if item.get("domain_code") != code:
+                    continue
+                tid = item["type_id"]
+                members = [n for n in all_nodes if n.layer == "type" and tid in n.type_ids]
+                active = sum(n.is_runtime_eligible for n in members)
+                types.append({"type_id": tid, "type_code": item.get("type_code"),
+                              "title": item.get("type_name", tid), "runtime_enabled": tid in active_ids,
+                              "approval_status": item.get("approval_status", "candidate"),
+                              "activation_status": item.get("activation_status", "inactive"),
+                              "coverage": {"total": len(members), "active": active,
+                                           "candidate": sum(n.approval_status == "candidate" for n in members),
+                                           "status": "active" if active else "candidate" if members else "gap"},
+                              "rule_ids": [n.node_id for n in members],
+                              "roles": sorted({role for n in members for role in n.roles}),
+                              "scene_tags": sorted({scene for n in members for scene in n.scene_tags})})
+            types.sort(key=lambda x: (x["type_code"] or "", x["type_id"]))
+            domains.append({"domain_code": code, "title": domain["name"],
+                            "principle_node_ids": [n.node_id for n in all_nodes if n.layer == "domain" and code in n.domain_codes],
+                            "types": types})
+        return {"domains": domains, "global_rule_ids": [n.node_id for n in all_nodes if n.layer == "global"],
+                "domain_count": len(domains), "type_count": sum(len(d["types"]) for d in domains),
+                "public_snapshot_id": self.public_snapshot_id,
+                "notice": "目录位置用于理解适用关系；是否采用规则由正式解析结果决定。"}
+
+    def _maintenance_records(self) -> Dict[str, Mapping[str, Any]]:
+        records = {}
+        for kind, attribute in _COLLECTIONS:
+            for asset in getattr(self._index, attribute):
+                nid = str(asset.get("domain_code")) if kind == "domain_principle" else projection.asset_node_id(asset, asset_kind=kind)
+                records[nid] = asset
+        records.update({x["type_id"]: x for x in self._index.taxonomy.get("catalog_types", ())})
+        return records
+
+    def get_rule_relationships(self, rule_id: str, *, type_id: Optional[str] = None) -> Dict[str, Any]:
+        """One-hop incoming and outgoing references, with per-type dependencies."""
+        if self.get_rule(rule_id) is None:
+            raise PublicResolutionError("未找到该规则或目录节点：" + rule_id)
+        if type_id is not None and type_id not in self._index.type_to_domain:
+            raise PublicResolutionError("未知类型：" + type_id)
+        records = self._maintenance_records()
+        aliases: Dict[str, List[str]] = {}
+        for nid, asset in records.items():
+            for key in ("domain_doctrine_id", "doctrine_id"):
+                if asset.get(key):
+                    aliases.setdefault(str(asset[key]), []).append(nid)
+        titles = {n.node_id: n.title for n in self._all_nodes()}
+        titles.update({x["type_id"]: x.get("type_name", x["type_id"]) for x in self._index.taxonomy.get("catalog_types", ())})
+        known = set(records) | set(titles)
+        outgoing, incoming = [], []
+        seen = set()
+        for nid, asset in records.items():
+            for raw in graph_service.derive_relationships(asset, from_id=nid, type_id=type_id):
+                targets = aliases.get(raw["to_id"], [raw["to_id"]])
+                # A reusable principle has one maintenance record per contract type.
+                # A domain's explicit reference selects only its own mappings.
+                if asset.get("domain_doctrine_id") and raw["source_field"] == "derived_principle_ids":
+                    targets = [t for t in targets if self._index.type_to_domain.get(records.get(t, {}).get("type_id")) == asset.get("domain_code")]
+                for target in targets:
+                    if nid != rule_id and target != rule_id:
+                        continue
+                    edge = {**raw, "to_id": target, "from_title": titles.get(nid, nid),
+                            "to_title": titles.get(target, target),
+                            "status": "valid" if target in known else "broken"}
+                    edge["relation_id"] = models.content_hash(edge)
+                    if edge["relation_id"] in seen:
+                        continue
+                    seen.add(edge["relation_id"])
+                    if nid == rule_id:
+                        outgoing.append(edge)
+                    if target == rule_id:
+                        incoming.append(edge)
+        return {"outgoing": outgoing, "incoming": incoming, "context_type_id": type_id}
+
+    def get_rule_detail(self, rule_id: str, *, projection_mode: str = "maintenance",
+                        type_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Full maintenance content is independent from runtime eligibility.
+
+        This DTO is deliberately separate from the frozen lightweight graph DTO.
+        The original asset is returned without truncation; reading it never activates it.
+        """
+        if projection_mode not in ("maintenance", "runtime"):
+            raise PublicResolutionError("未知查看模式：" + projection_mode)
+        node = self.get_rule(rule_id)
+        if node is None:
+            return None
+        asset = self._maintenance_records().get(rule_id)
+        body_format = "json"
+        if node.node_kind == "global_document":
+            # Only fixed, repository-owned reference paths can be read.
+            body = (self._skill_root / rule_id).read_text(encoding="utf-8")
+            body_format = "markdown"
+        else:
+            body = copy.deepcopy(dict(asset or {}))
+        included = projection_mode == "maintenance" or node.is_runtime_eligible or node.node_kind == "global_document"
+        visibility = node.body_visibility
+        if projection_mode == "maintenance" and not node.is_runtime_eligible:
+            visibility = "full_maintenance_candidate"
+        out = node.to_dict()
+        out.update({"body": body if included else None, "body_format": body_format,
+                    "body_visibility": visibility, "body_included": included,
+                    "asset_kind": node.node_kind, "runtime_eligible": node.is_runtime_eligible,
+                    "authoring_kind": "principle" if node.node_kind == "type_principle" else node.node_kind,
+                    "projection_mode": projection_mode,
+                    "content_sections": authoring_catalog.content_sections(body) if included and isinstance(body, Mapping) else [],
+                    "relations": self.get_rule_relationships(rule_id, type_id=type_id),
+                    "locations": [], "sources": []})
+        domains = {d["code"]: d["name"] for d in self._index.taxonomy.get("domains", ())}
+        for item in self._index.taxonomy.get("catalog_types", ()):
+            if item["type_id"] in node.type_ids:
+                out["locations"].append({"domain_code": item["domain_code"], "domain_title": domains.get(item["domain_code"]),
+                                         "type_id": item["type_id"], "type_title": item.get("type_name")})
+        if node.layer == "domain":
+            out["locations"] = [{"domain_code": code, "domain_title": domains.get(code), "type_id": None, "type_title": None} for code in node.domain_codes]
+        for source_id in node.source_refs:
+            source = self._index.lookup(source_id)
+            out["sources"].append({"node_id": source_id, "title": source.get("title", source_id) if source else source_id,
+                                   "body": copy.deepcopy(dict(source)) if source else None,
+                                   "status": "available" if source else "missing"})
+        return out
 
     def get_rule_neighbors(
         self,
@@ -202,16 +344,34 @@ class PublicRepository:
             )
         return out
 
-    def search_rules(self, query: str, *, limit: int = 200) -> List[models.RuleNode]:
+    def search_rules(self, query: str, *, limit: Optional[int] = None) -> List[models.RuleNode]:
         if not isinstance(query, str) or not query.strip():
             raise PublicResolutionError("搜索词不得为空。")
         needle = query.strip().casefold()
         hits = []
-        for node in self._all_nodes():
-            haystack = f"{node.title} {node.node_id} {node.summary or ''}".casefold()
+        records = self._maintenance_records()
+        nodes = list(self._all_nodes()) + [self.get_rule(x["type_id"]) for x in self._index.taxonomy.get("catalog_types", ())]
+        for node in nodes:
+            # Global documents are fixed repository paths, not catalog records.
+            # Use the same complete Markdown body as the detail view; search
+            # input is never interpreted as a path or used to select a file.
+            body_text = ((self._skill_root / node.node_id).read_text(encoding="utf-8")
+                         if node.node_id in GLOBAL_DOCUMENT_TITLES
+                         else json.dumps(records.get(node.node_id, {}), ensure_ascii=False))
+            haystack = f"{node.title} {node.node_id} {node.summary or ''} {body_text}".casefold()
             if needle in haystack:
                 hits.append(node)
-        return hits[:limit]
+        # Keep exact names/identities ahead of incidental body mentions, while
+        # retaining every full-text result and stable order within each rank.
+        def rank(node):
+            title, identity = node.title.casefold(), node.node_id.casefold()
+            if needle in (title, identity):
+                return 0
+            if needle in title or needle in identity:
+                return 1
+            return 2
+        hits.sort(key=rank)
+        return hits if limit is None else hits[:limit]
 
     def list_runtime_contract_types(self) -> List[Dict[str, str]]:
         """返回运行预览可选的已启用合同类型及中文名称。
@@ -616,6 +776,8 @@ class PublicRepository:
         # 原始目录仍保留可复用 doctrine_id，不修改运行时规则身份。
         for asset_kind, attribute in _COLLECTIONS:
             for asset in getattr(self._index, attribute):
+                if asset_kind == "domain_principle" and asset.get("domain_code") == rule_id:
+                    return asset
                 if projection.asset_node_id(asset, asset_kind=asset_kind) == rule_id:
                     return asset
         found = self._index.lookup(rule_id)
@@ -648,6 +810,11 @@ class PublicRepository:
                 continue
             for asset in getattr(self._index, attribute):
                 nodes.append(projection.project_type_node(asset, asset_kind=asset_kind))
+
+        # Domain placement is derived only from explicit type references, not IDs or prose.
+        nodes = [replace(node, domain_codes=tuple(sorted(set(node.domain_codes) | {
+            self._index.type_to_domain[tid] for tid in node.type_ids if tid in self._index.type_to_domain
+        }))).with_hash() for node in nodes]
 
         self._nodes_cache = tuple(nodes)
         return self._nodes_cache

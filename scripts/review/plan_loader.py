@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import json
+import re
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+
+from scripts.review.preflight import PlanValidationError, diagnostic
 
 
 ACTION_ALIAS = {
@@ -26,6 +29,9 @@ ACTION_ALIAS = {
     "新增": "insert",
     "delete": "delete",
     "删除": "delete",
+    "delete_paragraph": "delete_paragraph",
+    "delete-paragraph": "delete_paragraph",
+    "删除段落": "delete_paragraph",
     "auto": "auto",
     "自动": "auto",
     "none": "none",
@@ -46,7 +52,7 @@ EVIDENCE_ALIASES = {
     "不适用": "not_applicable",
 }
 EDIT_POLICIES = {"comment-first", "balanced", "revise-first"}
-DIRECT_EDIT_ACTIONS = {"replace", "insert", "delete"}
+DIRECT_EDIT_ACTIONS = {"replace", "insert", "delete", "delete_paragraph"}
 try:  # 与执行器/报告侧共用同一份口径定义，避免两处漂移
     from .comment_targets import RESPONSE_STANCES as RESPONSE_STANCE_MAP
 except ImportError:  # 直接以脚本方式运行时（无包上下文）
@@ -86,7 +92,7 @@ REVIEWER_VOICE_FORBIDDEN = (
     "我们会落实",
 )
 SUPPORTED_ACTIONS = {
-    "auto", "comment", "report-only", "replace", "insert", "delete", "none", "skip"
+    "auto", "comment", "report-only", "replace", "insert", "delete", "delete_paragraph", "none", "skip"
 }
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[2]
@@ -106,7 +112,8 @@ def load_plan(path: str | Path) -> dict[str, Any]:
     if not SCHEMA_PATH.is_file():
         raise FileNotFoundError(f"审查计划 schema 不存在: {SCHEMA_PATH}")
     json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    return payload
+    from scripts.review.plan_contract import canonical_plan
+    return canonical_plan(payload)
 
 
 def get_plan_meta(plan: dict[str, Any]) -> dict[str, Any]:
@@ -115,10 +122,8 @@ def get_plan_meta(plan: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_findings(plan: dict[str, Any]) -> list[Any]:
-    findings = plan.get("findings") or plan.get("risks") or []
-    if not isinstance(findings, list):
-        raise ValueError("findings 必须是数组")
-    return findings
+    from scripts.review.plan_contract import get_findings as canonical_findings
+    return canonical_findings(plan)
 
 
 def _normalize_action(action: Any) -> str:
@@ -257,10 +262,14 @@ def enrich_findings(
             continue
         finding = _normalize_legacy_fields(item)
         finding.setdefault("id", f"R{index:03d}")
-        finding.setdefault("evidence_state", infer_evidence_state(finding, edit_policy=policy))
-        inferred = infer_strategy_flags(finding, edit_policy=policy)
-        finding.setdefault("needs_negotiation", inferred["needs_negotiation"])
-        finding.setdefault("deterministic_edit", inferred["deterministic_edit"])
+        try:
+            finding.setdefault("evidence_state", infer_evidence_state(finding, edit_policy=policy))
+            inferred = infer_strategy_flags(finding, edit_policy=policy)
+            finding.setdefault("needs_negotiation", inferred["needs_negotiation"])
+            finding.setdefault("deterministic_edit", inferred["deterministic_edit"])
+        except ValueError:
+            # Preserve malformed values for the aggregated validation report.
+            finding.setdefault("evidence_state", finding.get("decision_state") or "")
         enriched.append(finding)
     return enriched
 
@@ -346,7 +355,7 @@ def _attach_directed_blocks(plan: dict[str, Any]) -> None:
             "scope": "this_finding",
             "reason": "该项输出与已命中 P0 触发器的禁止输出精确匹配",
             "prohibited_actions": [
-                "auto", "comment", "report-only", "replace", "insert", "delete"
+                "auto", "comment", "report-only", "replace", "insert", "delete", "delete_paragraph"
             ],
             "prohibited_outputs": [output_kind],
             "required_outputs": required_outputs,
@@ -354,10 +363,21 @@ def _attach_directed_blocks(plan: dict[str, Any]) -> None:
         }
 
 
-def validate_plan(plan: dict[str, Any]) -> None:
+def validate_plan(plan: dict[str, Any], *, source_docx=None, existing_revisions="reject", author=None) -> dict[str, Any]:
     """Validate the executable subset of review-plan.schema.json without jsonschema."""
+    from scripts.review.module_checklist import validate_module_checklist
     errors: list[str] = []
     meta = get_plan_meta(plan)
+    if 'meta' in plan and not isinstance(plan['meta'], dict):
+        errors.append('meta 必须是对象')
+    summary = plan.get('summary', {})
+    if not isinstance(summary, dict):
+        errors.append('summary 必须是对象')
+        summary = {}
+    try:
+        validate_module_checklist(dict(plan, meta=meta, summary=summary))
+    except (ValueError, TypeError, AttributeError) as exc:
+        errors.append(str(exc))
     if not str(meta.get("contract_name") or "").strip():
         errors.append("meta.contract_name 不得为空")
     if not str(meta.get("party_role") or meta.get("role") or "").strip():
@@ -367,7 +387,11 @@ def validate_plan(plan: dict[str, Any]) -> None:
     except ValueError as exc:
         errors.append(str(exc))
 
-    findings = get_findings(plan)
+    try:
+        findings = get_findings(plan)
+    except ValueError as exc:
+        findings = []
+        errors.append(str(exc))
     seen_ids: set[str] = set()
     for index, item in enumerate(findings, start=1):
         prefix = f"findings[{index - 1}]"
@@ -380,7 +404,7 @@ def validate_plan(plan: dict[str, Any]) -> None:
         elif finding_id in seen_ids:
             errors.append(f"{prefix}.id 重复: {finding_id}")
         seen_ids.add(finding_id)
-        if item.get("risk_level") not in RISK_LEVELS:
+        if not isinstance(item.get("risk_level"), str) or item.get("risk_level") not in RISK_LEVELS:
             errors.append(f"{prefix}.risk_level 必须为 P0/P1/P2")
         state = str(item.get("evidence_state") or "")
         if state not in set(EVIDENCE_ALIASES.values()):
@@ -388,6 +412,18 @@ def validate_plan(plan: dict[str, Any]) -> None:
         action = _normalize_action(item.get("action"))
         if action not in SUPPORTED_ACTIONS:
             errors.append(f"{prefix}.action 无效: {action}")
+        selector = item.get("selector")
+        if selector is not None and not isinstance(selector, dict):
+            errors.append(f"{prefix}.selector 必须是对象")
+        for field, container in (("occurrence", item), ("selector.occurrence", selector)):
+            if isinstance(container, dict):
+                occurrence = container.get("occurrence")
+                if occurrence is not None and (type(occurrence) is not int or occurrence < 1):
+                    errors.append(f"{prefix}.{field} 必须为从 1 开始的整数")
+        if action == "delete_paragraph":
+            tag = selector.get("tag") if isinstance(selector, dict) else None
+            if (tag or item.get("tag") or "w:p") != "w:p":
+                errors.append(f"{prefix}.tag 在 delete_paragraph 时必须为 w:p；target_text 须覆盖完整段落")
         # 1.5 的**机制落点**：命中库内明确规则且方向明确 ⇒ 不是"该由客户决定的结构性选择"，
         # 因而不得记 major_choice（执行器见到 major_choice 会强制仅批注）。
         # 只写在文档里的规则拦不住人——这条校验就是它的执行点。
@@ -409,12 +445,12 @@ def validate_plan(plan: dict[str, Any]) -> None:
         if not _text_present(item.get("legal_basis")):
             errors.append(f"{prefix}.legal_basis 不得为空")
         pending_kind = item.get("pending_kind")
-        if pending_kind is not None and pending_kind not in PENDING_KINDS:
-            errors.append(f"{prefix}.pending_kind 无效: {pending_kind}")
+        if pending_kind is not None and (not isinstance(pending_kind, str) or pending_kind not in PENDING_KINDS):
+            errors.append(f"{prefix}.pending_kind 无效: {pending_kind}（允许：fill/verify/authorization）")
         report_bucket = item.get("report_bucket")
-        if report_bucket is not None and report_bucket not in REPORT_BUCKETS:
+        if report_bucket is not None and (not isinstance(report_bucket, str) or report_bucket not in REPORT_BUCKETS):
             errors.append(f"{prefix}.report_bucket 无效: {report_bucket}")
-        if report_bucket in {"tax", "mixed"} and not _text_present(item.get("tax_advice")):
+        if isinstance(report_bucket, str) and report_bucket in {"tax", "mixed"} and not _text_present(item.get("tax_advice")):
             errors.append(f"{prefix}.tax_advice 在 report_bucket={report_bucket} 时必填")
         block = item.get("directed_block")
         if block is not None:
@@ -448,7 +484,7 @@ def validate_plan(plan: dict[str, Any]) -> None:
                 errors.append(f"linkage_checklist.{key} 标为 not_applicable 时必须写明 reason")
 
     responses = plan.get("responses")
-    if responses is not None:
+    if 'responses' in plan:
         if not isinstance(responses, list):
             errors.append("responses 必须是数组")
         else:
@@ -496,9 +532,46 @@ def validate_plan(plan: dict[str, Any]) -> None:
                             f"{prefix}.target 须给出 comment_id 或 anchor_text 之一"
                         )
 
-    if errors:
-        raise ValueError("审查计划校验失败：\n- " + "\n- ".join(errors))
-
+    source_view = None
+    if get_client_application_reviews(plan) and source_docx is not None:
+        from scripts.review.delivery_checks import inspect_view
+        source_view = inspect_view(source_docx, 'accept' if existing_revisions == 'accept-existing' else 'reject')
+    errors.extend(_client_application_comment_errors(plan, findings, source_view))
+    diagnostics = {'errors': [], 'warnings': []}
+    invalid_indices = set()
+    for cause in errors:
+        match = re.search(r'findings\[(\d+)\]', cause)
+        index = int(match.group(1)) if match else None
+        if index is not None:
+            invalid_indices.add(index)
+        finding = findings[index] if index is not None and index < len(findings) else None
+        path = re.match(r'[\w.]+(?:\[\d+\])?(?:\.[\w]+)*', cause)
+        diagnostics['errors'].append(diagnostic(cause, index=index, finding=finding,
+            path=path.group() if path else None))
+    # Continue checking independently executable findings despite schema errors.
+    # Skip malformed findings, preserving successful preceding edit order.
+    from scripts.review.preflight import preflight_plan, replacement_range_warnings
+    executable_plan = dict(plan, meta=meta, findings=findings)
+    executable_plan.pop('risks', None)
+    try:
+        normalize_edit_policy(meta.get('edit_policy'))
+        policy_valid = True
+    except ValueError:
+        policy_valid = False
+    if source_docx is not None:
+        from scripts.review.delivery_checks import inspect_view, report_reference_diagnostics
+        source_view = source_view or inspect_view(source_docx, 'accept' if existing_revisions == 'accept-existing' else 'reject')
+        diagnostics['errors'].extend(report_reference_diagnostics(plan, source_view))
+        if policy_valid:
+            preflight = preflight_plan(executable_plan, source_docx, existing_revisions=existing_revisions,
+                author=author, skip_indices=invalid_indices, raise_on_error=False)
+            diagnostics['errors'].extend(preflight['errors'])
+            diagnostics['warnings'].extend(preflight['warnings'])
+    elif policy_valid:
+        diagnostics['warnings'].extend(replacement_range_warnings(executable_plan))
+    if diagnostics['errors']:
+        raise PlanValidationError(diagnostics)
+    return diagnostics
 
 def enrich_plan(
     plan: dict[str, Any], *, edit_policy: str | None = None
@@ -523,7 +596,7 @@ def enrich_plan(
 # --------------------------------------------------------------------------- #
 # Rule Studio 集成扩展（W6）
 #
-# 以下函数**只读**既有 plan 结构，不改变 `enrich_plan` / `validate_plan` 的行为：
+# 以下函数只读既有 plan 结构；仅新 provenance 中的客户 AI 审查提示增加批注完整性校验：
 # - 旧 plan 缺少 `meta.resolution_provenance` 时一律按"无客户旧流程"处理，
 #   不猜测客户（INT-003）；
 # - 新字段是可选的，缺失不报错（§14「plan_loader 新字段必须可选」）。
@@ -562,3 +635,96 @@ def get_resolution_provenance(plan: dict[str, Any]) -> dict[str, Any]:
 def has_resolution_provenance(plan: dict[str, Any]) -> bool:
     """新 plan 是否携带本轮溯源信息。"""
     return bool(get_resolution_provenance(plan))
+
+
+def get_client_application_reviews(plan: dict[str, Any]) -> list[dict[str, Any]]:
+    """Read the AI full-contract review obligations without inventing approval.
+
+    Old plans have no such obligations. Only the resolver's explicit controlled
+    notice shape is recognised; a generic ``blocking=false`` is insufficient.
+    """
+    provenance = get_resolution_provenance(plan)
+    notices = provenance.get("client_application_review", provenance.get("rule_conflicts", []))
+    if not isinstance(notices, list) or not notices:
+        return []
+    from one_contract_rules.resolver import is_application_review_notice
+    return [deepcopy(item) for item in notices if is_application_review_notice(item)]
+
+
+def _client_application_comment_errors(plan: dict[str, Any], findings: list[Any], source_view=None) -> list[str]:
+    """Require traceable Word comments for the new CLI review obligations.
+
+    This is plan completeness, not human approval. Final DOCX comment/anchor
+    verification remains in the delivery path; this helper does not import Studio.
+    """
+    provenance = get_resolution_provenance(plan)
+    explicit = provenance.get('client_application_review')
+    reviews = get_client_application_reviews(plan)
+    if explicit is not None and (not isinstance(explicit, list) or len(explicit) != len(reviews)):
+        return ['meta.resolution_provenance.client_application_review 必须仅包含受控的客户全文审查提示']
+    if not reviews:
+        return []
+    rows = get_plan_meta(plan).get('client_rule_dispositions')
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        return ['meta.client_rule_dispositions 必须逐条记录 AI 客户适用性判断及真实 Word 批注证据']
+    required = {rule_id for notice in reviews for rule_id in notice['rule_ids']}
+    by_id = {item['id']: item for item in findings if isinstance(item, dict) and isinstance(item.get('id'), str)}
+    from scripts.review.action_executor import infer_auto_action, resolve_delivery_action, resolve_directed_block, resolve_replacement_text
+    try:
+        policy = normalize_edit_policy(get_plan_meta(plan).get('edit_policy'))
+    except ValueError:
+        policy = 'revise-first'  # The main validator already reports the invalid policy.
+    errors = []
+    for rule_id in sorted(required):
+        prefix = 'meta.client_rule_dispositions[' + rule_id + ']'
+        matching = [row for row in rows if row.get('rule_id') == rule_id]
+        if len(matching) != 1:
+            errors.append(prefix + ' 须有且仅有一条处理记录，不得遗漏或重复')
+            continue
+        row = matching[0]
+        ids, evidence = row.get('finding_ids'), row.get('evidence')
+        if not isinstance(ids, list) or not ids or any(not isinstance(i, str) or i not in by_id for i in ids) or len(ids) != len(set(ids)):
+            errors.append(prefix + '.finding_ids 须引用真实且不重复的审查事项')
+            continue
+        if not isinstance(evidence, list) or any(not isinstance(item, dict) for item in evidence):
+            errors.append(prefix + '.evidence 须包括原文 input 与对应 finding.comment 映射')
+            continue
+        input_quotes = []
+        for item in evidence:
+            if item.get('source') != 'input':
+                continue
+            index, quote, part = item.get('paragraph_index'), item.get('quote'), item.get('part', 'word/document.xml')
+            if type(index) is not int or index < 0 or not isinstance(quote, str) or not quote.strip() or not isinstance(part, str):
+                continue
+            if source_view is not None:
+                paragraphs = source_view.get('paragraphs', {}).get(part, [])
+                if index >= len(paragraphs) or quote not in paragraphs[index]:
+                    continue
+            input_quotes.append(quote)
+        if not input_quotes:
+            errors.append(prefix + '.evidence 缺少与实际合同位置一致的 input 原文证据')
+        linked_comment = False
+        for finding_id in ids:
+            finding = by_id[finding_id]
+            comment = finding.get('comment')
+            if not isinstance(comment, str) or not comment.strip():
+                continue
+            try:
+                requested = _normalize_action(finding.get('action'))
+                action = infer_auto_action(finding, edit_policy=policy) if requested == 'auto' else requested
+                action = resolve_delivery_action(finding, requested_action=requested, action=action, edit_policy=policy)
+                if action not in DIRECT_EDIT_ACTIONS | {'comment'} or resolve_directed_block(finding, action=action):
+                    continue
+                if action == 'replace' and resolve_replacement_text(finding, edit_policy=policy) is None:
+                    continue
+                if action == 'insert' and not (finding.get('replacement_text') or finding.get('insert_text')):
+                    continue
+            except (ValueError, TypeError):
+                continue
+            if any(item.get('source') == 'finding' and item.get('finding_id') == finding_id
+                   and item.get('field') == 'comment' and isinstance(item.get('quote'), str)
+                   and item['quote'].strip() and item['quote'] in comment for item in evidence):
+                linked_comment = True
+        if not linked_comment:
+            errors.append(prefix + '.evidence 必须关联非空 finding.comment，且对应动作确实写入 Word；仅报告、跳过或被阻断动作不能替代批注')
+    return errors

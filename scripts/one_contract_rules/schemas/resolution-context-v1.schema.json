@@ -160,6 +160,49 @@
     "context_hash": {
       "type": "string",
       "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "review_scope": {
+      "type": "string",
+      "enum": [
+        "whole_contract",
+        "clause_groups"
+      ],
+      "default": "whole_contract",
+      "description": "审查整份合同或明确选择的条款类别；省略时为整合同，不依据原件章节是否存在推断范围。"
+    },
+    "clause_groups": {
+      "type": "array",
+      "uniqueItems": true,
+      "default": [],
+      "items": {
+        "type": "string",
+        "enum": [
+          "subject",
+          "eligibility",
+          "scope",
+          "payment",
+          "tax",
+          "delivery",
+          "acceptance",
+          "quality",
+          "warranty",
+          "ownership",
+          "ip",
+          "confidentiality",
+          "data",
+          "compliance",
+          "security",
+          "liability",
+          "termination",
+          "term",
+          "dispute",
+          "notice",
+          "assignment",
+          "labor",
+          "governance"
+        ]
+      },
+      "description": "仅指定类别审查时非空；使用受控类别编号，不能用公共模块的自由中文议题代替。"
     }
   },
   "$defs": {
@@ -205,5 +248,36 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "review_scope"
+        ],
+        "properties": {
+          "review_scope": {
+            "const": "clause_groups"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "clause_groups"
+        ],
+        "properties": {
+          "clause_groups": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "clause_groups": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
 }

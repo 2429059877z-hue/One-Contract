@@ -13,6 +13,9 @@
 1. `routable_types` 中的具体类型（且已 active）—— 最优；
 2. `domain_fallbacks` 中的「待细分」类型 —— 诚实承认尚无成熟专项类型；
 3. **都不在** —— 拒绝。AI 不得凭空造类型或指向未启用资产。
+
+显式 domain_only 方法另允许保留目录中未启用具体类型的真实身份，
+但仅核准使用已启用大类方法；它不授予任何具体类型资产的运行资格。
 """
 from __future__ import annotations
 
@@ -44,9 +47,10 @@ def _router_first_pass(title: str, our_role: str) -> dict[str, Any]:
 
 def confirm(*, title: str, proposed: str, basis: str, our_role: str,
             router_initial: dict[str, Any] | None = None,
-            human_confirmed: bool = False) -> dict[str, Any]:
+            human_confirmed: bool = False, domain_only: bool = False) -> dict[str, Any]:
     taxonomy = _load("taxonomy_v2.json")
     manifest = _load("asset_manifest.json")
+    module_ids = {item["module_id"] for item in _load("module_catalog.json")["assets"]}
 
     routable = {x["type_id"]: x for x in taxonomy.get("routable_types", [])}
     fallbacks = {x["type_id"]: x for x in taxonomy.get("domain_fallbacks", [])}
@@ -57,10 +61,45 @@ def confirm(*, title: str, proposed: str, basis: str, our_role: str,
     initial = router_initial if router_initial is not None else _router_first_pass(title, our_role)
     notes: list[str] = []
 
-    if proposed in routable:
+    if domain_only:
+        entry = catalog.get(proposed)
+        required = (routable.get(proposed) or {}).get("required_modules") or []
+        unknown = sorted(set(required) - module_ids)
+        inactive = sorted((set(required) & module_ids) - active_modules)
+        domain = entry.get("domain_code") if entry else None
+        card = next((x for x in _load("domain_principle_catalog.json").get("assets", [])
+                     if x.get("domain_code") == domain), None)
+        domain_active = bool(card and card.get("approval_status") == "active"
+                             and card.get("activation_status") == "active"
+                             and card.get("domain_doctrine_id") in manifest.get("active_domain_doctrine_ids", [])
+                             and card.get("coverage", {}).get("coverage_status") != "gap")
+        check = {"kind": "catalog_type_domain_only", "in_routable_types": proposed in routable,
+                 "is_domain_fallback": False, "catalog_status": (entry or {}).get("approval_status"),
+                 "is_active": proposed in active_types, "domain_code": domain,
+                 "name": (entry or {}).get("type_name") or (entry or {}).get("name"), "domain_method_active": domain_active,
+                 "specialized_assets_used": False, "required_modules_resolvable": not (unknown or inactive),
+                 "missing_modules": sorted(unknown + inactive), "unknown_modules": unknown,
+                 "inactive_modules": inactive, "coverage_reduced": True}
+        if not entry or proposed in active_types:
+            verdict = "rejected"
+            notes.append("domain_only 方法仅用于目录中真实存在、尚未启用的具体类型；不得构造类型或绕过已启用类型的专项检查。")
+        elif unknown:
+            verdict = "data_error"
+            notes.append("数据故障：类型引用的模块不存在，不能用大类审查声明掩盖错误 ID。")
+        elif not domain_active:
+            verdict = "rejected"
+            notes.append("该类型没有已启用且具备内容的所属大类卡，不能声明 domain_only 审查。")
+        else:
+            verdict = "accepted_with_fallback"
+            notes.append("保留目录中的真实具体类型；本次仅使用公共方法和已启用大类原则，未启用的专项正文不进入审查。")
+    elif proposed in routable:
         entry = routable[proposed]
         missing = sorted(set(entry.get("required_modules") or []) - active_modules)
-        verdict = "accepted" if not missing else "rejected"
+        unknown = sorted(set(missing) - module_ids)
+        inactive = sorted(set(missing) & module_ids)
+        verdict = ("data_error" if unknown else
+                   "accepted_with_reduced_coverage" if inactive and human_confirmed else
+                   "needs_human_review" if inactive else "accepted")
         check = {
             "kind": "routable_specific_type",
             "in_routable_types": True,
@@ -69,9 +108,14 @@ def confirm(*, title: str, proposed: str, basis: str, our_role: str,
             "is_active": proposed in active_types,
             "required_modules_resolvable": not missing,
             "missing_modules": missing,
+            "unknown_modules": unknown,
+            "inactive_modules": inactive,
+            "coverage_reduced": bool(missing),
             "domain_code": entry.get("domain_code"),
             "name": entry.get("name"),
         }
+        if unknown:
+            notes.append("数据故障：引用的模块不存在，须修正 ID，人工确认不能覆盖。")
         if missing:
             notes.append(f"该类型声明的模块中有 {len(missing)} 个未启用：{missing}")
         if proposed not in active_types:
@@ -127,7 +171,7 @@ def confirm(*, title: str, proposed: str, basis: str, our_role: str,
     # 就自动放行。否则调用方只看 exit code / verdict，会在无人确认的情况下
     # 加载另一套专项规则。人工确认后可显式放行，并把确认事实写入溯源记录。
     material_divergence = (
-        verdict != "rejected"
+        verdict not in {"rejected", "data_error"}
         and not check["router_agrees"]
         and router_status in ("high", "medium")
     )
@@ -146,6 +190,7 @@ def confirm(*, title: str, proposed: str, basis: str, our_role: str,
         "human_confirmation": {
             "confirmed": bool(human_confirmed),
             "required_by_divergence": material_divergence,
+            "required_by_dependencies": bool(check.get("inactive_modules")) and not domain_only,
         },
         "proposed_type_id": proposed,
         "basis": basis,
@@ -157,6 +202,14 @@ def confirm(*, title: str, proposed: str, basis: str, our_role: str,
         },
         "cross_check": check,
         "verdict": verdict,
+        **({"review_method": "domain_only", "coverage_level": "domain_only"}
+           if domain_only and verdict == "accepted_with_fallback" else {}),
+        "coverage_notice": (
+            "保留真实合同类型；当前仅使用公共方法和已启用大类原则，暂无成熟专项资产，未加载候选正文。"
+            if domain_only and verdict == "accepted_with_fallback" else
+            "部分必选专项模块尚未启用；本次仅使用已启用资产，相关议题需人工补审。"
+            if verdict == "accepted_with_reduced_coverage" else ""
+        ),
         "notes": notes,
     }
 
@@ -169,10 +222,12 @@ def main() -> int:
     parser.add_argument("--proposed", required=True, help="AI 归类到的 type_id")
     parser.add_argument("--basis", required=True, help="AI 归类的依据（读到了哪些交易事实）")
     parser.add_argument("--our-role", default="unknown")
+    parser.add_argument("--domain-only", action="store_true",
+                        help="保留目录中未启用的真实类型，仅采用公共方法和已启用大类原则；不加载候选专项正文")
     parser.add_argument(
         "--human-confirmed",
         action="store_true",
-        help="人工已复核并确认 AI 归类；仅用于处理中高置信路由分歧",
+        help="人工已复核并确认 AI 归类；用于路由分歧或未启用依赖的单案覆盖降级确认；不激活资产",
     )
     parser.add_argument("--router-json", default="",
                         help="路由器初判的 JSON 文件；不传则本工具自行调用路由器")
@@ -187,12 +242,13 @@ def main() -> int:
         title=args.title, proposed=args.proposed, basis=args.basis,
         our_role=args.our_role, router_initial=initial,
         human_confirmed=args.human_confirmed,
+        domain_only=args.domain_only,
     )
     text = json.dumps(record, ensure_ascii=False, indent=2)
     if args.out:
         Path(args.out).write_text(text + "\n", encoding="utf-8")
     print(text)
-    if record["verdict"] == "rejected":
+    if record["verdict"] in {"rejected", "data_error"}:
         return 1
     if record["verdict"] == "needs_human_review":
         return 2

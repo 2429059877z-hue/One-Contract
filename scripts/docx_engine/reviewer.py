@@ -64,6 +64,21 @@ _NON_CONTENT_ELEMENT_TAGS = frozenset(
     }
 )
 
+#: 允许出现在插入容器内、随重建原样搬运的零宽标记（无文字、不参与接受视图）。
+#: 批注锚点（commentRange*）**不在**此列——它们与批注线程绑定，位置必须严格保持，
+#: 含批注锚点的容器一律不改写。
+_PASSTHROUGH_REVISION_MARKUP = frozenset(
+    {"w:bookmarkStart", "w:bookmarkEnd", "w:proofErr", "w:lastRenderedPageBreak"}
+)
+
+
+class _NestedEditNotApplicable(Exception):
+    """目标不满足「在他人插入内嵌套改写」的安全条件。
+
+    调用方捕获后应回退到既有拒绝路径（保持原报错提示不变），
+    该异常本身不对外呈现。
+    """
+
 
 class ContractReviewer:
     """合同审查操作封装类
@@ -276,6 +291,66 @@ class ContractReviewer:
         """
         return self.doc["word/document.xml"].suggest_deletion(node)
 
+    def delete_paragraph(self, node, comment_text=None):
+        """Track removal of a complete plain paragraph, including its mark.
+
+        The following paragraph keeps its own properties. Terminal paragraphs,
+        section breaks, existing revisions and structural/anchored content need
+        explicit handling and are rejected before the document is changed.
+        """
+        if getattr(node, "tagName", None) != "w:p":
+            raise ValueError("delete_paragraph 只接受 w:p 段落")
+        following = node.nextSibling
+        while following is not None and following.nodeType != following.ELEMENT_NODE:
+            following = following.nextSibling
+        if following is None or following.tagName != "w:p":
+            raise ValueError("delete_paragraph 需要紧邻的后续段落；末段或表格边界请用文字删除并人工确认段落结构")
+        from .revision_views import REVISION_TAGS
+        if self._has_tracked_changes(node) or any(node.getElementsByTagName(tag) for tag in REVISION_TAGS):
+            raise ValueError("delete_paragraph 暂不支持已有修订的段落；请先 accept-existing 或改用批注")
+        self._assert_plain_rewrite(node)
+        protected = {"w:sectPr", "w:bookmarkStart", "w:bookmarkEnd", "w:commentRangeStart", "w:commentRangeEnd", "w:commentReference"}
+        if any(node.getElementsByTagName(tag) for tag in protected):
+            raise ValueError("delete_paragraph 不支持节分隔、书签或已有批注锚点，请先结构化处理或仅添加批注")
+        for child in node.childNodes:
+            if child.nodeType != child.ELEMENT_NODE:
+                continue
+            if child.tagName not in {"w:pPr", "w:r", "w:proofErr"}:
+                raise ValueError("delete_paragraph 不支持该段落的复杂结构")
+            if child.tagName == "w:r" and any(
+                item.nodeType == item.ELEMENT_NODE and item.tagName not in {"w:rPr", "w:t", "w:tab"}
+                for item in child.childNodes
+            ):
+                raise ValueError("delete_paragraph 不支持该段落的复杂行内结构")
+        clone = node.cloneNode(True)
+        ppr = self._get_direct_child(clone, "w:pPr")
+        if ppr is None:
+            ppr = clone.ownerDocument.createElement("w:pPr")
+            clone.insertBefore(ppr, clone.firstChild)
+        rpr = self._get_direct_child(ppr, "w:rPr")
+        if rpr is None:
+            rpr = clone.ownerDocument.createElement("w:rPr")
+            # pPr rPr precedes sectPr/pPrChange; both are excluded above.
+            ppr.appendChild(rpr)
+        rpr.insertBefore(clone.ownerDocument.createElement("w:del"), rpr.firstChild)
+        for text in list(clone.getElementsByTagName("w:t")):
+            replacement = clone.ownerDocument.createElement("w:delText")
+            for index in range(text.attributes.length):
+                attr = text.attributes.item(index)
+                replacement.setAttribute(attr.name, attr.value)
+            while text.firstChild:
+                replacement.appendChild(text.firstChild)
+            text.parentNode.replaceChild(replacement, text)
+        deletion = clone.ownerDocument.createElement("w:del")
+        for child in list(clone.childNodes):
+            if child is not ppr:
+                deletion.appendChild(child)
+        clone.appendChild(deletion)
+        nodes = self.doc["word/document.xml"].replace_node(node, clone.toxml())
+        if comment_text:
+            self.add_comment(nodes[0], comment_text)
+        return {"deleted": nodes[0], "fallback": "paragraph_mark"}
+
     def suggest_insertion(self, node, xml_content):
         """
         建议插入（修订模式）
@@ -295,7 +370,9 @@ class ContractReviewer:
             new_content = '<w:p><w:r><w:t>新增条款内容</w:t></w:r></w:p>'
             reviewer.suggest_insertion(para, new_content)
         """
-        wrapped = DocxXMLEditor.suggest_paragraph(xml_content)
+        wrapped = DocxXMLEditor.suggest_paragraph(
+            xml_content, namespace_root=self.doc["word/document.xml"].dom.documentElement
+        )
         return self.doc["word/document.xml"].insert_after(node, wrapped)
 
     def _clone_context_formatting(self, node):
@@ -336,13 +413,19 @@ class ContractReviewer:
                 for sub in list(cloned.childNodes):
                     if getattr(sub, "tagName", None) == "w:sectPr":
                         cloned.removeChild(sub)
+                for tag in ("w:pPrChange", "w:rPrChange", "w:ins", "w:del"):
+                    for old in list(cloned.getElementsByTagName(tag)):
+                        old.parentNode.removeChild(old)
                 ppr_xml = cloned.toxml()
                 break
 
         for run in para.getElementsByTagName("w:r"):
             for child in getattr(run, "childNodes", ()):
                 if getattr(child, "tagName", None) == "w:rPr":
-                    rpr_xml = child.toxml()
+                    cloned = child.cloneNode(True)
+                    for old in list(cloned.getElementsByTagName("w:rPrChange")):
+                        old.parentNode.removeChild(old)
+                    rpr_xml = cloned.toxml()
                     break
             if rpr_xml:
                 break
@@ -361,15 +444,29 @@ class ContractReviewer:
         Returns:
             list: 插入的新节点列表
         """
-        escaped = html.escape(text, quote=False)
         if as_paragraph:
+            if getattr(node, "tagName", None) != "w:p":
+                raise ValueError("段落插入必须以 w:p 为锚点")
+            properties = self._get_direct_child(node, "w:pPr")
+            mark_properties = self._get_direct_child(properties, "w:rPr") if properties is not None else None
+            if mark_properties is not None and self._get_direct_child(mark_properties, "w:del") is not None:
+                # This physical paragraph merges with its successor in the
+                # accepted view. Inserting here would split that logical
+                # paragraph instead of adding after the visible anchor.
+                raise ValueError("插入锚点含待删除的段落标记，接受视图会与后段合并；请先 accept-existing 固定段落边界，再执行段落插入")
             ppr_xml, rpr_xml = self._clone_context_formatting(node)
-            paragraph_xml = (
-                f"<w:p>{ppr_xml}<w:r>{rpr_xml}<w:t>{escaped}</w:t></w:r></w:p>"
+            paragraphs = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+            # Prepare the entire batch before inserting; retain deliberate blank lines.
+            xml = "".join(
+                DocxXMLEditor.suggest_paragraph(
+                    f"<w:p>{ppr_xml}<w:r>{rpr_xml}{self._build_text_element_xml(value)}</w:r></w:p>",
+                    namespace_root=self.doc["word/document.xml"].dom.documentElement,
+                )
+                for value in paragraphs
             )
-            return self.suggest_insertion(node, paragraph_xml)
+            return self.doc["word/document.xml"].insert_after(node, xml)
 
-        insertion_xml = f"<w:ins><w:r><w:t>{escaped}</w:t></w:r></w:ins>"
+        insertion_xml = f"<w:ins><w:r>{self._build_text_element_xml(text)}</w:r></w:ins>"
         return self.doc["word/document.xml"].insert_after(node, insertion_xml)
 
     def _get_document_text(self, node):
@@ -394,8 +491,10 @@ class ContractReviewer:
                 for child in node.childNodes
                 if child.nodeType == child.TEXT_NODE
             )
-        if getattr(node, "tagName", "") == "w:tab":
-            return "\t"
+        inline = {"w:tab": "\t", "w:cr": "\n", "w:br": "\n",
+                  "w:noBreakHyphen": "\u2011", "w:softHyphen": "\u00ad"}
+        if getattr(node, "tagName", "") in inline:
+            return inline[node.tagName]
         return "".join(
             self._get_accepted_text(child)
             for child in node.childNodes
@@ -415,6 +514,16 @@ class ContractReviewer:
                 return current
             current = getattr(current, "parentNode", None)
         return None
+
+    def _assert_plain_rewrite(self, node):
+        # Flattening these nodes would lose layout or non-text content. Keep the
+        # original XML untouched and require an explicit structural edit first.
+        protected = {"w:cr", "w:br", "w:noBreakHyphen", "w:softHyphen",
+                     "w:drawing", "w:object", "w:pict", "w:fldChar", "w:instrText"}
+        found = sorted(tag for tag in protected if node.getElementsByTagName(tag))
+        if found:
+            raise ValueError("目标包含不可扁平重写的行内结构 " + ", ".join(found)
+                             + "；请先结构化处理并核对原文，或仅添加批注。")
 
     def _has_tracked_changes(self, node):
         revision_tags = {"w:ins", "w:del", "w:moveFrom", "w:moveTo"}
@@ -460,7 +569,15 @@ class ContractReviewer:
         if run_node is None:
             return ""
         rpr = self._get_direct_child(run_node, "w:rPr")
-        return rpr.toxml() if rpr is not None else ""
+        if rpr is None:
+            return ""
+        clone = rpr.cloneNode(True)
+        # Splitting one run copies its property history. Allocate a fresh
+        # annotation ID for each copy while retaining author/date and values.
+        for change in clone.getElementsByTagName("w:rPrChange"):
+            if change.hasAttribute("w:id"):
+                change.removeAttribute("w:id")
+        return clone.toxml()
 
     def _build_text_element_xml(self, text, *, deleted=False):
         escaped = html.escape(text, quote=False)
@@ -674,6 +791,471 @@ class ContractReviewer:
             f"{comment_ends}{''.join(reference_runs)}</w:p>"
         )
 
+    # ------------------------------------------------------------------
+    # 嵌套修订：目标完全落在他人未接受的插入（w:ins）内时做外科式改写
+    # ------------------------------------------------------------------
+
+    def _ins_shell_open_tag(self, ins_node):
+        """序列化 w:ins 的开始标签并剥掉 w:id——拆分出的片段由注入器分配新 id。"""
+        attrs = []
+        for index in range(ins_node.attributes.length):
+            attribute = ins_node.attributes.item(index)
+            if attribute.name == "w:id":
+                continue
+            attrs.append(
+                f'{attribute.name}="{html.escape(attribute.value, quote=True)}"'
+            )
+        return "<w:ins " + " ".join(attrs) + ">" if attrs else "<w:ins>"
+
+    def _collect_accepted_pieces(self, paragraph_node):
+        """按文档序收集段落接受视图的文字片段，并记录各片段所属的插入容器。
+
+        返回 (pieces, supported)。supported=False 表示存在无法忠实映射或无法安全
+        重建的结构（行内换行等已由 _assert_plain_rewrite 先行拦截；此处针对修订
+        结构）：多层插入、批注锚点或无法保留的非 run 子元素，
+        或段落含 w:moveTo / 制表符等无法映射的节点。书签及单层历史删除可保留。
+        """
+        pieces = []
+        supported = [True]
+        container = [None]
+
+        def visit(node):
+            if not supported[0] or node.nodeType != node.ELEMENT_NODE:
+                return
+            tag = node.tagName
+            if tag in _NON_CONTENT_ELEMENT_TAGS:
+                return
+            if tag in {"w:del", "w:moveFrom", "w:delText"}:
+                return
+            if tag in {"w:moveTo", "w:cr", "w:br", "w:tab"}:
+                supported[0] = False
+                return
+            if tag == "w:ins":
+                if container[0] is not None:
+                    supported[0] = False
+                    return
+                for child in node.childNodes:
+                    if child.nodeType != child.ELEMENT_NODE:
+                        continue
+                    if child.tagName == "w:r":
+                        continue
+                    if child.tagName == "w:del":
+                        # 源文件自带的跨作者嵌套（如 A 的插入里删 B 的文字）：
+                        # 零宽、不贡献接受视图文本；仅当内部无再嵌套修订时放行。
+                        if child.getElementsByTagName("w:ins") or child.getElementsByTagName("w:del"):
+                            supported[0] = False
+                            return
+                        continue
+                    if child.tagName not in _PASSTHROUGH_REVISION_MARKUP:
+                        supported[0] = False
+                        return
+                container[0] = node
+                for child in node.childNodes:
+                    visit(child)
+                container[0] = None
+                return
+            if tag == "w:r":
+                for child in node.childNodes:
+                    if (
+                        child.nodeType == child.ELEMENT_NODE
+                        and child.tagName not in {"w:rPr", "w:t"}
+                    ):
+                        supported[0] = False
+                        return
+                for text_node in node.getElementsByTagName("w:t"):
+                    text = "".join(
+                        part.data
+                        for part in text_node.childNodes
+                        if part.nodeType == part.TEXT_NODE
+                    )
+                    pieces.append(
+                        {"text": text, "container": container[0], "run": node}
+                    )
+                return
+            supported[0] = False
+
+        for child in paragraph_node.childNodes:
+            visit(child)
+        return pieces, supported[0]
+
+    def _replace_within_insertion(self, match, new_text, comment_text=None):
+        """目标完全落在单一历史插入（w:ins）内时的嵌套改写。
+
+        产出结构（W=目标所在的既有插入，T=目标文本，R=替换文本）：
+
+            前缀 w:ins(W) ｜ w:ins(W){ w:del(本轮){ T } } ｜ w:ins(本轮){ R } ｜ 后缀 w:ins(W)
+
+        全部接受＝前缀＋R＋后缀；拒绝 W 移除历史插入，但保留本轮独立的 R；
+        拒绝本轮＝w:del 还原为 T、移除 R（回到 W 的原始插入文本）。
+        w:ins(W) 片段保留原作者 author/date，仅由注入器分配新的 w:id。
+
+        不满足安全条件时抛出 _NestedEditNotApplicable，由调用方回退原拒绝提示。
+        """
+        paragraph = match["paragraph"]
+        pieces, supported = self._collect_accepted_pieces(paragraph)
+        if not supported:
+            raise _NestedEditNotApplicable()
+        if "".join(piece["text"] for piece in pieces) != match["paragraph_text"]:
+            raise _NestedEditNotApplicable()
+
+        start, end = match["start"], match["end"]
+        if start >= end:
+            raise _NestedEditNotApplicable()
+
+        container = None
+        offset = 0
+        for piece in pieces:
+            piece_start, piece_end = offset, offset + len(piece["text"])
+            offset = piece_end
+            if piece_end <= start or piece_start >= end:
+                continue
+            if piece["container"] is None or (
+                container is not None and piece["container"] is not container
+            ):
+                raise _NestedEditNotApplicable()
+            container = piece["container"]
+        if container is None:
+            raise _NestedEditNotApplicable()
+        container_author = container.getAttribute("w:author")
+        if not container_author or container_author == self.doc.author:
+            raise _NestedEditNotApplicable()
+
+        ins_start = ins_end = None
+        offset = 0
+        for piece in pieces:
+            if piece["container"] is container:
+                if ins_start is None:
+                    ins_start = offset
+                ins_end = offset + len(piece["text"])
+            offset += len(piece["text"])
+        if ins_start is None or start < ins_start or end > ins_end:
+            raise _NestedEditNotApplicable()
+        inner_start, inner_end = start - ins_start, end - ins_start
+
+        prepared = self._prepare_insertion_container(container)
+        if prepared["length"] != (ins_end - ins_start):
+            raise _NestedEditNotApplicable()
+        if any(kind == "shadow" for kind, _ in prepared["trailing"]):
+            raise _NestedEditNotApplicable()
+        shell = prepared["shell"]
+        fragments = []
+        prefix_xml = self._render_insertion_range(prepared, 0, inner_start)
+        if prefix_xml:
+            fragments.append(f"{shell}{prefix_xml}</w:ins>")
+        fragments.append(
+            f"{shell}{self._render_insertion_deletion(prepared, inner_start, inner_end)}</w:ins>"
+        )
+        if new_text:
+            template_run = next(
+                (
+                    run
+                    for run, run_start, run_text in prepared["runs"]
+                    if run_start <= inner_start < run_start + len(run_text)
+                ),
+                prepared["runs"][0][0],
+            )
+            fragments.append(
+                f"<w:ins>{self._build_run_xml(new_text, template_run)}</w:ins>"
+            )
+        suffix_xml = self._render_insertion_range(
+            prepared, inner_end, prepared["length"]
+        )
+        suffix_xml += "".join(xml for _, xml in prepared["trailing"])
+        if suffix_xml:
+            fragments.append(f"{shell}{suffix_xml}</w:ins>")
+
+        nodes = self.doc["word/document.xml"].replace_node(
+            container, "".join(fragments)
+        )
+        anchor = self._find_first_del_node(nodes)
+        if comment_text and anchor is not None:
+            self.add_comment(anchor, comment_text)
+        return {"deleted": anchor, "inserted": nodes, "fallback": "nested_insertion"}
+
+    def _prepare_insertion_container(self, container):
+        """为一个可安全重建的插入容器准备材料（run 文字切片 + 零宽标记相对位置）。"""
+        run_slices = []
+        markup_before_run = {}
+        run_index = 0
+        cursor = 0
+        for child in container.childNodes:
+            if child.nodeType != child.ELEMENT_NODE:
+                continue
+            if child.tagName in _PASSTHROUGH_REVISION_MARKUP:
+                markup_before_run.setdefault(run_index, []).append(
+                    ("markup", child.toxml())
+                )
+                continue
+            if child.tagName == "w:del":
+                # 源文件自带的跨作者嵌套删除：零宽影子结构，重建时须保留在
+                # 原插入容器内、其文档序位置附近（不可进入本轮 w:del 内部）。
+                markup_before_run.setdefault(run_index, []).append(
+                    ("shadow", child.toxml())
+                )
+                continue
+            if child.tagName != "w:r":
+                raise _NestedEditNotApplicable()
+            text = "".join(
+                "".join(
+                    part.data
+                    for part in text_node.childNodes
+                    if part.nodeType == part.TEXT_NODE
+                )
+                for text_node in child.getElementsByTagName("w:t")
+            )
+            if not text:
+                markup_before_run.setdefault(run_index, []).append(("markup", child.toxml()))
+                continue
+            run_slices.append((child, cursor, text))
+            cursor += len(text)
+            run_index += 1
+        if not run_slices:
+            raise _NestedEditNotApplicable()
+        trailing = markup_before_run.pop(len(run_slices), [])
+        return {
+            "container": container,
+            "runs": run_slices,
+            "length": cursor,
+            "markup_before_run": markup_before_run,
+            "trailing": trailing,
+            "emitted": set(),
+            "shell": self._ins_shell_open_tag(container),
+        }
+
+    @staticmethod
+    def _take_pending_markup(prepared, index):
+        pending = prepared["markup_before_run"].get(index)
+        if pending and index not in prepared["emitted"]:
+            prepared["emitted"].add(index)
+            return "".join(xml for _, xml in pending)
+        return ""
+
+    def _render_insertion_range(
+        self, prepared, range_start, range_end
+    ):
+        rendered = []
+        for index, (run, run_start, run_text) in enumerate(prepared["runs"]):
+            run_end = run_start + len(run_text)
+            overlap_start = max(range_start, run_start)
+            overlap_end = min(range_end, run_end)
+            if overlap_start >= overlap_end:
+                continue
+            rendered.append(
+                self._take_pending_markup(prepared, index)
+            )
+            rendered.append(
+                self._build_run_xml(
+                    run_text[overlap_start - run_start : overlap_end - run_start],
+                    run,
+                )
+            )
+        return "".join(rendered)
+
+    def _render_insertion_deletion(self, prepared, range_start, range_end):
+        # Keep historical zero-width deletions at their exact run boundary. A
+        # single outer deletion would swallow them; moving them would change
+        # the result of rejecting both this reviewer and their original author.
+        rendered = []
+        for index, (run, run_start, run_text) in enumerate(prepared["runs"]):
+            start = max(range_start, run_start)
+            end = min(range_end, run_start + len(run_text))
+            if start >= end:
+                continue
+            rendered.append(self._take_pending_markup(prepared, index))
+            rendered.append(
+                f"<w:del>{self._build_run_xml(run_text[start-run_start:end-run_start], run, deleted=True)}</w:del>"
+            )
+        return "".join(rendered)
+
+    def _find_first_del_node(self, nodes):
+        for node in nodes:
+            candidates = ([node] if node.tagName == "w:del" else []) + list(node.getElementsByTagName("w:del"))
+            for candidate in candidates:
+                if candidate.getAttribute("w:author") == self.doc.author:
+                    return candidate
+        return None
+
+    @staticmethod
+    def _iter_elements(node):
+        for child in node.childNodes:
+            if child.nodeType != child.ELEMENT_NODE:
+                continue
+            yield child
+            yield from ContractReviewer._iter_elements(child)
+
+    def _replace_with_nested_edits(self, match, new_text, comment_text=None):
+        """含历史修订段落的改写入口（两种受支持情形）。
+
+        - 目标完全落在单一历史插入（`w:ins`）内：交由 `_replace_within_insertion`
+          生成标准嵌套（前缀/中段/后缀 + 并列替换插入）。
+        - 目标跨越插入与普通文字的边界（含多段插入与普通文字交替、或段落他处有修订
+          而目标位于普通文字）：按上下文分段重建——普通文字段以本轮 `w:del` 删除；
+          插入内部分在保留原作者前缀/后缀片段的同时嵌套本轮 `w:del`；替换文本以本轮
+          `w:ins` 插在最后一段被删内容之后。四种视图均可正确还原。
+        其余情形（同一作者插入、位于历史删除内、容器含批注锚点或结构不可安全重建）
+        抛 `_NestedEditNotApplicable`，由调用方回退原拒绝提示。
+        """
+        paragraph = match["paragraph"]
+        pieces, supported = self._collect_accepted_pieces(paragraph)
+        if not supported:
+            raise _NestedEditNotApplicable()
+        if "".join(piece["text"] for piece in pieces) != match["paragraph_text"]:
+            raise _NestedEditNotApplicable()
+        start, end = match["start"], match["end"]
+        if start >= end:
+            raise _NestedEditNotApplicable()
+
+        offsets = []
+        offset = 0
+        for piece in pieces:
+            piece_start = offset
+            offset += len(piece["text"])
+            offsets.append((piece, piece_start, offset))
+
+        overlap = [
+            (piece, piece_start, piece_end, max(piece_start, start), min(piece_end, end))
+            for piece, piece_start, piece_end in offsets
+            if piece_end > start and piece_start < end
+        ]
+        if not overlap:
+            raise _NestedEditNotApplicable()
+
+        for piece, _, _, _, _ in overlap:
+            container = piece["container"]
+            if container is None:
+                continue
+            author = container.getAttribute("w:author")
+            if not author or author == self.doc.author:
+                raise _NestedEditNotApplicable()
+
+        first_piece = overlap[0][0]
+        if (
+            first_piece["container"] is not None
+            and all(
+                item[0]["container"] is first_piece["container"] for item in overlap
+            )
+            and overlap[0][3] == start
+            and overlap[-1][4] == end
+        ):
+            return self._replace_within_insertion(
+                match, new_text, comment_text=comment_text
+            )
+
+        template_rpr_xml = self._get_run_properties_xml(first_piece["run"])
+
+        # 受影响元素（文档序）：被覆盖的普通 run，与被覆盖的插入容器
+        affected = []
+        seen = set()
+        for node in self._iter_elements(paragraph):
+            tag = node.tagName
+            if tag == "w:ins":
+                hit = any(item[0]["container"] is node for item in overlap)
+            elif tag == "w:r":
+                hit = any(
+                    item[0]["container"] is None and item[0]["run"] is node
+                    for item in overlap
+                )
+            else:
+                continue
+            if hit and id(node) not in seen:
+                seen.add(id(node))
+                affected.append(node)
+        if not affected:
+            raise _NestedEditNotApplicable()
+
+        plans = []
+        for element in affected:
+            if element.tagName == "w:ins":
+                prepared = self._prepare_insertion_container(element)
+                ins_start = ins_end = None
+                for piece, piece_start, piece_end in offsets:
+                    if piece["container"] is element:
+                        if ins_start is None:
+                            ins_start = piece_start
+                        ins_end = piece_end
+                if ins_start is None or prepared["length"] != (ins_end - ins_start):
+                    raise _NestedEditNotApplicable()
+                local_start = max(start, ins_start) - ins_start
+                local_end = min(end, ins_end) - ins_start
+                if local_start >= local_end:
+                    raise _NestedEditNotApplicable()
+                if any(kind == "shadow" for kind, _ in prepared["trailing"]):
+                    raise _NestedEditNotApplicable()
+                shell = prepared["shell"]
+                parts = []
+                prefix_xml = self._render_insertion_range(prepared, 0, local_start)
+                if prefix_xml:
+                    parts.append(f"{shell}{prefix_xml}</w:ins>")
+                parts.append(
+                    f"{shell}{self._render_insertion_deletion(prepared, local_start, local_end)}</w:ins>"
+                )
+                if element is affected[-1] and new_text:
+                    parts.append(
+                        f"<w:ins><w:r>{template_rpr_xml}"
+                        f"{self._build_text_element_xml(new_text)}</w:r></w:ins>"
+                    )
+                suffix_xml = self._render_insertion_range(
+                    prepared, local_end, prepared["length"]
+                )
+                suffix_xml += "".join(xml for _, xml in prepared["trailing"])
+                if suffix_xml:
+                    parts.append(f"{shell}{suffix_xml}</w:ins>")
+                plans.append((element, "".join(parts)))
+            else:
+                run_pieces = [
+                    (piece, piece_start, piece_end)
+                    for piece, piece_start, piece_end in offsets
+                    if piece["container"] is None and piece["run"] is element
+                ]
+                if not run_pieces:
+                    raise _NestedEditNotApplicable()
+                run_text = "".join(piece["text"] for piece, _, _ in run_pieces)
+                run_base = run_pieces[0][1]
+                local_start = max(start, run_base) - run_base
+                local_end = min(end, run_pieces[-1][2]) - run_base
+                if local_start >= local_end:
+                    raise _NestedEditNotApplicable()
+                parts = []
+                prefix_text = run_text[:local_start]
+                if prefix_text:
+                    parts.append(self._build_run_xml(prefix_text, element))
+                parts.append(
+                    f"<w:del>{self._build_run_xml(run_text[local_start:local_end], element, deleted=True)}</w:del>"
+                )
+                if element is affected[-1] and new_text:
+                    parts.append(
+                        f"<w:ins><w:r>{template_rpr_xml}"
+                        f"{self._build_text_element_xml(new_text)}</w:r></w:ins>"
+                    )
+                suffix_text = run_text[local_end:]
+                if suffix_text:
+                    parts.append(self._build_run_xml(suffix_text, element))
+                plans.append((element, "".join(parts)))
+
+        # Parse every fragment before mutation (including replacement text), so
+        # malformed XML in the final fragment cannot leave a partial edit.
+        for _, xml in plans:
+            self.doc["word/document.xml"]._parse_fragment(xml)
+        # 全部片段渲染成功后再统一落笔，避免中途拒绝留下半改文档。
+        inserted_nodes = []
+        first_change_anchor = None
+        for element, xml in plans:
+            nodes = self.doc["word/document.xml"].replace_node(element, xml)
+            del_node = self._find_first_del_node(nodes)
+            if del_node is None:
+                raise _NestedEditNotApplicable()
+            if first_change_anchor is None:
+                first_change_anchor = del_node
+            inserted_nodes.extend(nodes)
+
+        if comment_text and first_change_anchor is not None:
+            self.add_comment(first_change_anchor, comment_text)
+        return {
+            "deleted": first_change_anchor,
+            "inserted": inserted_nodes,
+            "fallback": "nested_span",
+        }
+
     def _replace_within_run(
         self,
         run_node,
@@ -682,6 +1264,7 @@ class ContractReviewer:
         new_text,
         comment_text=None,
     ):
+        self._assert_plain_rewrite(run_node)
         if self._has_tracked_changes(run_node):
             raise ValueError("run already contains tracked changes")
 
@@ -766,11 +1349,17 @@ class ContractReviewer:
 
         match = matches[index - 1]
         paragraph = match["paragraph"]
+        self._assert_plain_rewrite(paragraph)
         if self._has_tracked_changes(paragraph):
-            raise ValueError(
-                "目标段落含既有修订；请使用 --existing-revisions accept-existing "
-                "先固定基线，或仅添加批注。为避免嵌套/覆盖历史修订，本次未改写。"
-            )
+            try:
+                return self._replace_with_nested_edits(
+                    match, new_text, comment_text=comment_text
+                )
+            except _NestedEditNotApplicable:
+                raise ValueError(
+                    "目标段落含修订，可能来自本轮第一次改写；同一段落的多处修改须合并为一次。"
+                    "若确属输入稿的历史修订，可先 accept-existing 固定基线；也可仅添加批注。"
+                ) from None
         paragraph_text = match["paragraph_text"]
         start = match["start"]
         end = match["end"]
@@ -820,16 +1409,24 @@ class ContractReviewer:
 
         match = matches[index - 1]
         paragraph = match["paragraph"]
+        self._assert_plain_rewrite(paragraph)
         if self._has_tracked_changes(paragraph):
-            raise ValueError(
-                "目标段落含既有修订；请使用 --existing-revisions accept-existing "
-                "先固定基线，或仅添加批注。为避免嵌套/覆盖历史修订，本次未修改。"
-            )
+            try:
+                return self._replace_with_nested_edits(
+                    match, new_text, comment_text=comment_text
+                )
+            except _NestedEditNotApplicable:
+                raise ValueError(
+                    "目标段落含修订，可能来自本轮第一次改写；同一段落的多处修改须合并为一次。"
+                    "若确属输入稿的历史修订，可先 accept-existing 固定基线；也可仅添加批注。"
+                ) from None
 
         paragraph_text = match["paragraph_text"]
         start = match["start"]
         end = match["end"]
-        revision_segments = self._build_revision_segments(old_text, new_text)
+        # Match normalization locates the span; the deletion must retain the
+        # exact source slice, including NBSP and repeated spaces.
+        revision_segments = self._build_revision_segments(paragraph_text[start:end], new_text)
         template_run = self._get_first_text_run(paragraph)
         replacement_xml = self._build_fragment_paragraph_xml(
             paragraph,

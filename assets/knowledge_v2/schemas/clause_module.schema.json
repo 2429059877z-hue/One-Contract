@@ -141,6 +141,10 @@
       "minLength": 1,
       "type": "string"
     },
+    "review_checks_derivation": {
+      "description": "记录既有检查点如何整理形成；保留来源说明，不代表新增法律结论或已完成审核。",
+      "type": "string"
+    },
     "review_checks": {
       "items": {"type": "string"},
       "type": "array"

@@ -312,7 +312,10 @@ def normalize_party_role(value: Any) -> str:
     raw = str(value or "").strip()
     if not raw:
         return ""
-    return PARTY_ROLE_ALIASES.get(raw.lower()) or PARTY_ROLE_ALIASES.get(raw) or ""
+    resolved = PARTY_ROLE_ALIASES.get(raw.lower()) or PARTY_ROLE_ALIASES.get(raw)
+    if not resolved:
+        raise ValueError(f"party_role 审查立场无法识别：{raw}；请使用明确角色枚举，描述放入交易概况。")
+    return resolved
 
 
 def normalize_review_intensity(value: Any) -> str:
@@ -551,19 +554,19 @@ def resolve_reviewer_profile(
     profile = load_profile() if profile_exists else load_profile_template()
     profile_confirmed = bool(profile.get("confirmed"))
     resolved_author = str(author or profile.get("author") or "").strip()
-    resolved_organization = str(organization or profile.get("organization") or "").strip()
+    resolved_organization = str(organization if organization is not None else profile.get("organization") or "").strip()
     resolved_department = str(department or profile.get("department") or "").strip()
     explicit_identity_provided = author is not None or organization is not None
     prompted_for_profile = False
 
-    if not resolved_author or not resolved_organization:
+    if not resolved_author:
         if _should_prompt_for_profile():
             _print_profile_notice()
             if not resolved_author:
                 resolved_author = _prompt_required_field("首次使用，请输入审查人姓名：")
             if not resolved_organization:
-                resolved_organization = _prompt_required_field(
-                    "请输入律所名称或公司名称："
+                resolved_organization = _prompt_optional_field(
+                    "请输入律所名称或公司名称（可留空）："
                 )
             if not resolved_department:
                 resolved_department = _prompt_optional_field(
@@ -573,15 +576,15 @@ def resolve_reviewer_profile(
         else:
             raise ValueError(
                 "未检测到完整的审查人配置。请先填写 "
-                f"{PROFILE_PATH}，至少提供 author 和 organization，"
-                "或在执行时显式传入 --author 与 --organization。"
+                f"{PROFILE_PATH}，至少提供 author（organization 可留空），"
+                "或在执行时显式传入 --author。"
             )
     elif _should_prompt_for_profile() and not profile_confirmed and not explicit_identity_provided:
         _print_profile_confirmation_notice()
         resolved_author = _prompt_required_field_with_default(
             "请确认审查人姓名", resolved_author
         )
-        resolved_organization = _prompt_required_field_with_default(
+        resolved_organization = _prompt_optional_field_with_default(
             "请确认律所名称或公司名称", resolved_organization
         )
         if department is None:

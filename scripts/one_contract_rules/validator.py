@@ -17,7 +17,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Mapping, Optional, Sequence
 
-from . import registry
+from . import clause_groups, registry
 
 __all__ = [
     "ValidationError",
@@ -165,6 +165,13 @@ def _validate_scope(scope: Mapping[str, Any]) -> None:
     if not isinstance(scope, Mapping):
         raise ValidationError("scope 必须是对象。", field_path="scope")
 
+    # Keep historical storage schemas readable; newly saved/published rules must
+    # select an actual topic instead of silently treating free text as a scope.
+    try:
+        clause_groups.validate_clause_groups(scope.get("clause_groups", []), field="scope.clause_groups")
+    except ValueError as exc:
+        raise ValidationError(str(exc), field_path="scope.clause_groups") from exc
+
     local_keys = (
         "domain_codes", "type_ids", "roles", "scene_tags",
         "contract_stages", "clause_groups",
@@ -190,6 +197,8 @@ def _validate_effect(effect: Any) -> None:
     for key in ("action", "target_key"):
         if not effect.get(key):
             raise ValidationError(f"effect 缺少 {key}。", field_path=f"effect.{key}")
+    if isinstance(effect.get("value"), str) and not effect["value"].strip():
+        raise ValidationError("处理要求不能为空；尚未写完时请先保存填写进度。", field_path="effect.value")
 
 
 def describe_scope_problem(scope: Any) -> Optional["ValidationError"]:
@@ -219,6 +228,8 @@ def describe_scope_problem(scope: Any) -> Optional["ValidationError"]:
 
 def validate_rule_business(payload: Mapping[str, Any]) -> None:
     """跨字段业务规则。结构校验通过后调用。"""
+    if isinstance(payload.get("title"), str) and not payload["title"].strip():
+        raise ValidationError("规则名称不能为空；尚未写完时请先保存填写进度。", field_path="title")
     _validate_scope(payload.get("scope") or {})
     _validate_effect(payload.get("effect"))
 
@@ -236,6 +247,18 @@ def validate_rule_business(payload: Mapping[str, Any]) -> None:
         raise ValidationError(
             "condition.mode 只允许 all 或 any。", field_path="condition.mode"
         )
+    assessment = condition.get("assessment_mode", "structured")
+    if assessment not in ("structured", "semantic"):
+        raise ValidationError("条件判断方式只能为结构化条件或由 AI 结合合同全文判断。",
+                              field_path="condition.assessment_mode")
+    if assessment == "semantic":
+        note = condition.get("natural_language_note")
+        if not isinstance(note, str) or not note.strip():
+            raise ValidationError("由 AI 结合合同全文判断时，须完整填写自然语言适用条件。",
+                                  field_path="condition.natural_language_note")
+        if condition.get("clauses") != []:
+            raise ValidationError("自然语言条件不能同时夹带结构化条件条目；请核对原内容后明确选择。",
+                                  field_path="condition.clauses")
 
 
 def ensure_single_active_version(rules: Sequence[Mapping[str, Any]]) -> None:

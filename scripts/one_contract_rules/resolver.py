@@ -10,7 +10,8 @@ ADR-022（公共升级默认暂停客户 overlay）、ADR-028（降级边界）�
 - **未选择客户**时结果必须与纯公共选择器一致（RES-024 / INT-008）；
 - 一旦**明确选择客户**，snapshot 缺失、损坏或 public fingerprint 不兼容时
   **必须 fail closed**，不得静默退回公共规则（DATA-006 / ADR-028）；
-- 冲突不得静默择一，一律输出冲突集合并要求人工确认（RS-HC-007）。
+- 客户业务适用性和商业冲突交由持有合同全文的 AI 审查，须在真实 Word 批注中
+  说明判断、事实不足或商业选择；不得因此伪造人工确认或绕过法律硬边界。
 """
 from __future__ import annotations
 
@@ -18,16 +19,71 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
-from . import guard_catalog, models, validator
+from . import clause_groups, guard_catalog, models, validator
 
 __all__ = [
     "Resolver",
     "ResolverError",
+    "is_application_review_notice",
+    "resolution_has_blockers",
 ]
 
 #: 优先级排序：按性质，不按数值（ADR-009）
 _CLASS_ORDER = tuple(models.NORMATIVE_CLASSES)
 _LAYER_ORDER = ("global", "domain", "type", "client", "case_instruction")
+_APPLICATION_REVIEW_KINDS = frozenset({
+    "scope_mismatch", "scope_undetermined", "condition_unmatched", "condition_undetermined",
+    "semantic_condition", "rule_confirmation", "explicit_conflict", "value_divergence",
+    "authorization_missing", "case_authorized_override",
+})
+
+
+def is_application_review_notice(conflict: Any) -> bool:
+    """Recognise only the controlled client-business review contract.
+
+    An arbitrary ``blocking: false`` on a guard, snapshot failure or public
+    conflict is never authority to continue.
+    """
+    if not isinstance(conflict, Mapping):
+        return False
+    rule_ids = conflict.get("rule_ids")
+    return bool(
+        conflict.get("code") == "CLIENT_APPLICATION_REVIEW"
+        and conflict.get("kind") in _APPLICATION_REVIEW_KINDS
+        and conflict.get("source_layer") == "client"
+        and conflict.get("blocking") is False
+        and conflict.get("requires_word_comment") is True
+        and conflict.get("assessment_basis") == "full_contract"
+        and isinstance(rule_ids, (list, tuple)) and rule_ids
+        and all(isinstance(rule_id, str) and rule_id.strip() for rule_id in rule_ids)
+    )
+
+
+def resolution_has_blockers(result: Any) -> bool:
+    """Keep storage, identity, public and legal gates distinct from AI review."""
+    if isinstance(result, models.EffectiveRuleSet):
+        result = result.to_dict()
+    if not isinstance(result, Mapping):
+        return True
+    if result.get("status") == "blocked":
+        return True
+    if "effective_rule_set" in result and resolution_has_blockers(result["effective_rule_set"]):
+        return True
+    conflicts = result.get("rule_conflicts", ())
+    if not isinstance(conflicts, (list, tuple)):
+        return True
+    return bool(result.get("human_confirmation_required") or any(
+        not is_application_review_notice(item) for item in conflicts
+    ))
+
+
+def _application_review(kind: str, rule_ids: Sequence[str], detail: str, **extra: Any) -> Dict[str, Any]:
+    if kind not in _APPLICATION_REVIEW_KINDS:
+        raise ValueError("Unknown client application review kind: " + kind)
+    return {**extra, "code": "CLIENT_APPLICATION_REVIEW", "kind": kind,
+            "source_layer": "client", "rule_ids": list(rule_ids), "blocking": False,
+            "assessment_basis": "full_contract", "requires_word_comment": True,
+            "detail": detail}
 
 
 class ResolverError(Exception):
@@ -76,6 +132,10 @@ class Resolver:
         public_fingerprint_override: Optional[str] = None,
     ) -> models.EffectiveRuleSet:
         ctx = dict(context)
+        try:
+            clause_groups.validate_review_scope(ctx)
+        except ValueError as exc:
+            raise ResolverError(str(exc), code="INVALID_SCHEMA") from exc
         profile_id = ctx.get("client_profile_id")
         snapshot_id = ctx.get("client_policy_snapshot_id")
 
@@ -175,12 +235,31 @@ class Resolver:
                     "rule_id": c.rule_id,
                     "reason": f"dependencies_missing: {sorted(set(c.dependencies) & set(dependency.missing))}",
                 })
+            if dropped and ctx.get("review_scope") == "clause_groups":
+                # A narrow review may exclude a required companion topic. Do
+                # not present the remaining subset as a complete clean review.
+                human = True
+                conflicts.append({
+                    "code": "DEPENDENCY_UNSATISFIED", "kind": "review_scope_dependency_missing",
+                    "rule_ids": [c.rule_id for c in dropped],
+                    "missing_rule_ids": sorted(dependency.missing),
+                    "detail": "指定条款类别审查所需的前置规则不可用；请核对依赖并明确扩大审查范围或修正规则。",
+                })
 
         client_rule_payloads = [c.payload for c in candidates if c.source_layer == "client"]
         detected = guard_catalog.detect_conflicts(client_rule_payloads)
         if detected:
-            conflicts.extend(dict(c) for c in detected)
-            human = True
+            for conflict in detected:
+                # These are client-to-client business choices only. Hard guards
+                # have already run over every potential client rule above.
+                ids = list(conflict.get("rule_ids") or conflict.get("pair") or ())
+                conflicts.append(_application_review(
+                    str(conflict["kind"]), ids,
+                    "客户规则存在不同商业口径；请结合合同全文判断可同时落实的部分，"
+                    "对不能同时满足的选择在 Word 批注中说明，不伪造客户决定，继续其他修订。",
+                    target_key=conflict.get("target_key"),
+                    original_conflict=dict(conflict),
+                ))
 
         # ---- 组装 -------------------------------------------------------- #
         # 结果中**不含客户层规则**时，必须保持公共快照自身的发射顺序，
@@ -332,6 +411,7 @@ class Resolver:
         undetermined: List[Dict[str, Any]] = []
         human = False
         now = self._parse_time(ctx.get("now")) or datetime.now(timezone.utc)
+        condition_catalog = guard_catalog.build_guard_catalog(self._public)
 
         for rule in rules:
             rule_id = str(rule.get("client_rule_id"))
@@ -353,22 +433,53 @@ class Resolver:
                 continue
 
             mismatch_reason, undetermined_reason = self._scope_mismatch(rule, ctx)
-            if mismatch_reason:
+            # Explicitly selected review boundaries and invalid catalog values
+            # remain gates. Business dimensions are hints for full-text review.
+            if mismatch_reason and mismatch_reason.startswith("scope_mismatch[clause_groups]"):
                 excluded.append({"rule_id": rule_id, "reason": mismatch_reason})
                 continue
-            if undetermined_reason:
-                # 缺维度 ⇒ 未确定：排除但**必须显式转人工**，不得静默丢弃
-                # （第三轮独立验证确认的 R0）。
+            if undetermined_reason and undetermined_reason.startswith("scope_undetermined[clause_groups]"):
                 human = True
                 excluded.append({"rule_id": rule_id, "reason": undetermined_reason})
-                undetermined.append({
-                    "code": "HUMAN_CONFIRMATION_REQUIRED",
-                    "kind": "scope_undetermined",
-                    "rule_ids": [rule_id],
-                    "detail": undetermined_reason,
-                })
+                undetermined.append({"code": "INVALID_SCHEMA", "kind": "invalid_client_scope",
+                                     "rule_ids": [rule_id], "detail": undetermined_reason})
                 continue
+            scope_reason = mismatch_reason or undetermined_reason
+            if scope_reason:
+                undetermined.append(_application_review(
+                    "scope_mismatch" if mismatch_reason else "scope_undetermined", [rule_id],
+                    "结构化适用范围预筛仅供参考；请结合合同全文判断实际适用性，"
+                    "并在 Word 批注中说明判断与事实不足。", prefilter_reason=scope_reason,
+                ))
 
+            condition_state, condition_issues = guard_catalog.evaluate_client_condition(
+                condition_catalog, rule, ctx.get("facts") or {}
+            )
+            if condition_issues:
+                # An invalid rule/fact declaration is not a semantic ambiguity.
+                # It must be repaired, not presented as safe AI discretion.
+                human = True
+                excluded.append({"rule_id": rule_id, "reason": "condition_invalid: 客户条件或事实结构无效"})
+                undetermined.append({"code": "INVALID_SCHEMA", "kind": "invalid_client_condition",
+                                     "rule_ids": [rule_id], "issues": condition_issues,
+                                     "detail": "客户条件或事实声明未通过结构校验，须修正后使用。"})
+                continue
+            if condition_state != "matched":
+                kind = {"semantic": "semantic_condition", "unknown": "condition_undetermined",
+                        "unmatched": "condition_unmatched"}[condition_state]
+                undetermined.append(_application_review(
+                    kind, [rule_id], "请依据合同全文评估客户条件；结构化预筛结果不等于最终适用结论。"
+                    "事实不足或涉及商业选择时保留明确 Word 批注，继续其余可落实修订。",
+                    prefilter_state=condition_state,
+                    natural_language_note=(rule.get("condition") or {}).get("natural_language_note", ""),
+                ))
+            if (rule.get("condition") or {}).get("human_confirmation_required"):
+                undetermined.append(_application_review(
+                    "rule_confirmation", [rule_id],
+                    "旧规则的人工确认标记作为审查提示保留，不作为开始审查或交付的前置。"
+                    "AI 应核对全文，并在 Word 批注中说明判断、待核实事实或商业选择。",
+                    legacy_human_confirmation_required=True,
+                ))
             payload = dict(rule)
             candidates.append(_Candidate(
                 rule_id=rule_id,
@@ -381,7 +492,7 @@ class Resolver:
                 content_hash=str(rule.get("content_sha256") or ""),
                 payload=payload,
                 matched_scope=dict(rule.get("scope") or {}),
-                inclusion_reason="客户 active 规则且 scope 匹配本案上下文",
+                inclusion_reason=self._client_inclusion_reason(rule, ctx, condition_state, scope_reason),
                 dependencies=tuple(rule.get("depends_on") or ()),
             ))
 
@@ -403,6 +514,30 @@ class Resolver:
         doc = publisher.Publisher(profile_dir).load_snapshot(snapshot["snapshot_id"])
         return tuple(doc["rules_doc"].get("rules", ()))
 
+    @staticmethod
+    def _client_inclusion_reason(rule: Mapping[str, Any], ctx: Mapping[str, Any],
+                                 condition_state: str = "matched", scope_reason: Optional[str] = None) -> str:
+        groups = (rule.get("scope") or {}).get("clause_groups") or []
+        reason = "已启用的客户规则进入 AI 合同全文审查集合，不表示已决定采用"
+        if scope_reason:
+            reason += "；范围预筛：" + scope_reason
+        if condition_state == "semantic":
+            reason += "；自然语言条件须结合合同全文判断，空结构化子句不表示无条件适用"
+        else:
+            reason += "；结构化条件预筛=" + condition_state
+        if groups:
+            labels = "、".join(clause_groups.CLAUSE_GROUP_LABELS[group] for group in groups)
+            reason += "；仅作用于“" + labels + "”条款，实际落实须核对条款归属，缺失条款可补写"
+            if ctx.get("review_scope", "whole_contract") == "whole_contract":
+                reason += "；整合同审查保留此要求，不据现有章节是否存在排除"
+            else:
+                reason += "；与本次明确选择的条款类别有交集，实际处理仅限交集"
+        else:
+            reason += "；规则未限定条款类别"
+            if ctx.get("review_scope") == "clause_groups":
+                reason += "，实际处理仍限于本次明确选择的类别"
+        return reason
+
     def _scope_mismatch(
         self, rule: Mapping[str, Any], ctx: Mapping[str, Any]
     ) -> Tuple[Optional[str], Optional[str]]:
@@ -413,12 +548,26 @@ class Resolver:
         `None not in allowed` 成立 → 规则被静默丢弃，且无冲突、无转人工，
         结果看起来像一份干净的纯公共结果（第三轮独立验证确认的 R0）。
 
-        缺维度按**未确定**处理（ADR 提案 Q3(b)）：既不静默应用，也不静默丢弃，
-        而是排除并显式要求人工确认；确定的取值不匹配才是安静的合法排除。
+        缺维度与业务不匹配均保留为 AI 全文审查的预筛信息，不能静默当作
+        已适用或直接丢弃；明确限定的审查类别仍是本次任务边界。
         """
         scope = rule.get("scope") or {}
+        try:
+            allowed_groups = clause_groups.validate_clause_groups(
+                scope.get("clause_groups", []), field="scope.clause_groups")
+            mode, selected_groups = clause_groups.validate_review_scope(ctx)
+        except ValueError as exc:
+            return None, "scope_undetermined[clause_groups]: " + str(exc)
+        if scope.get("applies_to_all") and allowed_groups:
+            return None, "scope_undetermined[clause_groups]: 全部适用与条款类别限制矛盾，须先修正规则"
         if scope.get("applies_to_all"):
             return None, None
+
+        # Check the user's explicit task boundary before business dimensions;
+        # a role mismatch must not hide a disjoint selected review scope.
+        if mode == "clause_groups" and allowed_groups and not set(allowed_groups).intersection(selected_groups):
+            return ("scope_mismatch[clause_groups]: 规则限定 " + str(sorted(allowed_groups))
+                    + "，本次明确审查类别 " + str(sorted(selected_groups)) + " 与其无交集", None)
 
         undetermined: List[str] = []
         checks = (
@@ -450,7 +599,7 @@ class Resolver:
         if undetermined:
             return None, (
                 "scope_undetermined: 上下文未提供 " + "、".join(undetermined)
-                + "；未确定不得当作不匹配，故本规则不执行并转人工确认"
+                + "；留待 AI 依据合同全文判断，不预先视为适用或不适用"
             )
         return None, None
 
@@ -466,7 +615,8 @@ class Resolver:
         时间、理由与被覆盖规则 ID（RES-018）。不 Physical 删除候选，
         以便 trace 与审计都能看到"它被覆盖了"这一事实。
 
-        无有效授权：**不静默覆盖**，原样返回并要求人工确认（RES-017）。
+        无有效授权：不静默覆盖。纯客户商业选择交 AI 留批注；跨客户、公共规则
+        或未知目标的授权请求保留阻断，不能借业务提示绕过身份和法律边界。
         """
         authorizations = list(ctx.get("case_authorizations") or ())
         instruction = ctx.get("case_instruction") or {}
@@ -521,18 +671,28 @@ class Resolver:
                               "或由律师另行确认。不静默生效。",
                 })
                 return candidates, conflicts, True
-            conflicts.append({
+            conflict = {
                 "code": "HUMAN_CONFIRMATION_REQUIRED",
                 "kind": "authorization_missing",
                 "overridden_rule_ids": sorted(target_ids),
                 "detail": "本案指令要求突破客户强制政策，但缺少有效授权；不静默覆盖。",
-            })
+            }
+            known_client_ids = {c.rule_id for c in candidates if c.source_layer == "client"}
+            if target_ids.issubset(known_client_ids):
+                conflicts.append(_application_review(
+                    "authorization_missing", sorted(target_ids),
+                    "本案指令与客户规则存在商业选择且未见有效授权。保留原规则，不声称例外已获授权；"
+                    "由 AI 结合合同全文评估，在 Word 批注中明确待客户决定的选择并继续其他修订。",
+                    overridden_rule_ids=[], requested_override_rule_ids=sorted(target_ids),
+                ))
+                return candidates, conflicts, False
+            conflicts.append(conflict)
             return candidates, conflicts, True
 
         out: List[_Candidate] = []
         for candidate in candidates:
             if candidate.rule_id in target_ids:
-                conflicts.append({
+                conflict = {
                     "code": "HUMAN_CONFIRMATION_REQUIRED",
                     "kind": "case_authorized_override",
                     "overridden_rule_ids": [candidate.rule_id],
@@ -545,7 +705,14 @@ class Resolver:
                     "reason": valid_auth.get("reason"),
                     "authentication_level": valid_auth.get("authentication_level"),
                     "evidence_refs": list(valid_auth.get("evidence_refs") or ()),
-                })
+                }
+                if candidate.source_layer == "client":
+                    conflict = _application_review(
+                        "case_authorized_override", [candidate.rule_id],
+                        "已记录本案客户授权例外；仍须依据合同全文评估如何落实，并在 Word 批注中说明。",
+                        **{k: v for k, v in conflict.items() if k not in ("code", "kind")},
+                    )
+                conflicts.append(conflict)
                 out.append(_Candidate(
                     rule_id=candidate.rule_id, version=candidate.version,
                     source_layer=candidate.source_layer,

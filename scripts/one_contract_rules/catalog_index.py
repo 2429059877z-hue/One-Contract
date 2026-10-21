@@ -155,7 +155,9 @@ class CatalogIndex:
         return None
 
     def known_ids(self) -> frozenset:
-        ids = set()
+        # Classification nodes are real reference targets, not missing rules.
+        ids = set(self.type_to_domain)
+        ids.update(d.get("code") for d in self.taxonomy.get("domains", ()) if d.get("code"))
         for item in self.all_nodes():
             for key in self._ID_KEYS:
                 if item.get(key):

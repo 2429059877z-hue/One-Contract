@@ -47,6 +47,11 @@ def route(
     taxonomy: Mapping[str, Any],
 ) -> dict[str, Any]:
     scored: list[tuple[int, Mapping[str, Any], list[str], bool]] = []
+    candidate_matches: list[tuple[int, Mapping[str, Any], list[str]]] = []
+    catalog_status = {
+        item["type_id"]: item.get("approval_status")
+        for item in taxonomy.get("catalog_types", [])
+    }
     route_catalog = taxonomy.get("routable_types") or taxonomy.get("pilot_types") or []
     for contract_type in route_catalog:
         score = 0
@@ -75,11 +80,28 @@ def route(
                 score += 1
                 evidence.append("transaction_structure_alignment")
         if title_hit and score >= 5:
-            scored.append((score, contract_type, evidence, structure_aligned))
+            type_status = catalog_status.get(contract_type["type_id"], "active")
+            if contract_type.get("runtime_status", "active") == "active" and type_status == "active":
+                scored.append((score, contract_type, evidence, structure_aligned))
+            else:
+                # A draft matcher can identify the domain gap without promoting
+                # its unapproved type or returning candidate doctrine content.
+                candidate_matches.append((score, contract_type, evidence))
     scored.sort(key=lambda item: (-item[0], item[1]["code"]))
+    candidate_matches.sort(key=lambda item: (-item[0], item[1]["code"]))
 
     if not scored:
         domain_code = taxonomy["legacy_broad_type_domains"].get(legacy_type, "EC-10")
+        fallback_evidence = [f"legacy_broad_type:{legacy_type or 'unknown'}", "no_routable_title_match"]
+        if candidate_matches:
+            top_score, candidate, candidate_evidence = candidate_matches[0]
+            candidate_domains = {
+                item[1]["domain_code"] for item in candidate_matches if item[0] == top_score
+            }
+            if len(candidate_domains) == 1:
+                domain_code = candidate["domain_code"]
+            fallback_evidence += candidate_evidence
+            fallback_evidence.append(f"candidate_type_unavailable:{candidate['type_id']}")
         fallback = next(item for item in taxonomy["domain_fallbacks"] if item["domain_code"] == domain_code)
         return {
             "primary_type_id": fallback["type_id"],
@@ -90,7 +112,7 @@ def route(
             "our_role": our_role,
             "scene_tags": sorted(set([domain_code, *scene_tags])),
             "classification_status": "low",
-            "evidence": [f"legacy_broad_type:{legacy_type or 'unknown'}", "no_routable_title_match"],
+            "evidence": fallback_evidence,
             "required_doctrines": [],
             "required_modules": [],
             "human_confirmation_required": True,

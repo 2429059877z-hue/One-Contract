@@ -2109,6 +2109,26 @@
       "type_code": "EC-10-021",
       "type_id": "type-catalog-ba9f4e4dffd05ca290ea",
       "type_name": "项目竣工结算确认书"
+    },
+    {
+      "type_id": "type-commercial-confidentiality",
+      "type_code": "EC-05-021",
+      "type_name": "商业保密协议",
+      "domain_code": "EC-05",
+      "domain_name": "技术、数据与知识产权",
+      "approval_status": "candidate",
+      "activation_status": "inactive",
+      "build_scope": "review_extension_20261019"
+    },
+    {
+      "type_id": "type-professional-service-mandate",
+      "type_code": "EC-04-046",
+      "type_name": "专业服务委托协议",
+      "domain_code": "EC-04",
+      "domain_name": "服务、委托与专业支持",
+      "approval_status": "candidate",
+      "activation_status": "inactive",
+      "build_scope": "review_extension_20261019"
     }
   ],
   "domain_fallbacks": [
@@ -3200,11 +3220,11 @@
         "doctrine-equity-transfer-closing"
       ],
       "required_modules": [
-        "mod-equity-object",
-        "mod-price-payment",
+        "mod-equity-transfer-object",
+        "mod-equity-transfer-consideration",
         "mod-conditions-closing",
         "mod-representations-indemnity",
-        "mod-governance-transition"
+        "mod-equity-transfer-governance-transition"
       ],
       "runtime_status": "active",
       "title_patterns": [
@@ -4098,7 +4118,14 @@
       "runtime_status": "active",
       "title_patterns": [
         "项目居间",
-        "居间服务协议"
+        "居间服务协议",
+        "猎头",
+        "人才寻访"
+      ],
+      "negative_patterns": [
+        "劳动合同",
+        "劳务派遣",
+        "员工.{0,5}保密"
       ]
     },
     {
@@ -5120,6 +5147,71 @@
         "广告制作",
         "广告投放",
         "广告服务"
+      ]
+    },
+    {
+      "type_id": "type-commercial-confidentiality",
+      "code": "EC-05-021",
+      "domain_code": "EC-05",
+      "name": "商业保密协议",
+      "broad_types": [
+        "confidentiality_data"
+      ],
+      "required_doctrines": [
+        "doctrine-commercial-confidentiality"
+      ],
+      "required_modules": [
+        "mod-commercial-confidential-information",
+        "mod-commercial-confidentiality-remedies",
+        "mod-commercial-return-destruction"
+      ],
+      "runtime_status": "candidate",
+      "title_patterns": [
+        "(?:商业|商务|合作|双向|双方|互惠|单向).{0,8}保密(?:协议|合同)",
+        "保密(?:协议|合同)",
+        "(?<![A-Za-z])NDA(?![A-Za-z])",
+        "non[-\\s]?disclosure\\s+agreement",
+        "confidentiality\\s+agreement"
+      ],
+      "negative_patterns": [
+        "员工|劳动|任职|雇佣|离职|竞业|employment|employee"
+      ]
+    },
+    {
+      "type_id": "type-professional-service-mandate",
+      "code": "EC-04-046",
+      "domain_code": "EC-04",
+      "name": "专业服务委托协议",
+      "broad_types": [
+        "agency_entrustment",
+        "service_consulting"
+      ],
+      "required_doctrines": [
+        "doctrine-professional-service-mandate"
+      ],
+      "required_modules": [
+        "mod-mandate-service-scope",
+        "mod-mandate-deliverables-acceptance",
+        "mod-mandate-fees-expenses",
+        "mod-mandate-change-control",
+        "mod-mandate-breach-termination"
+      ],
+      "runtime_status": "candidate",
+      "title_patterns": [
+        "专业服务.{0,6}(?:委托|代理)",
+        "(?:委托|代理).{0,6}专业服务",
+        "专利.{0,6}(?:代理|委托)",
+        "(?:会计|审计|税务).{0,8}(?:服务|代理|委托|业务约定)",
+        "代理记账",
+        "(?:检测|检验|认证).{0,6}(?:服务|委托)",
+        "委托.{0,6}(?:检测|检验|认证)"
+      ],
+      "negative_patterns": [
+        "技术咨询|技术开发|技术委托开发|委托开发",
+        "律师|法律顾问|诉讼代理|招标代理",
+        "猎头|人才寻访|居间",
+        "专利.{0,6}(?:转让|许可)",
+        "员工|劳动|劳务派遣"
       ]
     }
   ],

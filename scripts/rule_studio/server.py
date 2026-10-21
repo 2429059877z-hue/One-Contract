@@ -27,6 +27,9 @@ from one_contract_rules import (
 )
 
 from . import api, security
+from .task_repository import TaskRepository
+from .authoring_workspace import AuthoringWorkspace
+from .authoring_requests import AuthoringRequests
 
 __all__ = ["RuleStudioServer"]
 
@@ -73,15 +76,24 @@ class _Handler(BaseHTTPRequestHandler):
                    "application/json; charset=utf-8")
 
     def _read_body(self) -> Optional[Mapping[str, Any]]:
-        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError as exc:
+            raise ValueError("请求长度格式错误。") from exc
+        upload = self.path.startswith("/api/v1/tasks") or self.path == "/api/v1/workspace/restore"
+        limit = 42 * 1024 * 1024 if upload else 4 * 1024 * 1024
+        if length < 0 or length > limit:
+            raise ValueError("请求内容过大或长度无效；请将测试样例分批提交。")
         if length <= 0:
             return None
         raw = self.rfile.read(length)
         try:
             parsed = json.loads(raw.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            return None
-        return parsed if isinstance(parsed, Mapping) else None
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise ValueError("请求内容不是有效的 UTF-8 JSON。") from exc
+        if not isinstance(parsed, Mapping):
+            raise ValueError("请求内容必须是 JSON 对象。")
+        return parsed
 
     # ---- 校验 ---------------------------------------------------------- #
     #: 无需会话凭据的路径：静态资源与引导端点。
@@ -89,6 +101,11 @@ class _Handler(BaseHTTPRequestHandler):
     #: 这两类路径**仍强制校验 Host 与 Origin**——足以阻断 DNS rebinding
     #: 与跨站请求；且它们不返回任何私有客户数据（仅凭据本身与静态文件）。
     _TOKEN_EXEMPT = ("/", "/index.html", "/app.js", "/styles.css",
+                     "/knowledge-workbench.js", "/knowledge-workbench.css",
+                     "/knowledge-map.js", "/knowledge-map.css",
+                     "/authoring-workbench.js", "/authoring-workbench.css",
+                     "/task-workbench.js", "/task-workbench.css",
+                     "/ai-authoring.js", "/ai-authoring.css",
                      "/api/v1/session/bootstrap")
 
     def _authorize(self, method: str, path: str) -> Optional[Tuple[int, Dict[str, Any]]]:
@@ -150,6 +167,9 @@ class _Handler(BaseHTTPRequestHandler):
     def do_PUT(self) -> None:  # noqa: N802
         self._handle("PUT")
 
+    def do_PATCH(self) -> None:  # noqa: N802
+        self._handle("PATCH")
+
     def do_DELETE(self) -> None:  # noqa: N802
         self._handle("DELETE")
 
@@ -173,11 +193,19 @@ class _Handler(BaseHTTPRequestHandler):
                                        "field_path": None, "remediation": None}})
             return
 
+        try:
+            body = self._read_body()
+        except ValueError as exc:
+            self.close_connection = True
+            response = api._envelope(os.urandom(8).hex(), False, None,
+                                     api.ApiError(400, "INVALID_SCHEMA", field_path="body", detail=str(exc)))
+            self._json(response.status, response.payload)
+            return
         request = api.Request(
             method=method,
             path=path,
             query={k: v[0] for k, v in parse_qs(parsed.query).items()},
-            body=self._read_body(),
+            body=body,
         )
         response = api.dispatch(request, services=self.studio.services)
         self._json(response.status, response.payload)
@@ -209,9 +237,12 @@ class RuleStudioServer:
         data_root: Path,
         open_browser: bool = False,
         idle_timeout_seconds: Optional[float] = None,
+        read_only: bool = False,
     ) -> None:
         self.data_root = Path(data_root).expanduser().resolve()
-        self.data_root.mkdir(parents=True, exist_ok=True)
+        self.read_only = bool(read_only)
+        if not self.read_only:
+            self.data_root.mkdir(parents=True, exist_ok=True)
         self._open_browser = open_browser
         self._httpd: Optional[_Server] = None
         self._thread: Optional[threading.Thread] = None
@@ -227,14 +258,18 @@ class RuleStudioServer:
         self.exit_reason: Optional[str] = None
 
         self._public = public_repository.PublicRepository()
-        self._clients = client_repository.ClientRepository(data_root=self.data_root)
+        self._clients = client_repository.ClientRepository(data_root=self.data_root, read_only=self.read_only)
         self._resolver = resolver.Resolver(
             public_repository=self._public, client_repository=self._clients
         )
         # W5：公共提案仓库。走独立工作区，**不触碰公共资产、不进 runtime**。
         self._proposals = proposal_repository.ProposalRepository(
-            data_root=self.data_root, public_repository=self._public
+            data_root=self.data_root, public_repository=self._public, read_only=self.read_only
         )
+        self._authoring_workspace = AuthoringWorkspace(self.data_root, read_only=self.read_only)
+        self._authoring_requests = AuthoringRequests(self.data_root, self._authoring_workspace, self._clients,
+                                                     self._proposals, self._public, read_only=self.read_only)
+        self._tasks = TaskRepository(data_root=self.data_root, public_repository=self._public, client_repository=self._clients, read_only=self.read_only)
         self.security_context: Optional[security.SecurityContext] = None
 
     # ---- 生命周期 ------------------------------------------------------ #
@@ -339,5 +374,9 @@ class RuleStudioServer:
             "resolver": self._resolver,
             "stop_callback": self.stop,
             "proposal_repository": self._proposals,
+            "task_repository": self._tasks,
+            "authoring_workspace": self._authoring_workspace,
+            "authoring_requests": self._authoring_requests,
             "security_context": self.security_context,
+            "read_only": self.read_only,
         }
